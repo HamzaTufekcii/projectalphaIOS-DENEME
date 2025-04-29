@@ -13,9 +13,14 @@ public class SupabaseConfig {
     @Value("${supabase.apiKey}")
     private String supabaseApiKey;
 
+    @Value("${supabase.secretKey}")
+    private String supabaseSecretKey;
+
     public String getSupabaseUrl() {
         return supabaseUrl;
     }
+
+    public String getSupabaseSecretKey(){return supabaseSecretKey;}
 
     public String getSupabaseApiKey() {
         return supabaseApiKey;
