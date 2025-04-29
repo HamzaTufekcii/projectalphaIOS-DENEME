@@ -10,13 +10,19 @@
     align-items: center;
     z-index: 1000; /* Üstte olsun */
   }
-  
-  .popup-content {
+
+.popup-content {
     background: white;
     padding: 20px;
     border-radius: 10px;
     min-width: 300px;
+    width: 500px; /* <-- BU SATIR ÇOK ÖNEMLİ */
+    max-width: 90%; /* mobil uyumlu olsun diye */
+    min-height: 400px;
     text-align: center;
-    color: black; /* Yazıların görünmesi için */
+    color: black;
     font-size: 18px;
-  }
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

@@ -5,6 +5,9 @@ import { FaStar, FaSearch, FaFilter, FaMapMarkerAlt, FaHeart, FaRegHeart, FaPizz
 import '../styles/HomePage.css';
 import Popup from '../components/Popup';
 import Button from '../components/Button';
+import { FaEnvelope } from 'react-icons/fa';
+import axios from 'axios';
+
 
 
 const HomePage = () => {
@@ -16,7 +19,6 @@ const HomePage = () => {
     const [showThirdPopup, setShowThirdPopup] = useState(false);
     const [showFourthPopup, setShowFourthPopup] = useState(false);
     const [registerEmail, setRegisterEmail] = useState(''); //kullanıcının kaydolurken girdiği mail
-    const [registerName, setRegisterName] = useState('');   // Kullanıcının girdiği isim
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerPasswordControl, setRegisterPasswordControl] = useState('');
     const [selectedTab, setSelectedTab] = useState('user');
@@ -29,6 +31,7 @@ const HomePage = () => {
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
 
 
+
     const [errors, setErrors] = useState({
         email: '',
         password: '',
@@ -36,6 +39,10 @@ const HomePage = () => {
         ownerPassword: ''
     });
 
+    const handleGoBack = () => {
+        setShowThirdPopup(false);
+        setShowPopup(true);
+    };
 
 
     const featuredRestaurants = [
@@ -127,7 +134,6 @@ const HomePage = () => {
         setOwnerLoginPassword('');
 
         // Kayıt bilgileri
-        setRegisterName('');
         setRegisterEmail('');
 
         // Şifre oluşturma bilgileri
@@ -157,10 +163,23 @@ const HomePage = () => {
         return regex.test(email);
     };
 
-    const handleRegister = () => {
+    const handleSendOTP = async () => {
+        try {
+            const trimmedEmail = registerEmail.trim(); // boşlukları temizle
+            const response = await axios.post("http://localhost:8080/api/auth/send-verification-code", {
+                email: trimmedEmail // doğru alan adıyla gönder
+            });
+            alert("Onay kodu gönderildi. Lütfen e-postanızı kontrol ediniz.");
+        } catch (error) {
+            alert("Bir hata oluştu: " + (error.response?.data?.message || error.message));
+        }
+    };
+
+        const handleRegister = () => {
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir email adresi giriniz.");
         } else {
+            handleSendOTP();
             openSecondPopup(); // Eğer email geçerliyse 2. popup'ı açıyoruz
         }
     };
@@ -190,19 +209,31 @@ const HomePage = () => {
             setError('*Şifre tekrarı alanı boş bırakılamaz.');
             return;
         }
-
-
         setError('');
         closeFourthPopup();
     };
 
-
+    const VerifyOtp = async () => {
+        const trimmedEmail = registerEmail.trim();
+        const trimmedCode = confirmationCode.trim();
+        const [token, setToken] = useState("");
+        try {
+            const response = await axios.post("/api/auth/verify-verification-code", {
+                email,
+                token: trimmedCode ,
+            });
+            setToken(response.data.token);
+            setError('');
+        } catch (error) {
+            setError('Doğrulama hatalı: ' + error.response?.data || error.message);
+        }
+    }
 
     const handleConfirmationCodeClick = () => {
         if (confirmationCode.trim() === '') {
             setError('*Onay kodu boş bırakılamaz.');
         } else {
-            setError(''); // Hata sıfırlanır
+            VerifyOtp();
             openFourthPopup();
         }
     };
@@ -246,13 +277,9 @@ const HomePage = () => {
         }
     };
 
-    const handleNameRegister = () => {
-        if (registerName.trim() === '') {
-            setError('*İsim ve soyisim boş bırakılamaz.');
-        } else {
-            setError('');
+    const handleMailRegister = () => {
             handleRegister(); // Zaten email geçerliliği vs burada kontrol ediliyor
-        }
+            setError('');
     };
 
 
@@ -374,32 +401,86 @@ const HomePage = () => {
 
                             {showThirdPopup && (
                                 <Popup isOpen={showThirdPopup} onClose={closeThirdPopup}>
-                                    <div className='third-popup-container'>
-                                        <h3>Yeni Kullanıcı Kaydı</h3>
-                                        <input
-                                            type="text"
-                                            placeholder="İsim ve Soyisim giriniz"
-                                            name='registerName'
-                                            value={registerName}
-                                            onChange={(e) => setRegisterName(e.target.value)}
+                                    <div
+                                        className="third-popup-container"
+                                        style={{
+                                            position: 'relative',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}
+                                    >
+                                        <button
+                                            onClick={handleGoBack}
+                                            style={{
+                                                position: 'absolute',
+                                                top: '2px',
+                                                left: '8px',
+                                                width: '40px',
+                                                height: '40px',
+                                                backgroundColor: '#ff6b6b',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontSize: '18px',
+                                                lineHeight: '1',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                                transition: 'all 0.3s ease',
+                                            }}
+                                            onMouseOver={(e) => {
+                                                e.target.style.backgroundColor = '#ff8787';
+                                                e.target.style.transform = 'scale(1.1)';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.target.style.backgroundColor = '#ff6b6b';
+                                                e.target.style.transform = 'scale(1)';
+                                            }}
+                                        >
+                                            ←
+                                        </button>
+                                        <FaEnvelope
+                                            style={{
+                                                fontSize: '50px',
+                                                color: '#ff6b6b',
+                                                marginBottom: '10px'
+                                            }}
                                         />
-                                        {error && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{error}</div>}
+
+                                        <h3>Yeni Kullanıcı Kaydı</h3>
+
+                                        {/* SADECE Mail adresi input'u kaldı */}
                                         <input
                                             type="text"
                                             placeholder="Mail adresi giriniz"
-                                            name='registerMail'
+                                            name="registerMail"
                                             value={registerEmail}
                                             onChange={(e) => setRegisterEmail(e.target.value)}
+                                            style={{
+                                                width: '80%',
+                                                padding: '12px',
+                                                marginTop: '20px',
+                                                marginBottom: '20px',
+                                                borderRadius: '30px',
+                                                border: '1px solid #ff8787',
+                                                fontSize: '16px',
+                                            }}
                                         />
 
                                         <Button
                                             text="Onay Kodu Gönder"
-                                            onClick={handleNameRegister}
-                                            className='mail-approve'
+                                            onClick={handleMailRegister}
+                                            className="mail-approve"
                                         />
                                     </div>
                                 </Popup>
                             )}
+
+
 
 
                             {showFourthPopup && (

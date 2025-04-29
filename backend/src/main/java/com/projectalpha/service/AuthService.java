@@ -1,13 +1,17 @@
 package com.projectalpha.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.SupabaseConfig;
-import com.projectalpha.dto.AuthRequest;
-import com.projectalpha.dto.GenericResponse;
+import com.projectalpha.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,11 +19,72 @@ import java.util.Map;
 public class AuthService {
 
     private final SupabaseConfig supabaseConfig;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public AuthService(SupabaseConfig supabaseConfig) {
         this.supabaseConfig = supabaseConfig;
     }
+
+    public void sendVerificationCode(String email) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/otp"))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                    {
+                        "email": "%s",
+                        "create_user": true,
+                        "data": { "tmp" : true }
+                    }
+                """.formatted(email)))
+                .build();
+            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public SupabaseTokenResponse verifyVerificationCode(String email, String token) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/verify"))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                    {
+                        "email": "%s",
+                        "token": "%s",
+                        "type": "email"
+                    }
+                 """.formatted(email, token)))
+                .build();
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return mapper.readValue(response.body(), SupabaseTokenResponse.class);
+    }
+
+    public void setPassword(String userID, String password) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userID))
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("""
+                        {"password". "%s"}
+                """.formatted(password)))
+                .build();
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public ResponseEntity<GenericResponse> signup(AuthRequest request) {
         try {
