@@ -1,7 +1,8 @@
 package com.projectalpha.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class SupabaseTokenResponse {
 
@@ -13,6 +14,8 @@ public class SupabaseTokenResponse {
     public static class User {
         private String id;
         private String email;
+        private String aud;
+        private String role;
+        private String email_confirmed_at;
     }
-
 }

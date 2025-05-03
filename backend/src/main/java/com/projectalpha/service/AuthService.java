@@ -1,5 +1,6 @@
 package com.projectalpha.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.SupabaseConfig;
 import com.projectalpha.dto.*;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,14 +36,14 @@ public class AuthService {
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("""
-                    {
-                        "email": "%s",
-                        "create_user": true,
-                        "data": { "tmp" : true }
-                    }
-                """.formatted(email)))
+                            {
+                                "email": "%s",
+                                "create_user": true,
+                                "data": { "tmp" : true }
+                            }
+                        """.formatted(email)))
                 .build();
-            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     public SupabaseTokenResponse verifyVerificationCode(String email, String token) throws Exception {
@@ -49,113 +52,84 @@ public class AuthService {
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("""
-                    {
-                        "email": "%s",
-                        "token": "%s",
-                        "type": "email"
-                    }
-                 """.formatted(email, token)))
+                           {
+                               "email": "%s",
+                               "token": "%s",
+                               "type": "email"
+                           }
+                        """.formatted(email, token)))
                 .build();
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return mapper.readValue(response.body(), SupabaseTokenResponse.class);
     }
 
-    public void setPassword(String userID, String password) throws Exception {
+    public String getUserIdByEmail(String email) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userID))
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users"))
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Content-Type", "application/json")
-                .method("PATCH", HttpRequest.BodyPublishers.ofString("""
-                        {"password". "%s"}
-                """.formatted(password)))
                 .build();
-        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-    }
 
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        JsonNode root = mapper.readTree(response.body());
+        JsonNode users = root.get("users");
 
-
-
-
-
-
-//Sergenin kodlars
-
-
-
-
-
-
-    public ResponseEntity<GenericResponse> signup(AuthRequest request) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            String signupUrl = supabaseConfig.getSupabaseUrl() + "/auth/v1/signup";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseApiKey());
-            headers.set("apikey", supabaseConfig.getSupabaseApiKey());
-
-            Map<String, String> body = Map.of(
-                    "email", request.getEmail(),
-                    "password", request.getPassword()
-            );
-
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.exchange(
-                    signupUrl,
-                    HttpMethod.POST,
-                    entity,
-                    String.class
-            );
-
-            Map<String, String> data = new HashMap<>();
-            data.put("email", request.getEmail());
-
-            return ResponseEntity.ok(new GenericResponse(true, "Signup başarılı", data));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new GenericResponse(false, "Signup hatası: " + e.getMessage(), null));
-        }
-    }
-
-    public ResponseEntity<GenericResponse> login(AuthRequest request) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            String loginUrl = supabaseConfig.getSupabaseUrl() + "/auth/v1/token?grant_type=password";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseApiKey());
-            headers.set("apikey", supabaseConfig.getSupabaseApiKey());
-
-            Map<String, String> body = Map.of(
-                    "email", request.getEmail(),
-                    "password", request.getPassword()
-            );
-
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.exchange(
-                    loginUrl,
-                    HttpMethod.POST,
-                    entity,
-                    String.class
-            );
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, String> data = new HashMap<>();
-                data.put("access_token", "Token buraya parse edilecek");
-                // İleride istersen buraya JSON parse ederek access_token'ı ayrıştırırız.
-                return ResponseEntity.ok(new GenericResponse(true, "Login başarılı", data));
-            } else {
-                return ResponseEntity.status(response.getStatusCode())
-                        .body(new GenericResponse(false, "Login başarısız", null));
+        if (users != null && users.isArray()) {
+            for (JsonNode user : users) {
+                String userEmail = user.has("email") ? user.get("email").asText() : null;
+                if (email.equals(userEmail)) {
+                    return user.get("id").asText();  // UUID'yi döndür
+                }
             }
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new GenericResponse(false, "Login hatası: " + e.getMessage(), null));
         }
+        throw new RuntimeException("Kullanıcı bulunamadı veya e-posta eşleşmedi.");
+    }
+
+    public void setPassword(String email, String newPassword) throws Exception {
+        String userId = getUserIdByEmail(email);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userId))
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey()) // service_role API key
+                .header("Content-Type", "application/json")
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .method("PUT", HttpRequest.BodyPublishers.ofString("""
+                        {
+                            "password": "%s"
+                        }
+                """.formatted(newPassword)))
+                .build();
+
+        // Yanıtı almak için isteği gönderme
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Şifre güncellenemedi: " + response.body());
+        }
+    }
+
+
+    public SupabaseTokenResponse loginWithEmailPassword(String email, String password) throws Exception {
+        String jsonBody = """
+        {
+            "email": "%s",
+            "password": "%s"
+        }
+    """.formatted(email, password);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/token?grant_type=password"))
+                .header("Content-Type", "application/json")
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 400) {
+            throw new RuntimeException("Login başarısız: " + response.body());
+        }
+
+        return mapper.readValue(response.body(), SupabaseTokenResponse.class);
     }
 }

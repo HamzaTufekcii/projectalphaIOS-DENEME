@@ -29,7 +29,7 @@ const HomePage = () => {
     const [userLoginPassword, setUserLoginPassword] = useState('');
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
-
+    const [token, setToken] = useState("");
 
 
     const [errors, setErrors] = useState({
@@ -209,23 +209,40 @@ const HomePage = () => {
             setError('*Şifre tekrarı alanı boş bırakılamaz.');
             return;
         }
+        handleSetPassword();
         setError('');
         closeFourthPopup();
     };
 
+
+        const handleSetPassword = async () => {
+            try {
+                const email = registerEmail.trim();
+                const password = registerPassword.trim();
+
+                const response = await axios.post("http://localhost:8080/api/auth/set-password", {
+                    email: email,
+                    password: password,
+                });
+                setError("");
+            } catch(error) {
+                setError("Şifre belirlenirken bir hata oluştu.");
+            }
+        }
     const VerifyOtp = async () => {
-        const trimmedEmail = registerEmail.trim();
+        const email = registerEmail.trim();
         const trimmedCode = confirmationCode.trim();
-        const [token, setToken] = useState("");
+
         try {
-            const response = await axios.post("/api/auth/verify-verification-code", {
+            const response = await axios.post("http://localhost:8080/api/auth/verify-verification-code", {
                 email,
-                token: trimmedCode ,
+                token: trimmedCode
             });
             setToken(response.data.token);
             setError('');
         } catch (error) {
-            setError('Doğrulama hatalı: ' + error.response?.data || error.message);
+            console.log("Hata:", error.response?.data || error.message);
+            alert('Doğrulama hatalı: ' + error.response?.data || error.message);
         }
     }
 
@@ -237,8 +254,26 @@ const HomePage = () => {
             openFourthPopup();
         }
     };
+        const login = async () => {
+            const email = userLoginEmail.trim();
+            const password = userLoginPassword.trim();
 
-    const handleUserLogin = () => {
+            try{
+                const response = await axios.post("http://localhost:8080/api/auth/login", {
+                    email,
+                    password
+                });
+                const {access_token, refresh_token, user } = response.data;
+            }catch(error){
+                //
+            }
+
+        }
+
+
+
+
+        const handleUserLogin = () => {
         let newErrors = {};
 
         if (userLoginEmail.trim() === '') {
@@ -250,7 +285,7 @@ const HomePage = () => {
         }
 
         setErrors(newErrors);
-
+        login();
         // Eğer hiçbir hata yoksa giriş başarılı
         if (Object.keys(newErrors).length === 0) {
             console.log('Kullanıcı girişi başarılı');

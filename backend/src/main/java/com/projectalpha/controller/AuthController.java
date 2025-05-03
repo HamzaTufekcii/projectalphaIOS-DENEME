@@ -43,10 +43,25 @@ public class AuthController {
     @PostMapping("/set-password")
     public ResponseEntity<?> setPassword(@RequestBody Map<String, String> body) {
         try {
-            authService.setPassword(body.get("userId"), body.get("password"));
-            return ResponseEntity.ok("Şifre kaydedildi.");
+            authService.setPassword(body.get("email"), body.get("password"));
+            return ResponseEntity.ok("Şifre başarıyla kaydedildi.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Şifre kaydedilemedi: " + e.getMessage());
+        }
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+        try {
+            String email = body.get("email");
+            String password = body.get("password");
+            SupabaseTokenResponse response = authService.loginWithEmailPassword(email, password);
+            return ResponseEntity.ok(Map.of(
+                    "access_token", response.getAccess_token(),
+                    "refresh_token", response.getRefresh_token(),
+                    "user", response.getUser()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Login Hatalı: " + e.getMessage());
         }
     }
 }
