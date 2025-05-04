@@ -1,0 +1,120 @@
+.info-side {
+    width: 100%;
+    background-color: var(--primary-color);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+  }
+  
+  @media screen and (min-width: 768px) {
+    .info-side {
+      width: 50%;
+      padding: 40px;
+      
+    }
+  }
+  
+  .info-wrapper {
+    max-width: 450px;
+    margin: 0 auto;
+  }
+  
+  .info-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  
+  /* Features */
+  .features-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    
+  }
+  
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    background-color: var(--primary-color);
+    padding: 12px;
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .feature-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px var(--primary-color);
+  }
+  
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--primary-light);
+   /* background-color: #3b82f6;*/
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    font-size: 24px;
+  }
+  
+  .feature-content {
+    flex: 1;
+    
+  }
+  
+  .feature-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .feature-text {
+    color: var(--primary-light);
+  }
+  
+  /* Stats box */
+  .stats-container {
+    margin-top: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  
+  .stats-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  .stats-text {
+    color: var(--primary-light);
+    margin-bottom: 16px;
+  }
+  
+  .progress-bars {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    flex: 1;
+    background-color: #3b82f6;
+    border-radius: 9999px;
+  }
+  
+  .progress-bar-lighter {
+    background-color: #93c5fd;
+  }
+  
+  .stats-footnote {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--primary-light);
+  }
