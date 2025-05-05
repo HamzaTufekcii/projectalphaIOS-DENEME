@@ -224,8 +224,6 @@ const HomePage = () => {
         closeFourthPopup();
     };
 
-
-
     const handleConfirmationCodeClick = async () => {
         // 2️⃣ Boş kod kontrolü
         if (!confirmationCode.trim()) {
