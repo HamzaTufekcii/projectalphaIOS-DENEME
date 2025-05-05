@@ -6,8 +6,13 @@ import '../styles/HomePage.css';
 import Popup from '../components/Popup';
 import Button from '../components/Button';
 import { FaEnvelope } from 'react-icons/fa';
-import axios from 'axios';
-
+import CustomInput from '../components/CustomInput';
+import LoginPopup from '../components/HomePageComponents/LoginPopup';
+import ConfirmationPopup from '../components/HomePageComponents/ConfirmationPopup';
+import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPopup';
+import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
+import RestaurantList from '../components/HomePageComponents/RestaurantList';
+import axios from "axios";
 
 
 const HomePage = () => {
@@ -19,6 +24,7 @@ const HomePage = () => {
     const [showThirdPopup, setShowThirdPopup] = useState(false);
     const [showFourthPopup, setShowFourthPopup] = useState(false);
     const [registerEmail, setRegisterEmail] = useState(''); //kullanıcının kaydolurken girdiği mail
+    const [registerName, setRegisterName] = useState('');   // Kullanıcının girdiği isim
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerPasswordControl, setRegisterPasswordControl] = useState('');
     const [selectedTab, setSelectedTab] = useState('user');
@@ -29,7 +35,7 @@ const HomePage = () => {
     const [userLoginPassword, setUserLoginPassword] = useState('');
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
-    const [token, setToken] = useState("");
+    const [token, setToken] = useState('');
 
 
     const [errors, setErrors] = useState({
@@ -134,6 +140,7 @@ const HomePage = () => {
         setOwnerLoginPassword('');
 
         // Kayıt bilgileri
+        setRegisterName('');
         setRegisterEmail('');
 
         // Şifre oluşturma bilgileri
@@ -163,24 +170,26 @@ const HomePage = () => {
         return regex.test(email);
     };
 
-    const handleSendOTP = async () => {
-        try {
-            const trimmedEmail = registerEmail.trim(); // boşlukları temizle
-            const response = await axios.post("http://localhost:8080/api/auth/send-verification-code", {
-                email: trimmedEmail // doğru alan adıyla gönder
-            });
-            alert("Onay kodu gönderildi. Lütfen e-postanızı kontrol ediniz.");
-        } catch (error) {
-            alert("Bir hata oluştu: " + (error.response?.data?.message || error.message));
-        }
-    };
-
-        const handleRegister = () => {
+    const handleRegister = async () => {
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir email adresi giriniz.");
-        } else {
-            handleSendOTP();
-            openSecondPopup(); // Eğer email geçerliyse 2. popup'ı açıyoruz
+        }
+
+        try{
+             // boşlukları temizle
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/send-verification-code",
+                {
+                email: registerEmail.trim()
+                }
+            );
+            setError('');
+            openSecondPopup();
+
+        } catch (err) {
+            const msg = err.response?.data || err.message;
+            alert('E-posta gönderilemedi: ' + msg);
+            console.error(err);
         }
     };
 
@@ -209,71 +218,47 @@ const HomePage = () => {
             setError('*Şifre tekrarı alanı boş bırakılamaz.');
             return;
         }
+
         handleSetPassword();
         setError('');
         closeFourthPopup();
     };
 
 
-        const handleSetPassword = async () => {
-            try {
-                const email = registerEmail.trim();
-                const password = registerPassword.trim();
 
-                const response = await axios.post("http://localhost:8080/api/auth/set-password", {
-                    email: email,
-                    password: password,
-                });
-                setError("");
-            } catch(error) {
-                setError("Şifre belirlenirken bir hata oluştu.");
-            }
+    const handleConfirmationCodeClick = async () => {
+        // 2️⃣ Boş kod kontrolü
+        if (!confirmationCode.trim()) {
+            setError('*Onay kodu boş bırakılamaz.');
+            return;
         }
-    const VerifyOtp = async () => {
-        const email = registerEmail.trim();
-        const trimmedCode = confirmationCode.trim();
 
         try {
-            const response = await axios.post("http://localhost:8080/api/auth/verify-verification-code", {
-                email,
-                token: trimmedCode
-            });
+            // 3️⃣ Doğrulama isteğini await ile yap, ve sadece başarılıysa devam et
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/verify-verification-code",
+                {
+                    email: registerEmail.trim(),         // mutlaka .trim() ile kesin email gönder
+                    token: confirmationCode.trim(),      // backend’in beklediği alan adı ‘token’
+                }
+            );
+
+            // 4️⃣ Başarılıysa token’ı state’e al, hata mesajını temizle
             setToken(response.data.token);
             setError('');
-        } catch (error) {
-            console.log("Hata:", error.response?.data || error.message);
-            alert('Doğrulama hatalı: ' + error.response?.data || error.message);
-        }
-    }
 
-    const handleConfirmationCodeClick = () => {
-        if (confirmationCode.trim() === '') {
-            setError('*Onay kodu boş bırakılamaz.');
-        } else {
-            VerifyOtp();
+            // 5️⃣ Sadece burada openFourthPopup() çağır: hata yoksa şifre ekranına geç
             openFourthPopup();
+
+        } catch (err) {
+            // 6️⃣ Hata varsa kullanıcıya göster, popup’ı açma
+            const msg = err.response?.data?.message || err.message;
+            setError('Doğrulama hatalı: ' + msg);
+            console.error(err);
         }
     };
-        const login = async () => {
-            const email = userLoginEmail.trim();
-            const password = userLoginPassword.trim();
 
-            try{
-                const response = await axios.post("http://localhost:8080/api/auth/login", {
-                    email,
-                    password
-                });
-                const {access_token, refresh_token, user } = response.data;
-            }catch(error){
-                //
-            }
-
-        }
-
-
-
-
-        const handleUserLogin = () => {
+    const handleUserLogin = async () => {
         let newErrors = {};
 
         if (userLoginEmail.trim() === '') {
@@ -283,14 +268,26 @@ const HomePage = () => {
         if (userLoginPassword.trim() === '') {
             newErrors.password = '*Şifre alanı boş bırakılamaz.';
         }
-
-        setErrors(newErrors);
-        login();
-        // Eğer hiçbir hata yoksa giriş başarılı
-        if (Object.keys(newErrors).length === 0) {
+        try{
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email: userLoginEmail.trim(),
+                    password: userLoginPassword.trim()
+                }
+            );
+            const { access_token, refresh_token, user } = response.data;
             console.log('Kullanıcı girişi başarılı');
             closePopup();
+        } catch(err) {
+            const msg = err.response?.data?.message || err.message;
+            setError('Giriş yapılamadı: ' + msg);
+            console.error(err);
         }
+
+
+
+
     };
 
     const handleOwnerLogin = () => {
@@ -312,11 +309,42 @@ const HomePage = () => {
         }
     };
 
-    const handleMailRegister = () => {
-            handleRegister(); // Zaten email geçerliliği vs burada kontrol ediliyor
-            setError('');
+
+    const handleSetPassword = async () => {
+        try {
+            const email = registerEmail.trim();
+            const password = registerPassword.trim();
+
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/set-password",
+                {
+                    email: email,
+                    password: password,
+                }
+            );
+            setError("");
+        } catch(error) {
+            setError("Şifre belirlenirken bir hata oluştu.");
+        }
     };
 
+    const login = async () => {
+        const email = userLoginEmail.trim();
+        const password = userLoginPassword.trim();
+
+        try{
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email,
+                    password
+                }
+            );
+            const {access_token, refresh_token, user } = response.data;
+        } catch(error) {
+
+        }
+    };
 
     return (
         <div className="app-container">
@@ -330,229 +358,61 @@ const HomePage = () => {
 
                             <Button text="Login" onClick={openPopup} ></Button>
 
-                            <Popup isOpen={showPopup} onClose={closePopup}>
-                                <div className='popup-container'>
-                                    <div className='user-or-owner'>
 
-                                        <div className="user-or-owner-check">
-                                            <div className="user-or-owner-check">
-                                                <div className="tab-options">
-                                                    {/* Hareketli arkaplan */}
-                                                    <div className={`tab-background ${selectedTab}`}></div>
-
-                                                    <div
-                                                        className={`tab-option ${selectedTab === 'user' ? 'active' : ''}`}
-                                                        onClick={handleSelectUser}
-                                                    >
-                                                        KULLANICI
-                                                    </div>
-                                                    <div
-                                                        className={`tab-option ${selectedTab === 'owner' ? 'active' : ''}`}
-                                                        onClick={handleSelectOwner}
-                                                    >
-                                                        İŞLETME
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <div />
-
-
-                                        <div className='middle-content'>
-                                            {selectedTab === 'user' && (
-                                                <div className="tab-content animate-slide">
-                                                    <p>Kullanıcı Girişi</p>
-                                                    <input type="email" placeholder="Email"
-                                                        name='userLoginMail'
-                                                        value={userLoginEmail}
-                                                        onChange={(e) => setUserLoginEmail(e.target.value)} />
-                                                    {errors.email && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{errors.email}</div>}
-
-                                                    <input type="password" placeholder='Şifre'
-                                                        name='userLoginPassword'
-                                                        value={userLoginPassword}
-                                                        onChange={(e) => setUserLoginPassword(e.target.value)} />
-                                                    {errors.password && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{errors.password}</div>}
-                                                    <Button
-                                                        text="Giriş Yap"
-                                                        onClick={handleUserLogin}
-                                                        className='loged-in'
-                                                    />
-                                                </div>
-
-                                            )}
-
-                                            {selectedTab === 'owner' && (
-                                                <div className="tab-content animate-slide">
-                                                    <p>İşletme Girişi</p>
-                                                    <input type="email" placeholder="İşletme Email" name='ownerLoginMail'
-                                                        value={ownerLoginEmail}
-                                                        onChange={(e) => setOwnerLoginEmail(e.target.value)} />
-                                                    {errors.ownerEmail && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{errors.ownerEmail}</div>}
-                                                    <input type="password" placeholder='İşletme Şifresi' name='ownerLoginPassword'
-                                                        value={ownerLoginPassword}
-                                                        onChange={(e) => setOwnerLoginPassword(e.target.value)} />
-                                                    {errors.ownerPassword && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{errors.ownerPassword}</div>}
-                                                    <Button
-                                                        text="İşletme Girişi Yap"
-                                                        onClick={handleOwnerLogin}
-                                                        className='loged-in'
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className='popup-footer'>
-                                            <p>Hesabın yok mu?</p>
-                                            {selectedTab === 'user' && (
-                                                <a onClick={openThirdPopUp} className='register'>Kayıt Ol</a>
-                                            )}
-
-                                            {selectedTab === 'owner' && (
-                                                <Link to="/owner-register" className='register'>Kayıt Ol</Link>
-                                            )}
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </Popup>
+                            <LoginPopup
+                                isOpen={showPopup}
+                                onClose={closePopup}
+                                selectedTab={selectedTab}
+                                handleSelectUser={handleSelectUser}
+                                handleSelectOwner={handleSelectOwner}
+                                userLoginEmail={userLoginEmail}
+                                setUserLoginEmail={setUserLoginEmail}
+                                userLoginPassword={userLoginPassword}
+                                setUserLoginPassword={setUserLoginPassword}
+                                ownerLoginEmail={ownerLoginEmail}
+                                setOwnerLoginEmail={setOwnerLoginEmail}
+                                ownerLoginPassword={ownerLoginPassword}
+                                setOwnerLoginPassword={setOwnerLoginPassword}
+                                errors={errors}
+                                handleUserLogin={handleUserLogin}
+                                handleOwnerLogin={handleOwnerLogin}
+                                openThirdPopUp={openThirdPopUp}
+                            />
 
                             {/* İkinci Popup */}
-                            {showSecondPopup && (
-                                <Popup isOpen={showSecondPopup} onClose={closeSecondPopup}>
-                                    <div className='second-popup-container'>
-                                        <h2>Onay Kodu Girişi</h2>
-                                        <input type="text" placeholder="Onay Kodunu Giriniz" name='confirmationCode'
-                                            value={confirmationCode}
-                                            onChange={(e) => setConfirmationCode(e.target.value)} />
-                                        {/* HATA MESAJI */}
-                                        {error && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{error}</div>}
-                                        <Button text="Doğrula" onClick={handleConfirmationCodeClick} />
-                                    </div>
-                                </Popup>
-                            )}
-
-                            {showThirdPopup && (
-                                <Popup isOpen={showThirdPopup} onClose={closeThirdPopup}>
-                                    <div
-                                        className="third-popup-container"
-                                        style={{
-                                            position: 'relative',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            gap: '10px'
-                                        }}
-                                    >
-                                        <button
-                                            onClick={handleGoBack}
-                                            style={{
-                                                position: 'absolute',
-                                                top: '2px',
-                                                left: '8px',
-                                                width: '40px',
-                                                height: '40px',
-                                                backgroundColor: '#ff6b6b',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '8px',
-                                                fontSize: '18px',
-                                                lineHeight: '1',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                                                transition: 'all 0.3s ease',
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.target.style.backgroundColor = '#ff8787';
-                                                e.target.style.transform = 'scale(1.1)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.target.style.backgroundColor = '#ff6b6b';
-                                                e.target.style.transform = 'scale(1)';
-                                            }}
-                                        >
-                                            ←
-                                        </button>
-                                        <FaEnvelope
-                                            style={{
-                                                fontSize: '50px',
-                                                color: '#ff6b6b',
-                                                marginBottom: '10px'
-                                            }}
-                                        />
-
-                                        <h3>Yeni Kullanıcı Kaydı</h3>
-
-                                        {/* SADECE Mail adresi input'u kaldı */}
-                                        <input
-                                            type="text"
-                                            placeholder="Mail adresi giriniz"
-                                            name="registerMail"
-                                            value={registerEmail}
-                                            onChange={(e) => setRegisterEmail(e.target.value)}
-                                            style={{
-                                                width: '80%',
-                                                padding: '12px',
-                                                marginTop: '20px',
-                                                marginBottom: '20px',
-                                                borderRadius: '30px',
-                                                border: '1px solid #ff8787',
-                                                fontSize: '16px',
-                                            }}
-                                        />
-
-                                        <Button
-                                            text="Onay Kodu Gönder"
-                                            onClick={handleMailRegister}
-                                            className="mail-approve"
-                                        />
-                                    </div>
-                                </Popup>
-                            )}
 
 
+                            <ConfirmationPopup
+                                isOpen={showSecondPopup}
+                                onClose={closeSecondPopup}
+                                confirmationCode={confirmationCode}
+                                setConfirmationCode={setConfirmationCode}
+                                error={error}
+                                onConfirm={handleConfirmationCodeClick}
+                            />
+
+                            <RegisterEmailPopup
+                                isOpen={showThirdPopup}
+                                onClose={closeThirdPopup}
+                                registerEmail={registerEmail}
+                                setRegisterEmail={setRegisterEmail}
+                                onSendCode={handleRegister}
+                                onBack={handleGoBack}
+                            />
 
 
-                            {showFourthPopup && (
-                                <Popup isOpen={showFourthPopup} onClose={closeFourthPopup}>
-                                    <div className='fourth-popup-container'>
-                                        <h3>Yeni Şifre Belirleme</h3>
-
-                                        <input
-                                            type="password"
-                                            placeholder='Şifrenizi oluşturunuz'
-                                            name='newPassword'
-                                            value={registerPassword}
-                                            onChange={(e) => setRegisterPassword(e.target.value)}
-                                        />
-                                        {/* HATA MESAJI */}
-                                        {error && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{error}</div>}
-
-                                        <input
-                                            type="password"
-                                            placeholder='Şifre tekrar'
-                                            name='newPasswordAgain'
-                                            value={registerPasswordControl}
-                                            onChange={(e) => setRegisterPasswordControl(e.target.value)}
-                                        />
-                                        {/* HATA MESAJI */}
-                                        {error && <div style={{ color: 'red', fontSize: '12px', marginBottom: "5px", textAlign: "left" }}>{error}</div>}
-                                        <Button
-                                            text="Kayıt Ol"
-                                            onClick={checkEqual}
-                                            className='register-last'
-                                        />
-                                    </div>
-                                </Popup>
-                            )}
+                            <SetPasswordPopup
+                                isOpen={showFourthPopup}
+                                onClose={closeFourthPopup}
+                                registerPassword={registerPassword}
+                                setRegisterPassword={setRegisterPassword}
+                                registerPasswordControl={registerPasswordControl}
+                                setRegisterPasswordControl={setRegisterPasswordControl}
+                                error={error}
+                                onSubmit={checkEqual}
+                            />
 
                         </div>
-
 
                     </nav>
                 </div>
@@ -656,40 +516,8 @@ const HomePage = () => {
                 </section>
 
                 <section className="all-restaurants-section">
-                    <h2 className="section-heading">All Restaurants</h2>
-                    <div className="restaurant-list">
-                        {allRestaurants.map(restaurant => (
-                            <Link to={`/restaurant/${restaurant.id}`} className="restaurant-item" key={restaurant.id}>
-                                <div className="restaurant-item-img">
-                                    <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                                </div>
-                                <div className="restaurant-item-left">
+                    <RestaurantList title="Tüm Restoranlar" />
 
-                                    <h3 className="restaurant-title">{restaurant.name}</h3>
-                                    <div className="restaurant-meta">
-                                        <p className="restaurant-category">{restaurant.type}</p>
-                                        <div className="restaurant-location">
-                                            <span className="bullet">•</span>
-                                            <span>{restaurant.distance}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="restaurant-item-right">
-                                    <div className="rating-display">
-                                        <FaStar className="star-icon" />
-                                        <span className="rating-number">{restaurant.rating}</span>
-                                    </div>
-                                    <button className="favorite-small-btn" onClick={(e) => toggleFavorite(restaurant.id, e)}>
-                                        {favorites.includes(restaurant.id) ? (
-                                            <FaHeart className="heart-small favorited" />
-                                        ) : (
-                                            <FaRegHeart className="heart-small" />
-                                        )}
-                                    </button>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
                 </section>
             </main>
         </div>
