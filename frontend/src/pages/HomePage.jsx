@@ -12,6 +12,7 @@ import ConfirmationPopup from '../components/HomePageComponents/ConfirmationPopu
 import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPopup';
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
+import axios from "axios";
 
 
 const HomePage = () => {
@@ -34,6 +35,7 @@ const HomePage = () => {
     const [userLoginPassword, setUserLoginPassword] = useState('');
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
+    const [token, setToken] = useState('');
 
 
     const [errors, setErrors] = useState({
@@ -168,11 +170,26 @@ const HomePage = () => {
         return regex.test(email);
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir email adresi giriniz.");
-        } else {
-            openSecondPopup(); // Eğer email geçerliyse 2. popup'ı açıyoruz
+        }
+
+        try{
+             // boşlukları temizle
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/send-verification-code",
+                {
+                email: registerEmail.trim()
+                }
+            );
+            setError('');
+            openSecondPopup();
+
+        } catch (err) {
+            const msg = err.response?.data || err.message;
+            alert('E-posta gönderilemedi: ' + msg);
+            console.error(err);
         }
     };
 
@@ -202,23 +219,46 @@ const HomePage = () => {
             return;
         }
 
-
+        handleSetPassword();
         setError('');
         closeFourthPopup();
     };
 
 
 
-    const handleConfirmationCodeClick = () => {
-        if (confirmationCode.trim() === '') {
+    const handleConfirmationCodeClick = async () => {
+        // 2️⃣ Boş kod kontrolü
+        if (!confirmationCode.trim()) {
             setError('*Onay kodu boş bırakılamaz.');
-        } else {
-            setError(''); // Hata sıfırlanır
+            return;
+        }
+
+        try {
+            // 3️⃣ Doğrulama isteğini await ile yap, ve sadece başarılıysa devam et
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/verify-verification-code",
+                {
+                    email: registerEmail.trim(),         // mutlaka .trim() ile kesin email gönder
+                    token: confirmationCode.trim(),      // backend’in beklediği alan adı ‘token’
+                }
+            );
+
+            // 4️⃣ Başarılıysa token’ı state’e al, hata mesajını temizle
+            setToken(response.data.token);
+            setError('');
+
+            // 5️⃣ Sadece burada openFourthPopup() çağır: hata yoksa şifre ekranına geç
             openFourthPopup();
+
+        } catch (err) {
+            // 6️⃣ Hata varsa kullanıcıya göster, popup’ı açma
+            const msg = err.response?.data?.message || err.message;
+            setError('Doğrulama hatalı: ' + msg);
+            console.error(err);
         }
     };
 
-    const handleUserLogin = () => {
+    const handleUserLogin = async () => {
         let newErrors = {};
 
         if (userLoginEmail.trim() === '') {
@@ -228,14 +268,26 @@ const HomePage = () => {
         if (userLoginPassword.trim() === '') {
             newErrors.password = '*Şifre alanı boş bırakılamaz.';
         }
-
-        setErrors(newErrors);
-
-        // Eğer hiçbir hata yoksa giriş başarılı
-        if (Object.keys(newErrors).length === 0) {
+        try{
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email: userLoginEmail.trim(),
+                    password: userLoginPassword.trim()
+                }
+            );
+            const { access_token, refresh_token, user } = response.data;
             console.log('Kullanıcı girişi başarılı');
             closePopup();
+        } catch(err) {
+            const msg = err.response?.data?.message || err.message;
+            setError('Giriş yapılamadı: ' + msg);
+            console.error(err);
         }
+
+
+
+
     };
 
     const handleOwnerLogin = () => {
@@ -254,6 +306,43 @@ const HomePage = () => {
         if (Object.keys(newErrors).length === 0) {
             console.log('İşletme girişi başarılı');
             closePopup();
+        }
+    };
+
+
+    const handleSetPassword = async () => {
+        try {
+            const email = registerEmail.trim();
+            const password = registerPassword.trim();
+
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/set-password",
+                {
+                    email: email,
+                    password: password,
+                }
+            );
+            setError("");
+        } catch(error) {
+            setError("Şifre belirlenirken bir hata oluştu.");
+        }
+    };
+
+    const login = async () => {
+        const email = userLoginEmail.trim();
+        const password = userLoginPassword.trim();
+
+        try{
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email,
+                    password
+                }
+            );
+            const {access_token, refresh_token, user } = response.data;
+        } catch(error) {
+
         }
     };
 

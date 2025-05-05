@@ -1,8 +1,9 @@
 package com.projectalpha.controller;
 
-import com.projectalpha.dto.AuthRequest;
+import com.projectalpha.dto.*;
 import com.projectalpha.dto.GenericResponse;
 import com.projectalpha.dto.SupabaseTokenResponse;
+import com.projectalpha.exception.*;
 import com.projectalpha.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

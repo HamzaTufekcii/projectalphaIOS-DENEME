@@ -10,11 +10,11 @@ public class SupabaseTokenResponse {
     private String refresh_token;
     private User user;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @Data
     public static class User {
         private String id;
         private String email;
-        private String aud;
         private String role;
         private String email_confirmed_at;
     }

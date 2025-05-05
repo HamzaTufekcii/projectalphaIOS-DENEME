@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.SupabaseConfig;
 import com.projectalpha.dto.*;
+import com.projectalpha.exception.*;
+import com.projectalpha.exception.DuplicateEmailException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -31,19 +33,25 @@ public class AuthService {
     }
 
     public void sendVerificationCode(String email) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/otp"))
-                .header("apikey", supabaseConfig.getSupabaseApiKey())
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("""
+        String isUser = getUserIdByEmail(email);
+        if(isUser != null) {
+            throw new DuplicateEmailException();
+        }
+        else{
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/otp"))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("""
                             {
                                 "email": "%s",
                                 "create_user": true,
                                 "data": { "tmp" : true }
                             }
                         """.formatted(email)))
-                .build();
-        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    .build();
+            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        }
     }
 
     public SupabaseTokenResponse verifyVerificationCode(String email, String token) throws Exception {
