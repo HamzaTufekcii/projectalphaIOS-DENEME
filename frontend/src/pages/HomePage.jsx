@@ -314,12 +314,12 @@ const HomePage = () => {
         try {
             const email = registerEmail.trim();
             const password = registerPassword.trim();
-
             const response = await axios.post(
-                "http://localhost:8080/api/auth/set-password",
+                "http://localhost:8080/api/auth/update-user",
                 {
                     email: email,
                     password: password,
+                    role: "diner_user"
                 }
             );
             setError("");

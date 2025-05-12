@@ -41,10 +41,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/set-password")
-    public ResponseEntity<?> setPassword(@RequestBody Map<String, String> body) {
+    @PostMapping("/update-user")
+    public ResponseEntity<?> updateUser(@RequestBody Map<String, String> body) {
         try {
-            authService.setPassword(body.get("email"), body.get("password"));
+            authService.updateUser(body.get("email"), body.get("password"), body.get("role"));
             return ResponseEntity.ok("Şifre başarıyla kaydedildi.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Şifre kaydedilemedi: " + e.getMessage());

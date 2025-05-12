@@ -34,7 +34,7 @@ public class AuthService {
 
     public void sendVerificationCode(String email) throws Exception {
         String isUser = getUserIdByEmail(email);
-        if(isUser != null) {
+        if(!isUser.equals("Kullanıcı bulunamadı.")) {
             throw new DuplicateEmailException();
         }
         else{
@@ -71,7 +71,7 @@ public class AuthService {
         return mapper.readValue(response.body(), SupabaseTokenResponse.class);
     }
 
-    public String getUserIdByEmail(String email) throws Exception {
+    public String getUserIdByEmail(String email) throws Exception  {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users"))
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
@@ -91,10 +91,10 @@ public class AuthService {
                 }
             }
         }
-        throw new RuntimeException("Kullanıcı bulunamadı veya e-posta eşleşmedi.");
+        return "Kullanıcı bulunamadı.";
     }
 
-    public void setPassword(String email, String newPassword) throws Exception {
+    public void updateUser(String email, String newPassword, String role) throws Exception {
         String userId = getUserIdByEmail(email);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userId))
@@ -104,15 +104,19 @@ public class AuthService {
                 .method("PUT", HttpRequest.BodyPublishers.ofString("""
                         {
                             "password": "%s"
+                            "app_metadata": {
+                                "role": "%s"
+                             }
                         }
-                """.formatted(newPassword)))
+                """.formatted(newPassword, role)))
                 .build();
+
 
         // Yanıtı almak için isteği gönderme
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Şifre güncellenemedi: " + response.body());
+            throw new RuntimeException("Kullanıcı güncellenemedi: " + response.body());
         }
     }
 
