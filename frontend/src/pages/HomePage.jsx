@@ -1,34 +1,42 @@
 // src/pages/HomePage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaStar, FaSearch, FaFilter, FaMapMarkerAlt, FaHeart, FaRegHeart, FaPizzaSlice, FaCoffee, FaHamburger, FaWineGlassAlt } from 'react-icons/fa';
+import { 
+  FaStar, 
+  FaSearch, 
+  FaFilter, 
+  FaMapMarkerAlt, 
+  FaHeart, 
+  FaRegHeart, 
+  FaPizzaSlice, 
+  FaCoffee, 
+  FaHamburger, 
+  FaWineGlassAlt,
+  FaUtensils,
+  FaLocationArrow
+} from 'react-icons/fa';
 import '../styles/HomePage.css';
-import Popup from '../components/Popup';
 import Button from '../components/Button';
-import { FaEnvelope } from 'react-icons/fa';
 import CustomInput from '../components/CustomInput';
 import LoginPopup from '../components/HomePageComponents/LoginPopup';
 import ConfirmationPopup from '../components/HomePageComponents/ConfirmationPopup';
 import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPopup';
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
+import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
 import axios from "axios";
 
-
 const HomePage = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedFilter, setSelectedFilter] = useState('');
-    const [favorites, setFavorites] = useState([2, 4]);
+    // Auth and registration state
     const [showPopup, setShowPopup] = useState(false);
     const [showSecondPopup, setShowSecondPopup] = useState(false);
     const [showThirdPopup, setShowThirdPopup] = useState(false);
     const [showFourthPopup, setShowFourthPopup] = useState(false);
-    const [registerEmail, setRegisterEmail] = useState(''); //kullanıcının kaydolurken girdiği mail
-    const [registerName, setRegisterName] = useState('');   // Kullanıcının girdiği isim
+    const [selectedTab, setSelectedTab] = useState('user');
+    const [registerEmail, setRegisterEmail] = useState('');
+    const [registerName, setRegisterName] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerPasswordControl, setRegisterPasswordControl] = useState('');
-    const [selectedTab, setSelectedTab] = useState('user');
-    const [inputValue, setInputValue] = useState('');
     const [confirmationCode, setConfirmationCode] = useState('');
     const [error, setError] = useState('');
     const [userLoginEmail, setUserLoginEmail] = useState('');
@@ -36,58 +44,143 @@ const HomePage = () => {
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
     const [token, setToken] = useState('');
-
-
     const [errors, setErrors] = useState({
         email: '',
         password: '',
         ownerEmail: '',
         ownerPassword: ''
     });
+    
+    // Search and filter state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [selectedFilter, setSelectedFilter] = useState('all');
+    const [activeFilters, setActiveFilters] = useState({});
+    const [isSearching, setIsSearching] = useState(false);
 
+    // Location state
+    const [userLocation, setUserLocation] = useState(null);
+    const [locationStatus, setLocationStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+    
+    // Featured restaurants
+    const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
+    const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+    
+    // Get user location when component mounts
+    useEffect(() => {
+        getUserLocation();
+        loadFeaturedRestaurants();
+    }, []);
+    
+    // Load featured restaurants
+    const loadFeaturedRestaurants = async () => {
+        try {
+            setIsLoadingFeatured(true);
+            const data = await getFeaturedRestaurants();
+            setFeaturedRestaurants(data);
+        } catch (err) {
+            console.error('Error loading featured restaurants:', err);
+        } finally {
+            setIsLoadingFeatured(false);
+        }
+    };
+    
+    // Get user's geolocation
+    const getUserLocation = () => {
+        if (navigator.geolocation) {
+            setLocationStatus('loading');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                    setLocationStatus('success');
+                },
+                (error) => {
+                    console.error('Error getting user location:', error);
+                    setLocationStatus('error');
+                }
+            );
+        } else {
+            setLocationStatus('error');
+            console.error('Geolocation is not supported by this browser.');
+        }
+    };
+    
+    // Handle search submission
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        
+        if (!searchTerm.trim()) return;
+        
+        try {
+            setIsSearching(true);
+            const results = await getRestaurants({ 
+                searchTerm: searchTerm,
+                ...activeFilters
+            });
+            setSearchResults(results);
+        } catch (err) {
+            console.error('Error searching restaurants:', err);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+    
+    // Clear search results
+    const clearSearch = () => {
+        setSearchTerm('');
+        setSearchResults([]);
+        setActiveFilters({});
+    };
+
+    // Handle filter click
+    const handleFilterClick = (filter) => {
+        setSelectedFilter(filter);
+        
+        // Apply the filter based on the selected category
+        let newFilters = {};
+        
+        switch(filter) {
+            case 'all':
+                newFilters = {};
+                break;
+            case 'wine':
+                newFilters = { tag: 'wine' };
+                break;
+            case 'pizza':
+                newFilters = { tag: 'pizza' };
+                break;
+            case 'coffee':
+                newFilters = { tag: 'coffee' };
+                break;
+            case 'burger':
+                newFilters = { tag: 'burgers' };
+                break;
+            case 'cafe':
+                newFilters = { tag: 'cafe' };
+                break;
+            case 'promo':
+                newFilters = { hasActivePromo: true };
+                break;
+            default:
+                newFilters = {};
+        }
+        
+        setActiveFilters(newFilters);
+    };
+
+    // Login and registration functions
     const handleGoBack = () => {
         setShowThirdPopup(false);
         setShowPopup(true);
     };
 
-
-    const featuredRestaurants = [
-        { id: 1, name: "Sardunya", type: "Wine House", distance: "0.5 miles away", rating: 4.5, image: "https://static.wixstatic.com/media/91a1e5_da596005b0d64069b04f0ba1fa7bde51~mv2.jpg/v1/fill/w_442,h_589,q_90,enc_avif,quality_auto/91a1e5_da596005b0d64069b04f0ba1fa7bde51~mv2.jpg" },
-        { id: 2, name: "Botanica", type: "Fine Dining", distance: "1.2 miles away", rating: 4.0, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSus3XssJfNT4VBjmkZmrdiRKSYfbwy7kjquw&s" }
-    ];
-
-    const allRestaurants = [
-        { id: 3, name: "Naya", type: "Fine Dining", distance: "0.3 miles away", rating: 4.7, image: "https://profitnesetgune.com/wp-content/uploads/2023/06/1-6-scaled.jpg" },
-        { id: 4, name: "The Soul", type: "Pub", distance: "0.7 miles away", rating: 4.6, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_d-yhdv2ZkhWp-sj5d2DLDZ76nOk7RAdGNQ&s" },
-        { id: 5, name: "Olive Garden", type: "Italian", distance: "1.0 miles away", rating: 4.3, image: "https://parade.com/.image/t_share/MjEzNzg3ODkwNjU4ODQ2MTU5/olive-garden-exterior.jpg" },
-        { id: 6, name: "Spice Route", type: "Indian", distance: "0.8 miles away", rating: 4.4, image: "https://social.massimodutti.com/paper/wp-content/uploads/2020/09/The-Spice-Route-2.jpg" }
-    ];
-
-    const handleFilterClick = (filter) => {
-        setSelectedFilter(filter);
-    };
-
-    const toggleFavorite = (id, e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (favorites.includes(id)) {
-            setFavorites(favorites.filter(fav => fav !== id));
-        } else {
-            setFavorites([...favorites, id]);
-        }
-    };
-
-
     const handleSelectUser = () => setSelectedTab('user');
     const handleSelectOwner = () => setSelectedTab('owner');
 
-    const handleInputValue = () => {
-        if (inputValue.trim() === '') {
-            alert("Alan boş bırakılamaz!");
-        }
-    }
-
-    //pop up işlemleri başlangıç
+    // Popup management
     const openPopup = () => {
         setShowPopup(true);
     };
@@ -99,15 +192,13 @@ const HomePage = () => {
 
     const openSecondPopup = () => {
         setShowSecondPopup(true);
-        setShowThirdPopup(false); // İstersen ilk popup kapanır, ikincisi açılır
-
+        setShowThirdPopup(false);
     };
 
     const closeSecondPopup = () => {
         setShowSecondPopup(false);
         resetForm();
     };
-
 
     const openThirdPopUp = () => {
         setShowThirdPopup(true);
@@ -119,7 +210,6 @@ const HomePage = () => {
         resetForm();
     };
 
-
     const openFourthPopup = () => {
         setShowFourthPopup(true);
         setShowSecondPopup(false);
@@ -130,54 +220,39 @@ const HomePage = () => {
         resetForm();
     };
 
-    const resetForm = () => {  //popup kapandığında bilgilerin resetlenmesi
-        // Kullanıcı giriş bilgileri
+    const resetForm = () => {
         setUserLoginEmail('');
         setUserLoginPassword('');
-
-        // İşletme giriş bilgileri
         setOwnerLoginEmail('');
         setOwnerLoginPassword('');
-
-        // Kayıt bilgileri
         setRegisterName('');
         setRegisterEmail('');
-
-        // Şifre oluşturma bilgileri
         setRegisterPassword('');
         setRegisterPasswordControl('');
-
-        // Onay kodu
         setConfirmationCode('');
-
-        // Hatalar
         setErrors({
             userEmail: '',
             userPassword: '',
             ownerEmail: '',
             ownerPassword: ''
         });
-
         setError('');
     };
 
-
-    //pop-up bitiş
-
-    //mail geçerlilik kontrolü
+    // Email validation
     const validateEmail = (email) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
     };
 
+    // Registration flow
     const handleRegister = async () => {
         if (!validateEmail(registerEmail)) {
-            alert("Lütfen geçerli bir email adresi giriniz.");
+            alert("Lütfen geçerli bir e-posta adresi girin.");
             return;
         }
 
         try {
-            // Call the API to send verification code
             const response = await axios.post(
                 "http://localhost:8080/api/auth/send-verification-code",
                 {
@@ -185,55 +260,44 @@ const HomePage = () => {
                 }
             );
             
-            // If successful, clear any errors and open the second popup
             setError('');
             openSecondPopup();
-
         } catch (err) {
-            // Improved error handling
-            console.error("Registration error:", err);
+            console.error("Kayıt hatası:", err);
             
-            // Check if the response has data with a message
             if (err.response && err.response.data) {
                 if (err.response.data.message) {
                     alert('E-posta gönderilemedi: ' + err.response.data.message);
                 } else {
-                    // If data exists but doesn't have a message property, stringify it
                     alert('E-posta gönderilemedi: ' + JSON.stringify(err.response.data));
                 }
             } else if (err.message) {
-                // If there's a general error message
                 alert('E-posta gönderilemedi: ' + err.message);
             } else {
-                // Fallback error message
                 alert('E-posta gönderilemedi: Bilinmeyen bir hata oluştu.');
             }
         }
     };
 
-    //şifre belirlemede girilen iki şifrenin birbirine eşit olup olmadığının kontrlu
+    // Password validation
     const checkEqual = () => {
-        // Şifre eşit mi kontrolü
         if (registerPassword !== registerPasswordControl) {
-            setError('Girilen şifreler birbiriyle aynı olmalıdır.');
+            setError('Şifreler eşleşmelidir.');
             return;
         }
 
-        // Şifre boş mu kontrolü
         if (registerPassword.trim() === '') {
-            setError('*Şifre alanı boş bırakılamaz.');
+            setError('Şifre alanı boş bırakılamaz.');
             return;
         }
 
-        // Şifre minimum 6 karakter mi?
         if (registerPassword.length < 6) {
-            setError('*Şifre en az 6 karakter olmalıdır.');
+            setError('Şifre en az 6 karakter olmalıdır.');
             return;
         }
 
-        // Şifre tekrar alanı boş mu kontrolü
         if (registerPasswordControl.trim() === '') {
-            setError('*Şifre tekrarı alanı boş bırakılamaz.');
+            setError('Şifre tekrar alanı boş bırakılamaz.');
             return;
         }
 
@@ -242,51 +306,50 @@ const HomePage = () => {
         closeFourthPopup();
     };
 
-
-
+    // Verification code handling
     const handleConfirmationCodeClick = async () => {
-        // 2️⃣ Boş kod kontrolü
         if (!confirmationCode.trim()) {
-            setError('*Onay kodu boş bırakılamaz.');
+            setError('Doğrulama kodu boş bırakılamaz.');
             return;
         }
 
         try {
-            // 3️⃣ Doğrulama isteğini await ile yap, ve sadece başarılıysa devam et
             const response = await axios.post(
                 "http://localhost:8080/api/auth/verify-verification-code",
                 {
-                    email: registerEmail.trim(),         // mutlaka .trim() ile kesin email gönder
-                    token: confirmationCode.trim(),      // backend'in beklediği alan adı 'token'
+                    email: registerEmail.trim(),
+                    token: confirmationCode.trim(),
                 }
             );
 
-            // 4️⃣ Başarılıysa token'ı state'e al, hata mesajını temizle
             setToken(response.data.token);
             setError('');
-
-            // 5️⃣ Sadece burada openFourthPopup() çağır: hata yoksa şifre ekranına geç
             openFourthPopup();
-
         } catch (err) {
-            // 6️⃣ Hata varsa kullanıcıya göster, popup'ı açma
             const msg = err.response?.data?.message || err.message;
-            setError('Doğrulama hatalı: ' + msg);
+            setError('Doğrulama başarısız: ' + msg);
             console.error(err);
         }
     };
 
+    // User login
     const handleUserLogin = async () => {
         let newErrors = {};
 
         if (userLoginEmail.trim() === '') {
-            newErrors.email = '*Email alanı boş bırakılamaz.';
+            newErrors.email = 'E-posta alanı boş bırakılamaz.';
         }
 
         if (userLoginPassword.trim() === '') {
-            newErrors.password = '*Şifre alanı boş bırakılamaz.';
+            newErrors.password = 'Şifre alanı boş bırakılamaz.';
         }
-        try{
+        
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        
+        try {
             const response = await axios.post(
                 "http://localhost:8080/api/auth/login",
                 {
@@ -296,38 +359,63 @@ const HomePage = () => {
             );
             const { access_token, refresh_token, user } = response.data;
             console.log('Kullanıcı girişi başarılı');
+            
+            // Store tokens in localStorage for later use
+            localStorage.setItem('token', access_token);
+            localStorage.setItem('refreshToken', refresh_token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
             closePopup();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Giriş yapılamadı: ' + msg);
+            setError('Giriş başarısız: ' + msg);
             console.error(err);
         }
-
-
-
-
     };
 
-    const handleOwnerLogin = () => {
+    // Owner login
+    const handleOwnerLogin = async () => {
         let newErrors = {};
 
         if (ownerLoginEmail.trim() === '') {
-            newErrors.ownerEmail = '*İşletme email alanı boş bırakılamaz.';
+            newErrors.ownerEmail = 'İşletme e-posta alanı boş bırakılamaz.';
         }
 
         if (ownerLoginPassword.trim() === '') {
-            newErrors.ownerPassword = '*İşletme şifre alanı boş bırakılamaz.';
+            newErrors.ownerPassword = 'İşletme şifre alanı boş bırakılamaz.';
         }
 
-        setErrors(newErrors);
-
-        if (Object.keys(newErrors).length === 0) {
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        
+        try {
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email: ownerLoginEmail.trim(),
+                    password: ownerLoginPassword.trim()
+                }
+            );
+            
+            const { access_token, refresh_token, user } = response.data;
+            
+            // Store tokens in localStorage for later use
+            localStorage.setItem('token', access_token);
+            localStorage.setItem('refreshToken', refresh_token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
             console.log('İşletme girişi başarılı');
             closePopup();
+        } catch(err) {
+            const msg = err.response?.data?.message || err.message;
+            setError('Giriş başarısız: ' + msg);
+            console.error(err);
         }
     };
 
-
+    // Set user password
     const handleSetPassword = async () => {
         try {
             const email = registerEmail.trim();
@@ -341,26 +429,33 @@ const HomePage = () => {
                 }
             );
             setError("");
+            
+            // Auto login after successful registration
+            try {
+                const loginResponse = await axios.post(
+                    "http://localhost:8080/api/auth/login",
+                    {
+                        email: email,
+                        password: password
+                    }
+                );
+                
+                const { access_token, refresh_token, user } = loginResponse.data;
+                
+                // Store tokens in localStorage for later use
+                localStorage.setItem('token', access_token);
+                localStorage.setItem('refreshToken', refresh_token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                console.log('Otomatik giriş başarılı');
+            } catch (loginErr) {
+                console.error('Otomatik giriş başarısız:', loginErr);
+                // Otomatik giriş hatasını göstermeyin
+            }
+            
         } catch(error) {
-            setError("Şifre belirlenirken bir hata oluştu.");
-        }
-    };
-
-    const login = async () => {
-        const email = userLoginEmail.trim();
-        const password = userLoginPassword.trim();
-
-        try{
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email,
-                    password
-                }
-            );
-            const {access_token, refresh_token, user } = response.data;
-        } catch(error) {
-
+            console.error('Şifre ayarlama hatası:', error);
+            setError("Şifre ayarlama sırasında bir hata oluştu.");
         }
     };
 
@@ -368,14 +463,12 @@ const HomePage = () => {
         <div className="app-container">
             <header className="app-header">
                 <div className="header-content">
-                    <h1 className="site-title">Home</h1>
+                    <h1 className="site-title">FeastFine</h1>
                     <nav className="main-nav">
-                        <Link to="/" className="nav-item active">Home</Link>
-                        <Link to="/favorites" className="nav-item">Favorites</Link>
-                        <div>
-
-                            <Button text="Login" onClick={openPopup} ></Button>
-
+                        <Link to="/" className="nav-item active">Ana Sayfa</Link>
+                        <Link to="/favorites" className="nav-item">Favoriler</Link>
+                        <div className="auth-container">
+                            <Button text="Giriş Yap" onClick={openPopup} />
 
                             <LoginPopup
                                 isOpen={showPopup}
@@ -397,9 +490,6 @@ const HomePage = () => {
                                 openThirdPopUp={openThirdPopUp}
                             />
 
-                            {/* İkinci Popup */}
-
-
                             <ConfirmationPopup
                                 isOpen={showSecondPopup}
                                 onClose={closeSecondPopup}
@@ -418,7 +508,6 @@ const HomePage = () => {
                                 onBack={handleGoBack}
                             />
 
-
                             <SetPasswordPopup
                                 isOpen={showFourthPopup}
                                 onClose={closeFourthPopup}
@@ -429,115 +518,253 @@ const HomePage = () => {
                                 error={error}
                                 onSubmit={checkEqual}
                             />
-
                         </div>
-
                     </nav>
                 </div>
             </header>
 
             <main className="main-content">
-                <div className="search-container">
-                    <div className="search-wrapper">
-                        <FaSearch className="search-icon" />
-                        <input
-                            type="text"
-                            className="search-input"
-                            placeholder="Search"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <button className="filter-btn">
-                        Filters
-                        <FaFilter />
-                    </button>
-                </div>
-
-                <div className="filter-container">
-                    <div className="search-filters">
-                        <button onClick={() => handleFilterClick('all')} >
-                            <span style={{ color: selectedFilter === 'all' ? 'tomato' : 'gray', fontSize: '18px' }}>
-                                ALL
-                            </span>
-                        </button>
-
-                        <button onClick={() => handleFilterClick('alcohol')}>
-                            <FaWineGlassAlt size={30} color={selectedFilter === 'alcohol' ? 'tomato' : 'gray'} />
-                        </button>
-
-                        <button onClick={() => handleFilterClick('pizza')}>
-                            <FaPizzaSlice size={30} color={selectedFilter === 'pizza' ? 'tomato' : 'gray'} />
-                        </button>
-
-                        <button onClick={() => handleFilterClick('coffee')}>
-                            <FaCoffee size={30} color={selectedFilter === 'coffee' ? 'tomato' : 'gray'} />
-                        </button>
-                        <button onClick={() => handleFilterClick('hamburger')}>
-                            <FaHamburger size={30} color={selectedFilter === 'hamburger' ? 'tomato' : 'gray'} />
-                        </button>
-
-                        <button onClick={() => handleFilterClick('cafes')}>
-                            <span style={{ color: selectedFilter === 'cafes' ? 'tomato' : 'gray', fontSize: '18px' }}>
-                                Cafes
-                            </span>
-                        </button>
-
-                        <button onClick={() => handleFilterClick('casual')}>
-                            <span style={{ color: selectedFilter === 'casual' ? 'tomato' : 'gray', fontSize: '18px' }}>
-                                Casual
-                            </span>
-                        </button>
-
-
-                    </div>
-                </div>
-
-                {/* Şu an seçili filtreyi gösterelim */}
-                <div>
-
-                    <p><strong>Filter:</strong> {selectedFilter}</p>
-                </div>
-
-                <section className="featured-section">
-                    <h2 className="section-heading">Featured</h2>
-                    <div className="featured-cards">
-                        {featuredRestaurants.map(restaurant => (
-                            <Link to={`/restaurant/${restaurant.id}`} className="restaurant-card" key={restaurant.id}>
-                                <div className="card-header">
-                                    <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                                    <button className="favorite-btn" onClick={(e) => toggleFavorite(restaurant.id, e)}>
-                                        {favorites.includes(restaurant.id) ? (
-                                            <FaHeart className="heart-icon favorited" />
-                                        ) : (
-                                            <FaRegHeart className="heart-icon" />
-                                        )}
-                                    </button>
+                {/* Hero Section */}
+                <section className="hero-section">
+                    <div className="hero-content">
+                        <h1 className="hero-title">Mükemmel Yemek Deneyimini Keşfedin</h1>
+                        <p className="hero-subtitle">
+                            Gerçek zamanlı promosyonlarla restoranları ve kafeleri bulun, rezervasyon yapın ve yeni favoriler keşfedin.
+                        </p>
+                        
+                        <form className="hero-search-form" onSubmit={handleSearch}>
+                            <div className="search-wrapper">
+                                <FaSearch className="search-icon" />
+                                <input
+                                    type="text"
+                                    className="search-input"
+                                    placeholder="Restoran, mutfak veya konum ara..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <button type="submit" className="search-btn">Ara</button>
+                            
+                            {locationStatus === 'success' && (
+                                <div className="location-badge">
+                                    <FaLocationArrow />
+                                    <span>Konumunuz kullanılıyor</span>
                                 </div>
-                                <div className="card-body">
-                                    <h3 className="restaurant-title">{restaurant.name}</h3>
-                                    <div className="restaurant-details">
-                                        <span className="restaurant-type">{restaurant.type}</span>
-                                        <div className="distance">
-                                            <FaMapMarkerAlt className="location-icon" />
-                                            <span>{restaurant.distance}</span>
+                            )}
+                            
+                            {locationStatus === 'error' && (
+                                <button 
+                                    type="button" 
+                                    className="location-btn"
+                                    onClick={getUserLocation}
+                                >
+                                    <FaLocationArrow /> Konumumu kullan
+                                </button>
+                            )}
+                        </form>
+                    </div>
+                    <div className="hero-overlay"></div>
+                </section>
+
+                {/* Category Filter Pills */}
+                <div className="category-filter-container">
+                    <div className="category-filters">
+                        <button 
+                            className={`category-pill ${selectedFilter === 'all' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('all')}
+                        >
+                            <FaUtensils className="category-icon" />
+                            <span>Tümü</span>
+                        </button>
+                        
+                        <button 
+                            className={`category-pill ${selectedFilter === 'promo' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('promo')}
+                        >
+                            <span className="promo-badge-small">%</span>
+                            <span>Promosyonlar</span>
+                        </button>
+                        
+                        <button 
+                            className={`category-pill ${selectedFilter === 'cafe' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('cafe')}
+                        >
+                            <FaCoffee className="category-icon" />
+                            <span>Kafeler</span>
+                        </button>
+                        
+                        <button 
+                            className={`category-pill ${selectedFilter === 'pizza' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('pizza')}
+                        >
+                            <FaPizzaSlice className="category-icon" />
+                            <span>Pizza</span>
+                        </button>
+                        
+                        <button 
+                            className={`category-pill ${selectedFilter === 'burger' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('burger')}
+                        >
+                            <FaHamburger className="category-icon" />
+                            <span>Burgerler</span>
+                        </button>
+                        
+                        <button 
+                            className={`category-pill ${selectedFilter === 'wine' ? 'active' : ''}`}
+                            onClick={() => handleFilterClick('wine')}
+                        >
+                            <FaWineGlassAlt className="category-icon" />
+                            <span>Şarap & Akşam Yemeği</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Search Results (if any) */}
+                {searchResults.length > 0 && (
+                    <section className="search-results-section">
+                        <div className="search-header">
+                            <h2>
+                                Arama Sonuçları
+                                <span className="result-count">{searchResults.length} sonuç</span>
+                            </h2>
+                            <button className="clear-search-btn" onClick={clearSearch}>
+                                Aramayı Temizle
+                            </button>
+                        </div>
+                        
+                        <div className="restaurant-grid">
+                            {searchResults.map(restaurant => (
+                                <Link 
+                                    to={`/restaurant/${restaurant.id}`} 
+                                    className="restaurant-card" 
+                                    key={restaurant.id}
+                                >
+                                    <div className="card-header">
+                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                        {restaurant.hasActivePromo && (
+                                            <div className="promo-tag">
+                                                <FaStar className="promo-icon" />
+                                                <span>Promotion</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="card-body">
+                                        <h3 className="restaurant-title">{restaurant.name}</h3>
+                                        <div className="restaurant-details">
+                                            <span className="restaurant-type">{restaurant.type}</span>
+                                            <div className="distance">
+                                                <FaMapMarkerAlt className="location-icon" />
+                                                <span>{restaurant.distance}</span>
+                                            </div>
+                                        </div>
+                                        <div className="rating-container">
+                                            <FaStar className="star-icon" />
+                                            <span className="rating-value">{restaurant.rating}</span>
                                         </div>
                                     </div>
-                                    <div className="rating-container">
-                                        <FaStar className="star-icon" />
-                                        <span className="rating-value">{restaurant.rating}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Featured Restaurants Section */}
+                {featuredRestaurants.length > 0 && !isLoadingFeatured && (
+                    <section className="featured-section">
+                        <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
+                        <div className="featured-cards">
+                            {featuredRestaurants.map(restaurant => (
+                                <Link 
+                                    to={`/restaurant/${restaurant.id}`} 
+                                    className="restaurant-card featured" 
+                                    key={restaurant.id}
+                                >
+                                    <div className="card-header">
+                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                        {restaurant.hasActivePromo && (
+                                            <div className="promo-tag">
+                                                <FaStar className="promo-icon" />
+                                                <span>{restaurant.promoDetails}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
+                                    <div className="card-body">
+                                        <div className="card-top">
+                                            <h3 className="restaurant-title">{restaurant.name}</h3>
+                                            <span className="price-range">{restaurant.priceRange}</span>
+                                        </div>
+                                        <div className="restaurant-details">
+                                            <span className="restaurant-type">{restaurant.type}</span>
+                                            <div className="distance">
+                                                <FaMapMarkerAlt className="location-icon" />
+                                                <span>{restaurant.distance}</span>
+                                            </div>
+                                        </div>
+                                        <div className="rating-container">
+                                            <FaStar className="star-icon" />
+                                            <span className="rating-value">{restaurant.rating}</span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
+                {/* All Restaurants Section */}
                 <section className="all-restaurants-section">
-                    <RestaurantList title="Tüm Restoranlar" />
-
+                    <RestaurantList 
+                        title="Restoranları Keşfedin" 
+                        filters={activeFilters} 
+                        useGrid={true} 
+                    />
                 </section>
             </main>
+            
+            <footer className="app-footer">
+                <div className="footer-content">
+                    <div className="footer-logo">
+                        <h2>FeastFine</h2>
+                        <p>Yeni favori yemek deneyiminizi keşfedin</p>
+                    </div>
+                    
+                    <div className="footer-links">
+                        <div className="footer-section">
+                            <h3>Keşfet</h3>
+                            <ul>
+                                <li><Link to="/">Ana Sayfa</Link></li>
+                                <li><Link to="/favorites">Favoriler</Link></li>
+                                <li><Link to="/restaurants">Tüm Restoranlar</Link></li>
+                                <li><Link to="/promotions">Promosyonlar</Link></li>
+                            </ul>
+                        </div>
+                        
+                        <div className="footer-section">
+                            <h3>Hakkında</h3>
+                            <ul>
+                                <li><Link to="/about">Hakkımızda</Link></li>
+                                <li><Link to="/contact">İletişim</Link></li>
+                                <li><Link to="/privacy">Gizlilik Politikası</Link></li>
+                                <li><Link to="/terms">Kullanım Koşulları</Link></li>
+                            </ul>
+                        </div>
+                        
+                        <div className="footer-section">
+                            <h3>Restoran Sahipleri</h3>
+                            <ul>
+                                <li><Link to="/restaurant-signup">Restoranınızı Ekleyin</Link></li>
+                                <li><Link to="/business-login">İşletme Girişi</Link></li>
+                                <li><Link to="/promotions-guide">Promosyon Oluşturma</Link></li>
+                                <li><Link to="/help">Yardım Merkezi</Link></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="footer-bottom">
+                    <p>&copy; {new Date().getFullYear()} FeastFine. Tüm hakları saklıdır.</p>
+                </div>
+            </footer>
         </div>
     );
 };

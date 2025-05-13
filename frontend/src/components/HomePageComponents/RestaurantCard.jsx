@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaTag } from 'react-icons/fa';
 import './RestaurantCard.css';
 
 /**
@@ -11,7 +11,7 @@ import './RestaurantCard.css';
  * @param {boolean} featured - Whether this is a featured restaurant
  */
 const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = false }) => {
-  const { id, name, type, distance, rating, image } = restaurant;
+  const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails } = restaurant;
   const isFavorite = favorites.includes(id);
 
   return (
@@ -26,17 +26,37 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
           >
             {isFavorite ? <FaHeart className="heart filled" /> : <FaRegHeart className="heart" />}
           </button>
+          
+          {hasActivePromo && (
+            <div className="promo-badge">
+              <FaTag /> Promo
+            </div>
+          )}
         </div>
+        
         <div className="restaurant-info">
-          <h3>{name}</h3>
+          <div className="restaurant-header">
+            <h3>{name}</h3>
+            {priceRange && <span className="price-range">{priceRange}</span>}
+          </div>
+          
           <p className="restaurant-type">{type}</p>
+          
           <p className="restaurant-distance">
             <FaMapMarkerAlt /> {distance}
           </p>
+          
           <div className="rating">
             <FaStar className="star" />
             <span>{rating}</span>
           </div>
+          
+          {hasActivePromo && promoDetails && (
+            <div className="promo-details">
+              <FaTag className="promo-icon" />
+              <span>{promoDetails}</span>
+            </div>
+          )}
         </div>
       </Link>
     </div>

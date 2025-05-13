@@ -1,59 +1,59 @@
 // src/components/RestaurantList.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RestaurantCard from './RestaurantCard';
 import './RestaurantList.css';
+import { getRestaurants, getFavorites } from '../../services/restaurantService';
+import { FaSort, FaFilter } from 'react-icons/fa';
 
 /**
  * RestaurantList component to display a list of restaurants
- * Allows restaurants to be displayed in a grid or list view
+ * Allows restaurants to be displayed in a grid or list view with filtering and sorting
  * 
  * @param {string} title - Section title
- * @param {Array} restaurants - Array of restaurant objects to display
+ * @param {Object} filters - Filter criteria to apply
  * @param {boolean} useGrid - Whether to display as a grid (true) or list (false)
  */
-const RestaurantList = ({ title = "All Restaurants", restaurants = [], useGrid = false }) => {
-    // State for favorite restaurants
-    const [favorites, setFavorites] = useState([4]);
+const RestaurantList = ({ 
+  title = "All Restaurants", 
+  filters = {}, 
+  useGrid = true,
+  showSortOptions = true,
+  showFilterOptions = true
+}) => {
+    const [restaurants, setRestaurants] = useState([]);
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [sortOption, setSortOption] = useState('distance');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [activeFilters, setActiveFilters] = useState(filters);
     
-    // Default restaurants if none are provided
-    const defaultRestaurants = [
-        {
-            id: 3,
-            name: "Naya",
-            type: "Fine Dining",
-            distance: "0.3 miles away",
-            rating: 4.7,
-            image: "https://profitnesetgune.com/wp-content/uploads/2023/06/1-6-scaled.jpg"
-        },
-        {
-            id: 4,
-            name: "The Soul",
-            type: "Pub",
-            distance: "0.7 miles away",
-            rating: 4.6,
-            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_d-yhdv2ZkhWp-sj5d2DLDZ76nOk7RAdGNQ&s"
-        },
-        {
-            id: 5,
-            name: "Olive Garden",
-            type: "Italian",
-            distance: "1.0 miles away",
-            rating: 4.3,
-            image: "https://parade.com/.image/t_share/MjEzNzg3ODkwNjU4ODQ2MTU5/olive-garden-exterior.jpg"
-        },
-        {
-            id: 6,
-            name: "Spice Route",
-            type: "Indian",
-            distance: "0.8 miles away",
-            rating: 4.4,
-            image: "https://social.massimodutti.com/paper/wp-content/uploads/2020/09/The-Spice-Route-2.jpg"
+    // Fetch restaurants and favorites on component mount
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          const [restaurantData, favoritesData] = await Promise.all([
+            getRestaurants(activeFilters),
+            getFavorites()
+          ]);
+          
+          // Apply sorting to restaurant data
+          const sortedRestaurants = sortRestaurants(restaurantData, sortOption);
+          setRestaurants(sortedRestaurants);
+          setFavorites(favoritesData);
+        } catch (err) {
+          console.error('Error fetching data:', err);
+          setError('Failed to load restaurants. Please try again later.');
+        } finally {
+          setLoading(false);
         }
-    ];
-
-    // Use provided restaurants or default ones
-    const restaurantsToShow = restaurants.length > 0 ? restaurants : defaultRestaurants;
+      };
+      
+      fetchData();
+    }, [activeFilters, sortOption]);
 
     // Handle toggling favorites
     const toggleFavorite = (id, e) => {
@@ -66,13 +66,199 @@ const RestaurantList = ({ title = "All Restaurants", restaurants = [], useGrid =
             setFavorites([...favorites, id]);
         }
     };
+    
+    // Function to sort restaurants based on selected option
+    const sortRestaurants = (restaurantList, option) => {
+      const restaurantsCopy = [...restaurantList];
+      
+      switch (option) {
+        case 'rating':
+          return restaurantsCopy.sort((a, b) => b.rating - a.rating);
+        case 'distance':
+          // Assuming distance is in format "0.5 miles away"
+          return restaurantsCopy.sort((a, b) => {
+            const distA = parseFloat(a.distance);
+            const distB = parseFloat(b.distance);
+            return distA - distB;
+          });
+        case 'name':
+          return restaurantsCopy.sort((a, b) => a.name.localeCompare(b.name));
+        case 'promo':
+          return restaurantsCopy.sort((a, b) => (b.hasActivePromo ? 1 : 0) - (a.hasActivePromo ? 1 : 0));
+        default:
+          return restaurantsCopy;
+      }
+    };
+    
+    // Toggle sort menu visibility
+    const toggleSortMenu = () => {
+      setShowSortMenu(!showSortMenu);
+      if (showFilterMenu) setShowFilterMenu(false);
+    };
+    
+    // Toggle filter menu visibility
+    const toggleFilterMenu = () => {
+      setShowFilterMenu(!showFilterMenu);
+      if (showSortMenu) setShowSortMenu(false);
+    };
+    
+    // Handle sort option selection
+    const handleSortChange = (option) => {
+      setSortOption(option);
+      setShowSortMenu(false);
+    };
+    
+    // Handle filter changes
+    const handleFilterChange = (filterKey, value) => {
+      setActiveFilters(prev => ({
+        ...prev,
+        [filterKey]: value
+      }));
+    };
+    
+    // Clear all filters
+    const clearFilters = () => {
+      setActiveFilters({});
+      setShowFilterMenu(false);
+    };
+    
+    // Apply filters
+    const applyFilters = () => {
+      setShowFilterMenu(false);
+    };
+
+    if (loading) {
+      return <div className="loading-indicator">Restoranlar yükleniyor...</div>;
+    }
+    
+    if (error) {
+      return <div className="error-message">{error}</div>;
+    }
+    
+    if (restaurants.length === 0) {
+      return (
+        <div className="no-results">
+          <h2 className="section-heading">{title}</h2>
+          <p>Restoran bulunamadı. Filtrelerinizi değiştirmeyi deneyin.</p>
+          {Object.keys(activeFilters).length > 0 && (
+            <button className="clear-filters-btn" onClick={clearFilters}>
+              Tüm Filtreleri Temizle
+            </button>
+          )}
+        </div>
+      );
+    }
 
     return (
         <section className="restaurant-section">
-            <h2 className="section-heading">{title}</h2>
+            <div className="section-header">
+              <h2 className="section-heading">{title}</h2>
+              
+              <div className="list-controls">
+                {showFilterOptions && (
+                  <div className="filter-dropdown">
+                    <button className="control-btn" onClick={toggleFilterMenu}>
+                      <FaFilter /> Filtrele
+                    </button>
+                    
+                    {showFilterMenu && (
+                      <div className="dropdown-menu filter-menu">
+                        <div className="filter-group">
+                          <h4>Fiyat Aralığı</h4>
+                          <div className="filter-options">
+                            <button 
+                              className={`filter-option ${activeFilters.priceRange === '$' ? 'active' : ''}`}
+                              onClick={() => handleFilterChange('priceRange', '$')}
+                            >
+                              $
+                            </button>
+                            <button 
+                              className={`filter-option ${activeFilters.priceRange === '$$' ? 'active' : ''}`}
+                              onClick={() => handleFilterChange('priceRange', '$$')}
+                            >
+                              $$
+                            </button>
+                            <button 
+                              className={`filter-option ${activeFilters.priceRange === '$$$' ? 'active' : ''}`}
+                              onClick={() => handleFilterChange('priceRange', '$$$')}
+                            >
+                              $$$
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="filter-group">
+                          <h4>Promosyonlar</h4>
+                          <div className="filter-options">
+                            <button 
+                              className={`filter-option ${activeFilters.hasActivePromo === true ? 'active' : ''}`}
+                              onClick={() => handleFilterChange('hasActivePromo', true)}
+                            >
+                              Promosyonlu
+                            </button>
+                            <button 
+                              className={`filter-option ${activeFilters.hasActivePromo === false ? 'active' : ''}`}
+                              onClick={() => handleFilterChange('hasActivePromo', false)}
+                            >
+                              Promosyonsuz
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="filter-actions">
+                          <button className="secondary-btn" onClick={clearFilters}>
+                            Tümünü Temizle
+                          </button>
+                          <button className="primary-btn" onClick={applyFilters}>
+                            Filtrele
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {showSortOptions && (
+                  <div className="sort-dropdown">
+                    <button className="control-btn" onClick={toggleSortMenu}>
+                      <FaSort /> Sırala
+                    </button>
+                    
+                    {showSortMenu && (
+                      <div className="dropdown-menu">
+                        <button 
+                          className={`menu-item ${sortOption === 'distance' ? 'active' : ''}`}
+                          onClick={() => handleSortChange('distance')}
+                        >
+                          En Yakın İlk
+                        </button>
+                        <button 
+                          className={`menu-item ${sortOption === 'rating' ? 'active' : ''}`}
+                          onClick={() => handleSortChange('rating')}
+                        >
+                          En Yüksek Puan
+                        </button>
+                        <button 
+                          className={`menu-item ${sortOption === 'name' ? 'active' : ''}`}
+                          onClick={() => handleSortChange('name')}
+                        >
+                          Alfabetik
+                        </button>
+                        <button 
+                          className={`menu-item ${sortOption === 'promo' ? 'active' : ''}`}
+                          onClick={() => handleSortChange('promo')}
+                        >
+                          Promosyonlar İlk
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className={`restaurant-container ${useGrid ? 'grid-view' : 'list-view'}`}>
-                {restaurantsToShow.map(restaurant => (
+                {restaurants.map(restaurant => (
                     <RestaurantCard 
                         key={restaurant.id}
                         restaurant={restaurant}
