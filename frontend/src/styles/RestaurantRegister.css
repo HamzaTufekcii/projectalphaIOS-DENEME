@@ -1,0 +1,182 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.5;
+    color: #333;
+  }
+  
+  /* Container layout */
+  .registration-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f9fafb;
+  }
+  
+  /* Media query for desktop */
+  @media screen and (min-width: 768px) {
+    .registration-container {
+      flex-direction: row;
+    }
+  }
+  
+  /* kayıt formu */
+  .registration-form-side {
+    width: 100%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  @media screen and (min-width: 768px) {
+    .registration-form-side {
+      width: 50%;
+      padding: 40px;
+    }
+  }
+  
+  .registration-form-wrapper {
+    max-width: 450px;
+    margin: 0 auto;
+  }
+  
+  .form-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+  
+  .form-subtitle {
+    color: #6b7280;
+    margin-bottom: 32px;
+  }
+  
+  /* Form Elements */
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 4px;
+  }
+  
+  .input-container {
+    position: relative;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  .form-input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .select-container {
+    position: relative;
+  }
+  
+  .form-select {
+    appearance: none;
+    padding-right: 40px;
+  }
+  
+  .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #9ca3af;
+    pointer-events: none;
+  }
+  
+  .register-button {
+    margin-top: 8px;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 500;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .register-button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  /* Success message */
+  .success-message {
+    background-color: #ecfdf5;
+    border: 1px solid #d1fae5;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+  
+  .success-icon {
+    width: 48px;
+    height: 48px;
+    background-color: #10b981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 16px;
+  }
+  
+  .success-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 8px;
+  }
+  
+  .success-text {
+    color: #047857;
+  }
+  
