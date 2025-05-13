@@ -173,23 +173,41 @@ const HomePage = () => {
     const handleRegister = async () => {
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir email adresi giriniz.");
+            return;
         }
 
-        try{
-             // boşlukları temizle
+        try {
+            // Call the API to send verification code
             const response = await axios.post(
                 "http://localhost:8080/api/auth/send-verification-code",
                 {
-                email: registerEmail.trim()
+                    email: registerEmail.trim()
                 }
             );
+            
+            // If successful, clear any errors and open the second popup
             setError('');
             openSecondPopup();
 
         } catch (err) {
-            const msg = err.response?.data || err.message;
-            alert('E-posta gönderilemedi: ' + msg);
-            console.error(err);
+            // Improved error handling
+            console.error("Registration error:", err);
+            
+            // Check if the response has data with a message
+            if (err.response && err.response.data) {
+                if (err.response.data.message) {
+                    alert('E-posta gönderilemedi: ' + err.response.data.message);
+                } else {
+                    // If data exists but doesn't have a message property, stringify it
+                    alert('E-posta gönderilemedi: ' + JSON.stringify(err.response.data));
+                }
+            } else if (err.message) {
+                // If there's a general error message
+                alert('E-posta gönderilemedi: ' + err.message);
+            } else {
+                // Fallback error message
+                alert('E-posta gönderilemedi: Bilinmeyen bir hata oluştu.');
+            }
         }
     };
 
@@ -239,11 +257,11 @@ const HomePage = () => {
                 "http://localhost:8080/api/auth/verify-verification-code",
                 {
                     email: registerEmail.trim(),         // mutlaka .trim() ile kesin email gönder
-                    token: confirmationCode.trim(),      // backend’in beklediği alan adı ‘token’
+                    token: confirmationCode.trim(),      // backend'in beklediği alan adı 'token'
                 }
             );
 
-            // 4️⃣ Başarılıysa token’ı state’e al, hata mesajını temizle
+            // 4️⃣ Başarılıysa token'ı state'e al, hata mesajını temizle
             setToken(response.data.token);
             setError('');
 
@@ -251,7 +269,7 @@ const HomePage = () => {
             openFourthPopup();
 
         } catch (err) {
-            // 6️⃣ Hata varsa kullanıcıya göster, popup’ı açma
+            // 6️⃣ Hata varsa kullanıcıya göster, popup'ı açma
             const msg = err.response?.data?.message || err.message;
             setError('Doğrulama hatalı: ' + msg);
             console.error(err);

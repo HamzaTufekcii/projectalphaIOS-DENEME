@@ -1,15 +1,23 @@
 // src/components/RestaurantList.jsx
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaStar, FaHeart, FaRegHeart } from 'react-icons/fa';
-import './RestaurantList.css'
+import RestaurantCard from './RestaurantCard';
+import './RestaurantList.css';
 
-const RestaurantList = ({ title = "All Restaurants" }) => {
-    // Sabit restoran verisi bu component içinde
+/**
+ * RestaurantList component to display a list of restaurants
+ * Allows restaurants to be displayed in a grid or list view
+ * 
+ * @param {string} title - Section title
+ * @param {Array} restaurants - Array of restaurant objects to display
+ * @param {boolean} useGrid - Whether to display as a grid (true) or list (false)
+ */
+const RestaurantList = ({ title = "All Restaurants", restaurants = [], useGrid = false }) => {
+    // State for favorite restaurants
     const [favorites, setFavorites] = useState([4]);
-
-    const restaurants = [
+    
+    // Default restaurants if none are provided
+    const defaultRestaurants = [
         {
             id: 3,
             name: "Naya",
@@ -44,6 +52,10 @@ const RestaurantList = ({ title = "All Restaurants" }) => {
         }
     ];
 
+    // Use provided restaurants or default ones
+    const restaurantsToShow = restaurants.length > 0 ? restaurants : defaultRestaurants;
+
+    // Handle toggling favorites
     const toggleFavorite = (id, e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -56,41 +68,17 @@ const RestaurantList = ({ title = "All Restaurants" }) => {
     };
 
     return (
-        <section className="all-restaurants-section">
+        <section className="restaurant-section">
             <h2 className="section-heading">{title}</h2>
 
-            <div className="restaurant-list">
-                {restaurants.map(restaurant => (
-                    <Link to={`/restaurant/${restaurant.id}`} className="restaurant-item" key={restaurant.id}>
-                        <div className="restaurant-item-img">
-                            <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                        </div>
-
-                        <div className="restaurant-item-left">
-                            <h3 className="restaurant-title">{restaurant.name}</h3>
-                            <div className="restaurant-meta">
-                                <p className="restaurant-category">{restaurant.type}</p>
-                                <div className="restaurant-location">
-                                    <span className="bullet">•</span>
-                                    <span>{restaurant.distance}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="restaurant-item-right">
-                            <div className="rating-display">
-                                <FaStar className="star-icon" />
-                                <span className="rating-number">{restaurant.rating}</span>
-                            </div>
-                            <button className="favorite-small-btn" onClick={(e) => toggleFavorite(restaurant.id, e)}>
-                                {favorites.includes(restaurant.id) ? (
-                                    <FaHeart className="heart-small favorited" />
-                                ) : (
-                                    <FaRegHeart className="heart-small" />
-                                )}
-                            </button>
-                        </div>
-                    </Link>
+            <div className={`restaurant-container ${useGrid ? 'grid-view' : 'list-view'}`}>
+                {restaurantsToShow.map(restaurant => (
+                    <RestaurantCard 
+                        key={restaurant.id}
+                        restaurant={restaurant}
+                        favorites={favorites}
+                        toggleFavorite={toggleFavorite}
+                    />
                 ))}
             </div>
         </section>

@@ -1,147 +1,83 @@
 package com.projectalpha.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.projectalpha.config.SupabaseConfig;
 import com.projectalpha.dto.*;
 import com.projectalpha.exception.*;
-import com.projectalpha.exception.DuplicateEmailException;
+import com.projectalpha.repository.AuthRepository;
+import com.projectalpha.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Service for handling authentication operations.
+ */
 @Service
 public class AuthService {
 
-    private final SupabaseConfig supabaseConfig;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final AuthRepository authRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public AuthService(SupabaseConfig supabaseConfig) {
-        this.supabaseConfig = supabaseConfig;
+    public AuthService(AuthRepository authRepository, UserRepository userRepository) {
+        this.authRepository = authRepository;
+        this.userRepository = userRepository;
     }
 
+    /**
+     * Sends a verification code to the specified email for registration.
+     * 
+     * @param email The email to send the verification code to
+     * @throws DuplicateEmailException If the email is already registered
+     * @throws Exception If an error occurs during the process
+     */
     public void sendVerificationCode(String email) throws Exception {
-        String isUser = getUserIdByEmail(email);
-        if(!isUser.equals("Kullanıcı bulunamadı.")) {
-            throw new DuplicateEmailException();
+        // Check if user already exists
+        String userId = userRepository.findUserIdByEmail(email);
+        if (userId != null) {
+            throw new DuplicateEmailException("Email is already registered");
         }
-        else{
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/otp"))
-                    .header("apikey", supabaseConfig.getSupabaseApiKey())
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("""
-                            {
-                                "email": "%s",
-                                "create_user": true,
-                                "data": { "tmp" : true }
-                            }
-                        """.formatted(email)))
-                    .build();
-            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        }
+        
+        // Send verification code through repository
+        authRepository.sendVerificationCode(email);
     }
 
+    /**
+     * Verifies a token for the specified email.
+     * 
+     * @param email The email associated with the token
+     * @param token The verification token
+     * @return SupabaseTokenResponse containing access token and user info
+     * @throws Exception If verification fails
+     */
     public SupabaseTokenResponse verifyVerificationCode(String email, String token) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/verify"))
-                .header("apikey", supabaseConfig.getSupabaseApiKey())
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("""
-                           {
-                               "email": "%s",
-                               "token": "%s",
-                               "type": "email"
-                           }
-                        """.formatted(email, token)))
-                .build();
-        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return mapper.readValue(response.body(), SupabaseTokenResponse.class);
+        return authRepository.verifyToken(email, token);
     }
 
-    public String getUserIdByEmail(String email) throws Exception  {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users"))
-                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
-                .header("apikey", supabaseConfig.getSupabaseApiKey())
-                .header("Content-Type", "application/json")
-                .build();
-
-        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        JsonNode root = mapper.readTree(response.body());
-        JsonNode users = root.get("users");
-
-        if (users != null && users.isArray()) {
-            for (JsonNode user : users) {
-                String userEmail = user.has("email") ? user.get("email").asText() : null;
-                if (email.equals(userEmail)) {
-                    return user.get("id").asText();  // UUID'yi döndür
-                }
-            }
-        }
-        return "Kullanıcı bulunamadı.";
-    }
-
+    /**
+     * Updates a user's password and role.
+     * 
+     * @param email The user's email
+     * @param newPassword The new password to set
+     * @param role The role to assign to the user
+     * @throws Exception If the update fails
+     */
     public void updateUser(String email, String newPassword, String role) throws Exception {
-        String userId = getUserIdByEmail(email);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userId))
-                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey()) // service_role API key
-                .header("Content-Type", "application/json")
-                .header("apikey", supabaseConfig.getSupabaseApiKey())
-                .method("PUT", HttpRequest.BodyPublishers.ofString("""
-                        {
-                            "password": "%s"
-                            "app_metadata": {
-                                "role": "%s"
-                             }
-                        }
-                """.formatted(newPassword, role)))
-                .build();
-
-
-        // Yanıtı almak için isteği gönderme
-        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Kullanıcı güncellenemedi: " + response.body());
+        String userId = userRepository.findUserIdByEmail(email);
+        if (userId == null) {
+            throw new UserNotFoundException("User not found with email: " + email);
         }
+        
+        userRepository.updateUserPasswordAndRole(userId, newPassword, role);
     }
 
-
+    /**
+     * Authenticates a user with email and password.
+     * 
+     * @param email The user's email
+     * @param password The user's password
+     * @return SupabaseTokenResponse containing access token, refresh token, and user info
+     * @throws Exception If authentication fails
+     */
     public SupabaseTokenResponse loginWithEmailPassword(String email, String password) throws Exception {
-        String jsonBody = """
-        {
-            "email": "%s",
-            "password": "%s"
-        }
-    """.formatted(email, password);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/token?grant_type=password"))
-                .header("Content-Type", "application/json")
-                .header("apikey", supabaseConfig.getSupabaseApiKey())
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() >= 400) {
-            throw new RuntimeException("Login başarısız: " + response.body());
-        }
-
-        return mapper.readValue(response.body(), SupabaseTokenResponse.class);
+        return authRepository.authenticateUser(email, password);
     }
 }
