@@ -66,6 +66,19 @@ const HomePage = () => {
     const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
     const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
     
+    // Expose this component instance to be accessed by Navbar
+    useEffect(() => {
+        // Bileşeni global olarak erişilebilir yap
+        window.homePageInstance = {
+            openLoginPopup: openPopup
+        };
+        
+        // Cleanup: Component unmount olduğunda referansı temizle
+        return () => {
+            window.homePageInstance = null;
+        };
+    }, []);
+    
     // Get user location when component mounts
     useEffect(() => {
         getUserLocation();
