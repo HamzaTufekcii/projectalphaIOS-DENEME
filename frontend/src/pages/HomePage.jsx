@@ -461,67 +461,55 @@ const HomePage = () => {
 
     return (
         <div className="app-container">
-            <header className="app-header">
-                <div className="header-content">
-                    <h1 className="site-title">FeastFine</h1>
-                    <nav className="main-nav">
-                        <Link to="/" className="nav-item active">Ana Sayfa</Link>
-                        <Link to="/favorites" className="nav-item">Favoriler</Link>
-                        <div className="auth-container">
-                            <Button text="Giriş Yap" onClick={openPopup} />
+            {/* Hidden popups that will be shown when triggered */}
+            <LoginPopup
+                isOpen={showPopup}
+                onClose={closePopup}
+                selectedTab={selectedTab}
+                handleSelectUser={handleSelectUser}
+                handleSelectOwner={handleSelectOwner}
+                userLoginEmail={userLoginEmail}
+                setUserLoginEmail={setUserLoginEmail}
+                userLoginPassword={userLoginPassword}
+                setUserLoginPassword={setUserLoginPassword}
+                ownerLoginEmail={ownerLoginEmail}
+                setOwnerLoginEmail={setOwnerLoginEmail}
+                ownerLoginPassword={ownerLoginPassword}
+                setOwnerLoginPassword={setOwnerLoginPassword}
+                errors={errors}
+                handleUserLogin={handleUserLogin}
+                handleOwnerLogin={handleOwnerLogin}
+                openThirdPopUp={openThirdPopUp}
+            />
 
-                            <LoginPopup
-                                isOpen={showPopup}
-                                onClose={closePopup}
-                                selectedTab={selectedTab}
-                                handleSelectUser={handleSelectUser}
-                                handleSelectOwner={handleSelectOwner}
-                                userLoginEmail={userLoginEmail}
-                                setUserLoginEmail={setUserLoginEmail}
-                                userLoginPassword={userLoginPassword}
-                                setUserLoginPassword={setUserLoginPassword}
-                                ownerLoginEmail={ownerLoginEmail}
-                                setOwnerLoginEmail={setOwnerLoginEmail}
-                                ownerLoginPassword={ownerLoginPassword}
-                                setOwnerLoginPassword={setOwnerLoginPassword}
-                                errors={errors}
-                                handleUserLogin={handleUserLogin}
-                                handleOwnerLogin={handleOwnerLogin}
-                                openThirdPopUp={openThirdPopUp}
-                            />
+            <ConfirmationPopup
+                isOpen={showSecondPopup}
+                onClose={closeSecondPopup}
+                confirmationCode={confirmationCode}
+                setConfirmationCode={setConfirmationCode}
+                error={error}
+                onConfirm={handleConfirmationCodeClick}
+            />
 
-                            <ConfirmationPopup
-                                isOpen={showSecondPopup}
-                                onClose={closeSecondPopup}
-                                confirmationCode={confirmationCode}
-                                setConfirmationCode={setConfirmationCode}
-                                error={error}
-                                onConfirm={handleConfirmationCodeClick}
-                            />
+            <RegisterEmailPopup
+                isOpen={showThirdPopup}
+                onClose={closeThirdPopup}
+                registerEmail={registerEmail}
+                setRegisterEmail={setRegisterEmail}
+                onSendCode={handleRegister}
+                onBack={handleGoBack}
+            />
 
-                            <RegisterEmailPopup
-                                isOpen={showThirdPopup}
-                                onClose={closeThirdPopup}
-                                registerEmail={registerEmail}
-                                setRegisterEmail={setRegisterEmail}
-                                onSendCode={handleRegister}
-                                onBack={handleGoBack}
-                            />
-
-                            <SetPasswordPopup
-                                isOpen={showFourthPopup}
-                                onClose={closeFourthPopup}
-                                registerPassword={registerPassword}
-                                setRegisterPassword={setRegisterPassword}
-                                registerPasswordControl={registerPasswordControl}
-                                setRegisterPasswordControl={setRegisterPasswordControl}
-                                error={error}
-                                onSubmit={checkEqual}
-                            />
-                        </div>
-                    </nav>
-                </div>
-            </header>
+            <SetPasswordPopup
+                isOpen={showFourthPopup}
+                onClose={closeFourthPopup}
+                registerPassword={registerPassword}
+                setRegisterPassword={setRegisterPassword}
+                registerPasswordControl={registerPasswordControl}
+                setRegisterPasswordControl={setRegisterPasswordControl}
+                error={error}
+                onSubmit={checkEqual}
+            />
 
             <main className="main-content">
                 {/* Hero Section */}
