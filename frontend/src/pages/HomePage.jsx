@@ -340,7 +340,11 @@ const HomePage = () => {
             openFourthPopup();
         } catch (err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Doğrulama başarısız: ' + msg);
+            if (err.response.data.message.includes("Verification code is incorrect")) {
+                setError('Onay kodu yanlış girildi. Lütfen tekrar deneyin.');
+            } else {
+                setError('Doğrulama başarısız: ' + msg);
+            }
             console.error(err);
         }
     };
@@ -367,7 +371,8 @@ const HomePage = () => {
                 "http://localhost:8080/api/auth/login",
                 {
                     email: userLoginEmail.trim(),
-                    password: userLoginPassword.trim()
+                    password: userLoginPassword.trim(),
+                    role: "diner_user"
                 }
             );
             const { access_token, refresh_token, user } = response.data;
@@ -381,7 +386,25 @@ const HomePage = () => {
             closePopup();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
+            if(err.response.data.message.includes("Invalid login credentials")) {
+                let errors = {};
+                errors.password = 'Şifrenizi hatalı girdiniz.';
+                setErrors(errors);
+                return;
+            }
+            if(err.response.data.message.includes("User not found")){
+                let errors = {};
+                errors.password = 'Böyle bir kullanıcı bulunmamaktadır.';
+                setErrors(errors);
+                return;
+            }
+            if(err.response.data.message.includes("Wrong role")){
+                let errors = {};
+                errors.ownerPassword = 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.';
+                setErrors(errors);
+                return;
+            }
+            alert('Giriş başarısız: ' + msg);
             console.error(err);
         }
     };
@@ -408,7 +431,8 @@ const HomePage = () => {
                 "http://localhost:8080/api/auth/login",
                 {
                     email: ownerLoginEmail.trim(),
-                    password: ownerLoginPassword.trim()
+                    password: ownerLoginPassword.trim(),
+                    role: "owner_user"
                 }
             );
             
@@ -423,7 +447,25 @@ const HomePage = () => {
             closePopup();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
+            if(err.response.data.message.includes("Invalid login credentials")) {
+                let errors = {};
+                errors.ownerPassword = 'Şifrenizi hatalı girdiniz.';
+                setErrors(errors);
+                return;
+            }
+            if(err.response.data.message.includes("User not found")){
+                let errors = {};
+                errors.ownerPassword = 'Böyle bir işletme hesabı bulunmamaktadır.';
+                setErrors(errors);
+                return;
+            }
+            if(err.response.data.message.includes("Wrong role")){
+                let errors = {};
+                errors.ownerPassword = 'Bu işletme girişi içindir. Lütfen kullanıcı girişiyle giriniz.';
+                setErrors(errors);
+                return;
+            }
+            alert('Giriş başarısız: ' + msg);
             console.error(err);
         }
     };

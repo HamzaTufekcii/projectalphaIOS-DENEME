@@ -15,7 +15,6 @@ public class SupabaseTokenResponse {
     public static class User {
         private String id;
         private String email;
-        private String role;
         private String email_confirmed_at;
         private AppMetaData app_metadata;
     }

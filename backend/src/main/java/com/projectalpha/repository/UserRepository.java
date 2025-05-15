@@ -24,6 +24,13 @@ public interface UserRepository {
      */
     String isVerified(String email) throws Exception;
     /**
+     * Find a user's role in raw_app_meta_data
+     *
+     * @param email The email to search for
+     * @return User's role if found, null otherwise
+     */
+    String checkRole(String email) throws Exception;
+    /**
      * Update a user's password and role
      * 
      * @param userId The ID of the user to update

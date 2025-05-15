@@ -86,7 +86,17 @@ public class AuthService {
      * @return SupabaseTokenResponse containing access token, refresh token, and user info
      * @throws Exception If authentication fails
      */
-    public SupabaseTokenResponse loginWithEmailPassword(String email, String password) throws Exception {
+    public SupabaseTokenResponse loginWithEmailPassword(String email, String password, String expectedRole) throws Exception {
+        String userId = userRepository.findUserIdByEmail(email);
+        String userRole = userRepository.checkRole(email);
+
+        if (userId == null) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+        if (!(userRole.equals(expectedRole))) {
+            throw new WrongRoleLoginMethod("Wrong role");
+        }
+
         return authRepository.authenticateUser(email, password);
     }
 }
