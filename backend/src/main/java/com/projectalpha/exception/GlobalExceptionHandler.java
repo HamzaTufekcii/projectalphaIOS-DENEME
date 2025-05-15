@@ -13,14 +13,13 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<GenericResponse<Void>> handleDuplicateEmail(DuplicateEmailException ex) {
-        GenericResponse<Void> resp =
-                new GenericResponse<>(false,
-                        "EMAIL_ALREADY_EXISTS",  // code
-                        ex.getMessage(),         // "E-posta zaten mevcut"
-                        null);
+        GenericResponse<Void> resp = new GenericResponse<Void>(
+                false,
+                "EMAIL_ALREADY_EXISTS",  // code
+                ex.getMessage(),         // "E-posta zaten mevcut"
+                null);
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(resp);
