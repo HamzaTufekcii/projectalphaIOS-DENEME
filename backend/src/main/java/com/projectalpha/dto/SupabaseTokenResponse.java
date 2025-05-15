@@ -17,5 +17,13 @@ public class SupabaseTokenResponse {
         private String email;
         private String role;
         private String email_confirmed_at;
+        private AppMetaData app_metadata;
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @Data
+    public static class AppMetaData {
+        private String role;
+    }
+
 }
