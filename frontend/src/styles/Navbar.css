@@ -1,0 +1,206 @@
+.main-navbar {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar-brand {
+  flex: 0 0 auto;
+  margin-right: auto;
+}
+
+.navbar-brand .brand-link {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff5a5f;
+  text-decoration: none;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #555;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-link:hover {
+  color: #ff5a5f;
+}
+
+.nav-link.active {
+  color: #ff5a5f;
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ff5a5f;
+}
+
+.navbar-auth {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.login-button {
+  background-color: #ff5a5f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover {
+  background-color: #e74c3c;
+}
+
+/* Profile Link Styles */
+.profile-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.profile-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.profile-link.active {
+  color: #f15a29;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background-color: transparent;
+  color: #666;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #f8e5e0;
+  color: #f15a29;
+}
+
+.nav-icon {
+  font-size: 16px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 15px;
+  }
+  
+  .navbar-links {
+    gap: 15px;
+  }
+  
+  .navbar-brand .brand-link {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .navbar-brand, .navbar-links, .navbar-auth {
+    flex: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .navbar-auth {
+    justify-content: center;
+  }
+}
+
+/* Styles for not-authenticated section on Favorites page */
+.not-authenticated {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.auth-error {
+  text-align: center;
+  max-width: 500px;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #f15a29;
+  margin-bottom: 15px;
+}
+
+.login-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #f15a29;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #d84315;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+} 

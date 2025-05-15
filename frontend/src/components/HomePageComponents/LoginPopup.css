@@ -1,0 +1,146 @@
+
+.popup-container {
+    display: flex;
+    flex-direction: column;
+    width: 480px;
+}
+
+.user-or-owner {
+    display: flex;
+
+    flex-direction: column;
+}
+
+.user-or-owner-check {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    height: 50px;
+    border-bottom: var(--text-light);
+    margin-bottom: 20px;
+    position: relative;
+    
+}
+
+.tab-options {
+    position: relative;
+    display: flex;
+    width: 480px;
+    height: 40px;
+    background: #ffeaea;
+    border-radius: 25px;
+    overflow: hidden;
+  }
+  
+  .tab-option {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    color: #FF7F7F ;
+    z-index: 2; /* yazılar üstte kalacak */
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .tab-option.active {
+    color: white ;/* Seçilen yazı beyaz olsun */
+    
+  }
+  
+  .tab-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: #FF7F7F;
+    border-radius: 25px;
+    z-index: 1; /* arkaplan yazıların altında olacak */
+    transition: all 0.4s ease;
+  }
+  
+  .tab-background.owner {
+    left: 50%;
+  }
+  
+  .tab-background.user {
+    left: 0%;
+  }
+    
+
+
+.tab-content {
+    transition: all 0.5s ease;
+}
+
+.animate-slide {
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+
+.user {
+    background-color: var(--primary-color);
+}
+
+.owner {
+    background-color: var(--primary-color);
+}
+
+/*
+.side:hover {
+    background-color: var(--primary-color);
+    transition: 0.5s;
+    color: var(--primary-light);
+}
+    */
+
+.middle-content p {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.popup-footer {
+    width: 100%;
+    /* Sağdan soldan boşluk kalmasın */
+    height: 20%;
+    /* Popup'ın yüksekliğinin %20'si kadar kaplasın */
+    display: flex;
+    justify-content: center;
+    /* İçindekileri yatay ortala */
+    align-items: center;
+    /* Dikeyde ortala */
+    background-color: var(--primary-light);
+    /* İstersen arkaplan verebilirsin */
+    gap: 8px;
+    margin: 0;
+    /* Dış boşluk olmasın */
+    padding: 0;
+    /* İç boşluk olmasın */
+    box-sizing: border-box;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.popup-footer a{
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.popup-footer .register{
+    text-decoration: none;
+    color: black;
+}
+
