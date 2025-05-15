@@ -22,6 +22,7 @@ const LoginPopup = ({
     ownerLoginPassword,
     setOwnerLoginPassword,
     errors,
+    error,
     handleUserLogin,
     handleOwnerLogin,
     openThirdPopUp
@@ -56,6 +57,11 @@ const LoginPopup = ({
 
                     <div />
 
+                    {error && (
+                        <div className="error-message" style={{ color: 'red', padding: '10px', marginBottom: '10px', backgroundColor: '#ffeeee', borderRadius: '4px', textAlign: 'center' }}>
+                            {error}
+                        </div>
+                    )}
 
                     <div className='middle-content'>
                         {selectedTab === 'user' && (

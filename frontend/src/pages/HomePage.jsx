@@ -24,6 +24,7 @@ import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPo
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
 import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
+import { login, saveAuthData } from '../services/authService';
 import axios from "axios";
 
 const HomePage = () => {
@@ -363,22 +364,16 @@ const HomePage = () => {
         }
         
         try {
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: userLoginEmail.trim(),
-                    password: userLoginPassword.trim()
-                }
-            );
-            const { access_token, refresh_token, user } = response.data;
+            const authData = await login(userLoginEmail, userLoginPassword);
             console.log('Kullanıcı girişi başarılı');
             
-            // Store tokens in localStorage for later use
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('refreshToken', refresh_token);
-            localStorage.setItem('user', JSON.stringify(user));
+            // Store tokens using authService
+            saveAuthData(authData);
             
             closePopup();
+            
+            // Force refresh to update UI
+            window.location.reload();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
             setError('Giriş başarısız: ' + msg);
@@ -404,23 +399,16 @@ const HomePage = () => {
         }
         
         try {
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: ownerLoginEmail.trim(),
-                    password: ownerLoginPassword.trim()
-                }
-            );
+            const authData = await login(ownerLoginEmail, ownerLoginPassword);
             
-            const { access_token, refresh_token, user } = response.data;
-            
-            // Store tokens in localStorage for later use
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('refreshToken', refresh_token);
-            localStorage.setItem('user', JSON.stringify(user));
+            // Store tokens using authService
+            saveAuthData(authData);
             
             console.log('İşletme girişi başarılı');
             closePopup();
+            
+            // Force refresh to update UI
+            window.location.reload();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
             setError('Giriş başarısız: ' + msg);
@@ -490,6 +478,7 @@ const HomePage = () => {
                 ownerLoginPassword={ownerLoginPassword}
                 setOwnerLoginPassword={setOwnerLoginPassword}
                 errors={errors}
+                error={error}
                 handleUserLogin={handleUserLogin}
                 handleOwnerLogin={handleOwnerLogin}
                 openThirdPopUp={openThirdPopUp}
