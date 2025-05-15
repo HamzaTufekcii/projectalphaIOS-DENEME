@@ -43,6 +43,9 @@ public class AuthController {
         } catch (DuplicateEmailException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new GenericResponse<>(false, e.getMessage()));
+        } catch (UserNotVerifiedException e){
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new GenericResponse<>(false, e.getMessage()));
         } catch (Exception e) {
             // Log the full error for debugging purposes
             e.printStackTrace();

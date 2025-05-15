@@ -16,7 +16,13 @@ public interface UserRepository {
      * @return The user ID if found, null otherwise
      */
     String findUserIdByEmail(String email) throws Exception;
-    
+    /**
+     * Find a user by their email and check if verified
+     *
+     * @param email The email to search for
+     * @return The verification time if found, null otherwise
+     */
+    String isVerified(String email) throws Exception;
     /**
      * Update a user's password and role
      * 

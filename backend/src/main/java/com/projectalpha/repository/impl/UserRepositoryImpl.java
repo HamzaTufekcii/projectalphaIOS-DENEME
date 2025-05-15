@@ -3,6 +3,8 @@ package com.projectalpha.repository.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.SupabaseConfig;
+import com.projectalpha.exception.UserNotFoundException;
+import com.projectalpha.exception.UserNotVerifiedException;
 import com.projectalpha.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -40,6 +42,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (users != null && users.isArray()) {
             for (JsonNode user : users) {
                 String userEmail = user.has("email") ? user.get("email").asText() : null;
+
                 if (email.equals(userEmail)) {
                     return user.get("id").asText();
                 }
@@ -47,6 +50,32 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return null;
     }
+    @Override
+    public String isVerified(String email) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users"))
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Content-Type", "application/json")
+                .build();
+
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        JsonNode root = mapper.readTree(response.body());
+        JsonNode users = root.get("users");
+
+        if (users != null && users.isArray()) {
+            for (JsonNode user : users) {
+                String userEmail = user.has("email") ? user.get("email").asText() : null;
+
+                if (email.equals(userEmail)) {
+                    JsonNode emailConfirmedAtNode = user.get("email_confirmed_at");
+                    return emailConfirmedAtNode != null ? emailConfirmedAtNode.asText() : null;
+                }
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public void updateUserPasswordAndRole(String userId, String password, String role) throws Exception {
