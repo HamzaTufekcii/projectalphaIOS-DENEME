@@ -368,16 +368,8 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(userLoginEmail, userLoginPassword);
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: userLoginEmail.trim(),
-                    password: userLoginPassword.trim(),
-                    role: "diner_user"
-                }
-            );
-            const { access_token, refresh_token, user } = response.data;
+            const role = "diner_user";
+            const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
             
             // Store tokens using authService
@@ -387,28 +379,20 @@ const HomePage = () => {
 
             // Force refresh to update UI
             window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            if(err.response.data.message.includes("Invalid login credentials")) {
-                let errors = {};
-                errors.password = 'Şifrenizi hatalı girdiniz.';
-                setErrors(errors);
-                return;
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ password: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ password: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerLoginPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
             }
-            if(err.response.data.message.includes("User not found")){
-                let errors = {};
-                errors.password = 'Böyle bir kullanıcı bulunmamaktadır.';
-                setErrors(errors);
-                return;
-            }
-            if(err.response.data.message.includes("Wrong role")){
-                let errors = {};
-                errors.ownerPassword = 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.';
-                setErrors(errors);
-                return;
-            }
-            alert('Giriş başarısız: ' + msg);
-            console.error(err);
         }
     };
 
@@ -430,15 +414,8 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(ownerLoginEmail, ownerLoginPassword);
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: ownerLoginEmail.trim(),
-                    password: ownerLoginPassword.trim(),
-                    role: "owner_user"
-                }
-            );
+            const role = "owner_user";
+            const authData = await login(ownerLoginEmail, ownerLoginPassword, role);
 
             // Store tokens using authService
             saveAuthData(authData);
@@ -448,28 +425,20 @@ const HomePage = () => {
 
             // Force refresh to update UI
             window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            if(err.response.data.message.includes("Invalid login credentials")) {
-                let errors = {};
-                errors.ownerPassword = 'Şifrenizi hatalı girdiniz.';
-                setErrors(errors);
-                return;
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ ownerPassword: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ ownerPassword: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
             }
-            if(err.response.data.message.includes("User not found")){
-                let errors = {};
-                errors.ownerPassword = 'Böyle bir işletme hesabı bulunmamaktadır.';
-                setErrors(errors);
-                return;
-            }
-            if(err.response.data.message.includes("Wrong role")){
-                let errors = {};
-                errors.ownerPassword = 'Bu işletme girişi içindir. Lütfen kullanıcı girişiyle giriniz.';
-                setErrors(errors);
-                return;
-            }
-            alert('Giriş başarısız: ' + msg);
-            console.error(err);
         }
     };
 

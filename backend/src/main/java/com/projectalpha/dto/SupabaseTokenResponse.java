@@ -61,14 +61,6 @@ public class SupabaseTokenResponse {
             this.email = email;
         }
 
-        public String getRole() {
-            return role;
-        }
-
-        public void setRole(String role) {
-            this.role = role;
-        }
-
         public String getEmail_confirmed_at() {
             return email_confirmed_at;
         }
@@ -90,7 +82,6 @@ public class SupabaseTokenResponse {
     @Data
     public static class AppMetaData {
         private String role;
-
         public String getRole() {
             return role;
         }
