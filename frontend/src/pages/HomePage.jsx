@@ -268,21 +268,21 @@ const HomePage = () => {
         try {
             const response = await axios.post(
                 "http://localhost:8080/api/auth/send-verification-code",
-                {
-                    email: registerEmail.trim()
-                }
+                { email: registerEmail.trim() }
             );
-            
             setError('');
             openSecondPopup();
+
         } catch (err) {
             console.error("Kayıt hatası:", err);
-            
-            if (err.response && err.response.data) {
-                if (err.response.data.message) {
-                    alert('E-posta gönderilemedi: ' + err.response.data.message);
+
+            // Eğer kullanıcı daha önce doğrulanmamışsa uyar ve popupı aç
+            if (err.response && err.response.data && err.response.data.message) {
+                if (err.response.data.message.includes("User is not verified")) {
+                    setError('E-Postanı henüz doğrulamamışsın. Yeni kod e-postana yollandı.');
+                    openSecondPopup();
                 } else {
-                    alert('E-posta gönderilemedi: ' + JSON.stringify(err.response.data));
+                    alert('E-posta gönderilemedi: ' + err.response.data.message);
                 }
             } else if (err.message) {
                 alert('E-posta gönderilemedi: ' + err.message);

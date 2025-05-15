@@ -27,12 +27,21 @@ public class AuthService {
      * 
      * @param email The email to send the verification code to
      * @throws DuplicateEmailException If the email is already registered
+     * @throws UserNotVerifiedException If the email is not verified
      * @throws Exception If an error occurs during the process
      */
     public void sendVerificationCode(String email) throws Exception {
         // Check if user already exists
         String userId = userRepository.findUserIdByEmail(email);
+        String verificationTime = userRepository.isVerified(email);
+
         if (userId != null) {
+            // Check if user verified email or not
+            if(verificationTime == null) {
+                authRepository.sendVerificationCode(email);
+                throw new UserNotVerifiedException("User is not verified");
+            }
+
             throw new DuplicateEmailException("Email is already registered");
         }
         
