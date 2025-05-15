@@ -24,6 +24,7 @@ import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPo
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
 import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
+import { login, saveAuthData } from '../services/authService';
 import axios from "axios";
 
 const HomePage = () => {
@@ -367,6 +368,7 @@ const HomePage = () => {
         }
         
         try {
+            const authData = await login(userLoginEmail, userLoginPassword);
             const response = await axios.post(
                 "http://localhost:8080/api/auth/login",
                 {
@@ -378,12 +380,13 @@ const HomePage = () => {
             const { access_token, refresh_token, user } = response.data;
             console.log('Kullanıcı girişi başarılı');
             
-            // Store tokens in localStorage for later use
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('refreshToken', refresh_token);
-            localStorage.setItem('user', JSON.stringify(user));
+            // Store tokens using authService
+            saveAuthData(authData);
             
             closePopup();
+
+            // Force refresh to update UI
+            window.location.reload();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
             if(err.response.data.message.includes("Invalid login credentials")) {
@@ -427,6 +430,7 @@ const HomePage = () => {
         }
         
         try {
+            const authData = await login(ownerLoginEmail, ownerLoginPassword);
             const response = await axios.post(
                 "http://localhost:8080/api/auth/login",
                 {
@@ -435,16 +439,15 @@ const HomePage = () => {
                     role: "owner_user"
                 }
             );
-            
-            const { access_token, refresh_token, user } = response.data;
-            
-            // Store tokens in localStorage for later use
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('refreshToken', refresh_token);
-            localStorage.setItem('user', JSON.stringify(user));
+
+            // Store tokens using authService
+            saveAuthData(authData);
             
             console.log('İşletme girişi başarılı');
             closePopup();
+
+            // Force refresh to update UI
+            window.location.reload();
         } catch(err) {
             const msg = err.response?.data?.message || err.message;
             if(err.response.data.message.includes("Invalid login credentials")) {
@@ -532,6 +535,7 @@ const HomePage = () => {
                 ownerLoginPassword={ownerLoginPassword}
                 setOwnerLoginPassword={setOwnerLoginPassword}
                 errors={errors}
+                error={error}
                 handleUserLogin={handleUserLogin}
                 handleOwnerLogin={handleOwnerLogin}
                 openThirdPopUp={openThirdPopUp}

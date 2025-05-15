@@ -1,9 +1,37 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
+import { FaUser, FaHeart, FaSignOutAlt, FaList } from 'react-icons/fa';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  
+  // Check if user is logged in - this runs on component mount and on location changes
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      
+      if (token) {
+        setIsLoggedIn(true);
+        if (userData) {
+          try {
+            setUser(JSON.parse(userData));
+          } catch (e) {
+            console.error('Error parsing user data', e);
+          }
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    };
+    
+    checkAuthStatus();
+  }, [location.pathname]); // Re-check auth status when route changes
   
   const handleLoginClick = () => {
     // If we're on HomePage, we want to find the openPopup function from HomePage
@@ -14,6 +42,21 @@ const Navbar = () => {
       // Fallback to default login page if we're not on HomePage
       window.location.href = '/login';
     }
+  };
+  
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setUser(null);
+    
+    // Redirect to home page
+    navigate('/');
+    
+    // Show logout toast/notification
+    alert('Başarıyla çıkış yaptınız.');
   };
   
   return (
@@ -30,18 +73,45 @@ const Navbar = () => {
           >
             Ana Sayfa
           </Link>
-          <Link 
-            to="/favorites" 
-            className={`nav-link ${location.pathname === '/favorites' ? 'active' : ''}`}
-          >
-            Favoriler
-          </Link>
+          
+          {isLoggedIn && (
+            <>
+              <Link 
+                to="/favorites" 
+                className={`nav-link ${location.pathname === '/favorites' ? 'active' : ''}`}
+              >
+                <FaHeart className="nav-icon" /> Favoriler
+              </Link>
+              
+              <Link 
+                to="/lists" 
+                className={`nav-link ${location.pathname === '/lists' ? 'active' : ''}`}
+              >
+                <FaList className="nav-icon" /> Listeler
+              </Link>
+            </>
+          )}
         </div>
         
         <div className="navbar-auth">
-          <button className="login-button" onClick={handleLoginClick}>
-            Giriş Yap
-          </button>
+          {isLoggedIn ? (
+            <div className="user-menu">
+              <Link 
+                to="/profile" 
+                className={`profile-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
+              >
+                <FaUser className="nav-icon" /> 
+                {user?.name || 'Profilim'}
+              </Link>
+              <button className="logout-button" onClick={handleLogout}>
+                <FaSignOutAlt className="nav-icon" /> Çıkış
+              </button>
+            </div>
+          ) : (
+            <button className="login-button" onClick={handleLoginClick}>
+              Giriş Yap
+            </button>
+          )}
         </div>
       </div>
     </nav>
