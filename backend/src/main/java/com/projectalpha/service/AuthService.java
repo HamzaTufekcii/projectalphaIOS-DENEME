@@ -74,7 +74,7 @@ public class AuthService {
         if (userId == null) {
             throw new UserNotFoundException("User not found with email: " + email);
         }
-        
+        userRepository.createUserProfile(userId, email, role);
         userRepository.updateUserPasswordAndRole(userId, newPassword, role);
     }
 
