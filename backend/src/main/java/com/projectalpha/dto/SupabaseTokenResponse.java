@@ -41,7 +41,6 @@ public class SupabaseTokenResponse {
     public static class User {
         private String id;
         private String email;
-        private String role;
         private String email_confirmed_at;
         private AppMetaData app_metadata;
 
@@ -60,14 +59,6 @@ public class SupabaseTokenResponse {
 
         public void setEmail(String email) {
             this.email = email;
-        }
-
-        public String getRole() {
-            return role;
-        }
-
-        public void setRole(String role) {
-            this.role = role;
         }
 
         public String getEmail_confirmed_at() {
@@ -91,7 +82,6 @@ public class SupabaseTokenResponse {
     @Data
     public static class AppMetaData {
         private String role;
-
         public String getRole() {
             return role;
         }

@@ -75,6 +75,33 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return null;
     }
+    @Override
+    public String checkRole(String email) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users"))
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Content-Type", "application/json")
+                .build();
+
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        JsonNode root = mapper.readTree(response.body());
+        JsonNode users = root.get("users");
+
+        if (users != null && users.isArray()) {
+            for (JsonNode user : users) {
+                String userEmail = user.has("email") ? user.get("email").asText() : null;
+
+                if (email.equals(userEmail)) {
+                    JsonNode appMetaData = user.get("app_metadata");
+                    if (appMetaData != null && appMetaData.has("role")) {
+                        return appMetaData.get("role").asText();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
 
     @Override

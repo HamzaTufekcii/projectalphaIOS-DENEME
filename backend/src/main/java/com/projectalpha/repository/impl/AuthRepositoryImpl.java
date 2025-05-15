@@ -3,6 +3,8 @@ package com.projectalpha.repository.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.SupabaseConfig;
 import com.projectalpha.dto.SupabaseTokenResponse;
+import com.projectalpha.exception.InvalidLoginCredentials;
+import com.projectalpha.exception.VerificationCodeNotCorrect;
 import com.projectalpha.repository.AuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -73,8 +75,12 @@ public class AuthRepositoryImpl implements AuthRepository {
                 .build();
                 
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        
+
+
         if (response.statusCode() >= 400) {
+            if(response.statusCode() == 403) {
+                throw new VerificationCodeNotCorrect("Verification code is incorrect");
+            }
             throw new RuntimeException("Token verification failed: " + response.body());
         }
         
@@ -100,6 +106,9 @@ public class AuthRepositoryImpl implements AuthRepository {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() >= 400) {
+            if(response.statusCode() == 400) {
+                throw new InvalidLoginCredentials("Invalid login credentials");
+            }
             throw new RuntimeException("Authentication failed: " + response.body());
         }
 

@@ -341,7 +341,11 @@ const HomePage = () => {
             openFourthPopup();
         } catch (err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Doğrulama başarısız: ' + msg);
+            if (err.response.data.message.includes("Verification code is incorrect")) {
+                setError('Onay kodu yanlış girildi. Lütfen tekrar deneyin.');
+            } else {
+                setError('Doğrulama başarısız: ' + msg);
+            }
             console.error(err);
         }
     };
@@ -364,20 +368,31 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(userLoginEmail, userLoginPassword);
+            const role = "diner_user";
+            const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
             
             // Store tokens using authService
             saveAuthData(authData);
             
             closePopup();
-            
+
             // Force refresh to update UI
             window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
-            console.error(err);
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ password: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ password: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerLoginPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
+            }
         }
     };
 
@@ -399,20 +414,31 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(ownerLoginEmail, ownerLoginPassword);
-            
+            const role = "owner_user";
+            const authData = await login(ownerLoginEmail, ownerLoginPassword, role);
+
             // Store tokens using authService
             saveAuthData(authData);
             
             console.log('İşletme girişi başarılı');
             closePopup();
-            
+
             // Force refresh to update UI
             window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
-            console.error(err);
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ ownerPassword: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ ownerPassword: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
+            }
         }
     };
 

@@ -62,14 +62,19 @@ export const updateUser = async (email, password, role = 'user') => {
  * Login with email and password
  * @param {string} email - User's email address
  * @param {string} password - User's password
+ * @param {string} role - User's role
  * @returns {Promise} Response from the API with tokens and user info
  */
-export const login = async (email, password) => {
+export const login = async (email, password, role) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, { 
-      email: email.trim(), 
-      password: password 
-    });
+    const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: email.trim(),
+          password: password.trim(),
+          role: role
+        }
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message || 'Error logging in';

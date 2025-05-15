@@ -77,6 +77,9 @@ public class AuthController {
                 "token", res.getAccess_token(), 
                 "userId", res.getUser().getId()
             ));
+        } catch (VerificationCodeNotCorrect e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new GenericResponse(false, e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new GenericResponse(false, "Verification failed: " + e.getMessage()));
@@ -128,19 +131,26 @@ public class AuthController {
         try {
             String email = body.get("email");
             String password = body.get("password");
+            String expectedRole = body.get("role");
             
             if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new GenericResponse(false, "Email and password are required"));
             }
             
-            SupabaseTokenResponse response = authService.loginWithEmailPassword(email, password);
+            SupabaseTokenResponse response = authService.loginWithEmailPassword(email, password, expectedRole);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "access_token", response.getAccess_token(),
                 "refresh_token", response.getRefresh_token(),
                 "user", response.getUser()
             ));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericResponse(false, e.getMessage()));
+        } catch (InvalidLoginCredentials e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new GenericResponse(false, e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new GenericResponse(false, "Login failed: " + e.getMessage()));
