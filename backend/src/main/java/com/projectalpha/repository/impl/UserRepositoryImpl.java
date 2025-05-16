@@ -102,7 +102,31 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return null;
     }
+    @Override
+    public void createUserProfile(String userId, String email, String role) throws Exception {
+        String query = "";
 
+        if ("diner_user".equals(role)) {
+            query = "INSERT INTO user_profile_diner (user_id, email) VALUES ('%s', '%s')".formatted(userId, email);
+        } else if ("owner_user".equals(role)) {
+            query = "INSERT INTO user_profile_owner (user_id, email) VALUES ('%s', '%s')".formatted(userId, email);
+        } else {
+            throw new IllegalArgumentException("Geçersiz kullanıcı rolü: " + role);
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/rpc/execute_sql"))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"sql\": \"" + query + "\"}"))
+                .build();
+
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 400) {
+            throw new RuntimeException("Profil ekleme başarısız: " + response.body());
+        }
+    }
 
     @Override
     public void updateUserPasswordAndRole(String userId, String password, String role) throws Exception {

@@ -22,6 +22,14 @@ public interface UserRepository {
      * @param email The email to search for
      * @return The verification time if found, null otherwise
      */
+    /**
+     * Update a user's password and role
+     *
+     * @param userId The ID of the user to update
+     * @param email The new password
+     * @param role The role to check
+     */
+    void createUserProfile(String userId, String email, String role) throws Exception;
     String isVerified(String email) throws Exception;
     /**
      * Find a user's role in raw_app_meta_data
