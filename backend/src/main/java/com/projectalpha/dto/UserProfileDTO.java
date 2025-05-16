@@ -3,7 +3,7 @@ package com.projectalpha.dto;
 import java.util.Date;
 
 /**
- * Data Transfer Object for user profile information
+ * Data Transfer Object for user user information
  */
 public class UserProfileDTO {
     private String id;
@@ -12,23 +12,25 @@ public class UserProfileDTO {
     private String surname;
     private String phone;
     private String profilePicture;
-    private Date lastUpdated;
+    private Date created_at;
     private String role;
+    private String address;
 
     // Default constructor
     public UserProfileDTO() {}
 
     // Constructor with all fields
-    public UserProfileDTO(String id, String email, String name, String surname, 
-                         String phone, String profilePicture, Date lastUpdated, String role) {
+    public UserProfileDTO(String id, String email, String name, String surname,
+                          String phone, String profilePicture, Date created_at, String role, String address) {
         this.id = id;
         this.email = email;
         this.name = name;
         this.surname = surname;
         this.phone = phone;
         this.profilePicture = profilePicture;
-        this.lastUpdated = lastUpdated;
+        this.created_at = created_at;
         this.role = role;
+        this.address = address;
     }
 
     // Getters and Setters
@@ -80,12 +82,12 @@ public class UserProfileDTO {
         this.profilePicture = profilePicture;
     }
 
-    public Date getLastUpdated() {
-        return lastUpdated;
+    public Date getCreated_at() {
+        return created_at;
     }
 
-    public void setLastUpdated(Date lastUpdated) {
-        this.lastUpdated = lastUpdated;
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
     }
 
     public String getRole() {
@@ -95,4 +97,8 @@ public class UserProfileDTO {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getAddress() {return address;}
+
+    public void setAddress(String address) {this.address = address;}
 } 
