@@ -153,11 +153,11 @@ public class OwnerRepositoryImpl implements OwnerRepository {
     @Override
     public BusinessDTO createInitialBusinessForOwner(String ownerId, OwnerRegisterRequest request) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-
         // 1. Business oluştur (POST)
         Map<String, Object> businessPayload = Map.of(
                 "name", request.getRequestBusiness().getName(),
-                "owner_id", ownerId
+                "description", request.getRequestBusiness().getDescription(),
+                "owner_id1", ownerId
         );
         String businessJson = mapper.writeValueAsString(new Map[]{businessPayload});
 
@@ -166,15 +166,14 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                 .header("Content-Type", "application/json")
+                .header("Prefer", "return=representation")
                 .POST(HttpRequest.BodyPublishers.ofString(businessJson))
                 .build();
-
         HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
-        System.out.println(businessResponse.body());
-        // Supabase POST response is array of created items
-        BusinessDTO createdBusiness = mapper.readValue(businessResponse.body(), new TypeReference<BusinessDTO[]>() {})[0];
-        String businessId = createdBusiness.getId();
 
+        BusinessDTO[] businesses = mapper.readValue(businessResponse.body(), BusinessDTO[].class);
+        BusinessDTO createdBusiness = businesses[0];
+        String businessId = createdBusiness.getId();
         // 2. Address oluştur (POST)
         Map<String, Object> addressPayload = Map.of(
                 "city", request.getRequestAddress().getCity(),
@@ -189,28 +188,34 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                 .header("Content-Type", "application/json")
+                .header("Prefer", "return=representation")
                 .POST(HttpRequest.BodyPublishers.ofString(addressJson))
                 .build();
 
         HttpResponse<String> addressResponse = httpClient.send(addressRequest, HttpResponse.BodyHandlers.ofString());
-        AddressDTO createdAddress = mapper.readValue(addressResponse.body(), new TypeReference<AddressDTO[]>() {})[0];
-        String addressId = createdAddress.getId();
 
+        AddressDTO[] addresses = mapper.readValue(addressResponse.body(), AddressDTO[].class);
+        AddressDTO createdAddress = addresses[0];
+        String addressId = createdAddress.getId();
         // 3. Business'a addressId ekle (PATCH)
         Map<String, Object> updateBusinessPayload = Map.of(
-                "address_id", addressId
+                "addresses", addressId
         );
+
         String updateBusinessJson = mapper.writeValueAsString(updateBusinessPayload);
 
         HttpRequest updateBusinessRequest = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "rest/v1/business?id=eq." + businessId))
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/business?id=eq." + businessId))
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                 .header("Content-Type", "application/json")
+                .header("Prefer", "return=minimal")
                 .method("PATCH", HttpRequest.BodyPublishers.ofString(updateBusinessJson))
                 .build();
 
         httpClient.send(updateBusinessRequest, HttpResponse.BodyHandlers.discarding());
+
+
 
         // 4. Owner profil güncelle (PATCH)
         Map<String, Object> profilePayload = Map.of(
@@ -218,19 +223,25 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                 "surname", request.getRequestOwner().getSurname(),
                 "phone_numb", request.getRequestOwner().getPhone_numb()
         );
+
         String profileJson = mapper.writeValueAsString(profilePayload);
 
+        //owner_id ile satırı bul. ilgili kolonun bilgilerini değiştir.
+        String column = "id";
+        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?select=" + column + "&owner_id=eq." + ownerId;
+
         HttpRequest profileRequest = HttpRequest.newBuilder()
-                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "rest/v1/user_profile_owner?user_id=eq." + ownerId))
+                .uri(URI.create(url))
                 .header("apikey", supabaseConfig.getSupabaseApiKey())
                 .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                 .header("Content-Type", "application/json")
+                .header("Prefer", "return=minimal")
                 .method("PATCH", HttpRequest.BodyPublishers.ofString(profileJson))
                 .build();
 
         httpClient.send(profileRequest, HttpResponse.BodyHandlers.discarding());
 
-        // Son olarak güncellenmiş business objesini döndür
+         //Son olarak güncellenmiş business objesini döndür
         createdBusiness.setAddress(addressId);
         return createdBusiness;
     }
