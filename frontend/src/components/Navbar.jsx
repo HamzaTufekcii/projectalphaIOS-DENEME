@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 import { FaUser, FaHeart, FaSignOutAlt, FaList } from 'react-icons/fa';
+import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
 
 const Navbar = () => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -96,6 +98,10 @@ const Navbar = () => {
         <div className="navbar-auth">
           {isLoggedIn ? (
             <div className="user-menu">
+              <button className="nav-link" onClick={() => setIsSettingsOpen(true)}>
+                <FaCog className="nav-icon" /> Ayarlar
+              </button>
+
               <Link 
                 to="/profile" 
                 className={`profile-link ${location.pathname.startsWith('/user') ? 'active' : ''}`}
@@ -114,6 +120,12 @@ const Navbar = () => {
           )}
         </div>
       </div>
+      <SettingsPopup
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onLogout={handleLogout}
+          onChangePassword={() => navigate('/change-password')}
+      />
     </nav>
   );
 };
