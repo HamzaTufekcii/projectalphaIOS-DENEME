@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
-import { FaUser, FaHeart, FaSignOutAlt, FaList } from 'react-icons/fa';
+import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
+import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog, FaStar } from 'react-icons/fa';
 
 const Navbar = () => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -89,6 +91,10 @@ const Navbar = () => {
               >
                 <FaList className="nav-icon" /> Listeler
               </Link>
+              <Link to="/reviews" className="nav-link">
+                <FaStar /> Değerlendirmeler
+              </Link>
+
             </>
           )}
         </div>
@@ -96,6 +102,14 @@ const Navbar = () => {
         <div className="navbar-auth">
           {isLoggedIn ? (
             <div className="user-menu">
+              <span
+                className={`nav-link ${isSettingsOpen ? 'active' : ''}`}
+                onClick={() => setIsSettingsOpen(true)}
+              >
+                <FaCog className="nav-icon" /> Ayarlar
+              </span>
+
+
               <Link 
                 to="/profile" 
                 className={`profile-link ${location.pathname.startsWith('/user') ? 'active' : ''}`}
@@ -114,6 +128,12 @@ const Navbar = () => {
           )}
         </div>
       </div>
+      <SettingsPopup
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onLogout={handleLogout}
+          onChangePassword={() => navigate('/change-password')}
+      />
     </nav>
   );
 };
