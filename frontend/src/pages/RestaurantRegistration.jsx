@@ -81,12 +81,22 @@ export default function RestaurantRegistration() {
             });
             setFormStep(2);
         } catch (err) {
-            setEmailError('Kod gönderilemedi: ' + (err.response?.data?.message || err.message));
+            if (err.response && err.response.data && err.response.data.message) {
+                if (err.response.data.message.includes("User is not verified")) {
+                    setCodeError('E-Postanı henüz doğrulamamışsın. Yeni kod e-postana yollandı.');
+                    setFormStep(2);
+                }
+                if(err.response.data.message.includes("Email is already registered")) {
+                    setEmailError('Bu e-posta ile oluşturulmuş bir hesap mevcut.');
+                } else {
+                    alert('E-posta gönderilemedi: ' + err.response.data.message);
+                }
+            } else if (err.message) {
+                alert('E-posta gönderilemedi: ' + err.message);
+            } else {
+                alert('E-posta gönderilemedi: Bilinmeyen bir hata oluştu.');
+            }
         }
-
-
-        // Şimdilik doğrudan ilerle
-
     };
 
     // Adım 2: Kod doğrulama (şimdilik kod girildiyse geçerli sayılır)
@@ -105,7 +115,13 @@ export default function RestaurantRegistration() {
             });
             setFormStep(3);
         } catch (err) {
-            setCodeError('Kod yanlış veya süresi geçmiş olabilir.');
+            const msg = err.response?.data?.message || err.message;
+            if (err.response.data.message.includes("Verification code is incorrect")) {
+                setCodeError('Onay kodu yanlış girildi. Lütfen tekrar deneyin.');
+            } else {
+                setCodeError('Doğrulama başarısız: ' + msg);
+            }
+            console.error(err);
         }
 
 
@@ -167,6 +183,7 @@ export default function RestaurantRegistration() {
             await axios.post('http://localhost:8080/api/auth/update-owner-user', requestBody);
 
             setSubmitted(true);
+            alert("Test aşamasında işletme profili şifresi otomatik olarak isletmetest olmaktadır.");
             setTimeout(() => {
                 setFormData({
                     ownerName: '', taxNo: '', name: '', email: '', phone: '',
@@ -179,17 +196,6 @@ export default function RestaurantRegistration() {
             console.error('Kayıt başarısız:', err);
             setErrors({ form: 'Kayıt sırasında hata oluştu: ' + (err.response?.data?.message || err.message) });
         }
-        /*console.log('Form submitted:', formData);
-        setSubmitted(true);
-
-        // Başarılıysa 3 saniye sonra anasayfaya yönlendir
-        setTimeout(() => {
-            setFormData({
-                ownerName: '', taxNo: '', name: '', email: '', phone: '', address: '', cuisine: ''
-            });
-            setSubmitted(false);
-            navigate('/');
-        }, 3000);*/
     };
 
     return (

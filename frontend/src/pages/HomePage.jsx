@@ -187,6 +187,7 @@ const HomePage = () => {
 
     // Login and registration functions
     const handleGoBack = () => {
+        resetForm();
         setShowThirdPopup(false);
         setShowPopup(true);
     };
@@ -261,6 +262,7 @@ const HomePage = () => {
 
     // Registration flow
     const handleRegister = async () => {
+
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir e-posta adresi girin.");
             return;
@@ -282,6 +284,8 @@ const HomePage = () => {
                 if (err.response.data.message.includes("User is not verified")) {
                     setError('E-Postanı henüz doğrulamamışsın. Yeni kod e-postana yollandı.');
                     openSecondPopup();
+                }if(err.response.data.message.includes("Email is already registered")) {
+                    alert('Bu e-posta ile oluşturulmuş bir hesap mevcut.');
                 } else {
                     alert('E-posta gönderilemedi: ' + err.response.data.message);
                 }
@@ -525,6 +529,8 @@ const HomePage = () => {
                 registerEmail={registerEmail}
                 setRegisterEmail={setRegisterEmail}
                 onSendCode={handleRegister}
+                error={error}
+                errors={error}
                 onBack={handleGoBack}
             />
 
