@@ -1,38 +1,25 @@
 package com.projectalpha.dto.user.diner;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.security.Timestamp;
+import lombok.Data;
 
-@Entity
-@Table(name = "user_profile_diner")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
 public class DinerUserProfile {
-    //ID değiştirilemez.
-    @Getter
-    @Id
-    @Column(name = "user_id")
-    private String userId;
 
-    @Getter
-    private String id; //değiştirilemez.
+    private String user_id;
 
-    @Setter
-    @Getter
+    private String id;
+
     private String name;
 
-    @Setter
-    @Getter
     private String phone_numb;
 
-    @Getter
-    private String email; //değiştirilemez.
+    private String email;
 
-    @Setter
-    @Getter
     private String surname;
 
-    @Getter
-    private Timestamp created_at; //değiştirilemez.
+    private String created_at;
+
 }

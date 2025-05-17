@@ -86,6 +86,7 @@ const MOCK_USER_REVIEWS = [
 
 const ProfilePage = () => {
   const { userId } = useParams();
+  const {role} = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [userProfile, setUserProfile] = useState(null);
@@ -110,8 +111,20 @@ const ProfilePage = () => {
       return null;
     }
   };
+  const getUserRoleFromStorage = () => {
+    const userJson = localStorage.getItem('user');
+    if (!userJson) return null;
+    try{
+      const userData = JSON.parse(userJson);
+      return userData.app_metadata.role || null;
+    }catch(e){
+      console.error('There is no role in token.', e);
+      return null;
+    }
+  }
   
-  const currentUserId = userId || getUserIdFromStorage();
+  const currentUserId = userId || getUserIdFromStorage().trim();
+  const currentUserRole = role || getUserRoleFromStorage().trim();
   
   useEffect(() => {
     // Verify auth
@@ -137,18 +150,19 @@ const ProfilePage = () => {
             'Authorization': `Bearer ${token}`
           }
         };
-        
         // Fetch user user
-        const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/profile`, config);
+        const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`);
+        console.log(profileResponse.data.email);
         setUserProfile(profileResponse.data);
         setEditFormData(profileResponse.data);
+
         
         // Fetch user lists
-        const listsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/lists`, config);
+        const listsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists`);
         setUserLists(listsResponse.data);
         
         // Fetch user reviews
-        const reviewsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/reviews`, config);
+        const reviewsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/reviews`);
         setUserReviews(reviewsResponse.data);
         
         setIsLoading(false);
@@ -164,8 +178,6 @@ const ProfilePage = () => {
         
         // For development, use mock data
         console.log('Using mock data for user page development');
-        setUserProfile(MOCK_USER_PROFILE);
-        setEditFormData(MOCK_USER_PROFILE);
         setUserLists(MOCK_USER_LISTS);
         setUserReviews(MOCK_USER_REVIEWS);
         setUseMockData(true);
@@ -179,9 +191,18 @@ const ProfilePage = () => {
   
   const handleProfileEdit = (e) => {
     e.preventDefault();
-    
+    const requestBody = {
+        email: editFormData.email.trim(),
+        role: currentUserRole,
+        requestDiner: {
+          name: editFormData.name.trim(),
+          surname: editFormData.surname.trim(),
+          phone_numb: editFormData.phone.trim(),
+        }
+      }
+
     // Save user changes
-    axios.put(`${API_BASE_URL}/users/${currentUserId}/profile`, editFormData)
+    axios.put(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`, requestBody)
       .then(response => {
         setUserProfile(editFormData);
         setIsEditing(false);

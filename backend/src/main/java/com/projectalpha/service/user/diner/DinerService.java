@@ -1,5 +1,6 @@
 package com.projectalpha.service.user.diner;
 
+import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ public interface DinerService {
      * Update dinerProfile
      *
      * @param userId dinerId
-     * @param profile dinerProfile
+     * @param request dinerProfile
      */
-    void updateProfile(String userId, DinerUserProfile profile);
+    void updateProfile(String userId, DinerUpdateRequest request);
 }

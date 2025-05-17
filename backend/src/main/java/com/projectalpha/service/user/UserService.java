@@ -3,6 +3,7 @@ package com.projectalpha.service.user;
 /*import com.projectalpha.dto.ListDTO;
 import com.projectalpha.dto.ReviewDTO;
 import com.projectalpha.dto.UserProfileDTO;*/
+import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.diner.DinerRepository;
@@ -39,8 +40,8 @@ public class UserService implements DinerService, OwnerService {
     }
 
     @Override
-    public void updateProfile(String userId, DinerUserProfile profile) {
-        dinerRepository.updateDinerProfile(userId, profile);
+    public void updateProfile(String userId, DinerUpdateRequest request) {
+        dinerRepository.updateDinerProfile(userId, request);
     }
 
     @Override

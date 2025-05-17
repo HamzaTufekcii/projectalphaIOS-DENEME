@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner;
 
+import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.ListDTO;
 import org.springframework.stereotype.Repository;
@@ -20,9 +21,9 @@ public interface DinerRepository {
      * update diners by their user_id (in database)
      *
      * @param userId The dinerId to search for
-     * @param profile dinerProfile
+     * @param request dinerProfile
      */
-    void updateDinerProfile(String userId, DinerUserProfile profile);
+    void updateDinerProfile(String userId, DinerUpdateRequest request);
     /**
      * Find diners' lists by their user_id (in database)
      *

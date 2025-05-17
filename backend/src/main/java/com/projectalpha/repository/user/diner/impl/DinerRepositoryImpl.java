@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.impl;
 
+import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.ListDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.repository.user.diner.DinerRepository;
@@ -14,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -31,8 +33,9 @@ public class DinerRepositoryImpl implements DinerRepository {
     @Override
     public Optional<DinerUserProfile> findDinerByID(String userId) {
         try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?user_id=eq." + userId))
+                    .uri(URI.create(url))
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
@@ -40,7 +43,6 @@ public class DinerRepositoryImpl implements DinerRepository {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
             if (response.statusCode() == 200) {
                 JsonNode root = mapper.readTree(response.body());
                 if (root.isArray() && root.size() > 0) {
@@ -55,35 +57,35 @@ public class DinerRepositoryImpl implements DinerRepository {
     }
 
     @Override
-    public void updateDinerProfile(String userId, DinerUserProfile profile) {
+    public void updateDinerProfile(String userId, DinerUpdateRequest request) {
         try {
-            // Güncellenebilir alanları JSON objesi yapıyoruz (id, email, created_at yok)
-            String body = mapper.writeValueAsString(new DinerUpdateDTO(profile));
+            Map<String, Object> profilePayload = Map.of(
+                    "name", request.getRequestDiner().getName(),
+                    "surname", request.getRequestDiner().getSurname(),
+                    "phone_numb", request.getRequestDiner().getPhone_numb()
+            );
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?user_id=eq." + userId))
+            String profileJson = mapper.writeValueAsString(profilePayload);
+
+            //user_id ile satırı bul. ilgili kolonun bilgilerini değiştir.
+            String column = "id";
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + column + "&user_id=eq." + userId;
+
+            HttpRequest profileRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
+                    .header("Prefer", "return=minimal")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(profileJson))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(profileRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
                 throw new RuntimeException("Update failed: " + response.body());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    } private static class DinerUpdateDTO {
-        public String name;
-        public String phone_numb;
-        public String surname;
-
-        public DinerUpdateDTO(DinerUserProfile profile) {
-            this.name = profile.getName();
-            this.phone_numb = profile.getPhone_numb();
-            this.surname = profile.getSurname();
         }
     }
 

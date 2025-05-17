@@ -375,7 +375,7 @@ const HomePage = () => {
             const role = "diner_user";
             const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
-            
+
             // Store tokens using authService
             saveAuthData(authData);
             
@@ -383,6 +383,7 @@ const HomePage = () => {
 
             // Force refresh to update UI
             window.location.reload();
+
         } catch (err) {
             console.error("Giriş hatası:", err);
 
