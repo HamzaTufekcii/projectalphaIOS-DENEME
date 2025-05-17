@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaArrowLeft, FaChevronLeft, FaChevronRight, FaTag, FaTimes, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import { getRestaurantById, getFavorites, toggleFavorite as toggleFavoriteService } from '../services/restaurantService';
 import '../styles/RestaurantDetailPage.css';
+import RestaurantReviews from "../components/RestaurantDetailComponents/RestaurantReviews.jsx";
 
 const RestaurantDetailPage = () => {
   const { id } = useParams();
@@ -420,7 +421,13 @@ const RestaurantDetailPage = () => {
               <p>Menü içeriği burada gösterilecektir.</p>
             </div>
           )}
-
+          {activeTab === 'reviews' && (
+              <div className="reviews-tab">
+                {/* Yorum Formu + Yorumlar bileşeni */}
+                <RestaurantReviews restaurantId={id} />
+              </div>
+          )}
+          {/*
           {activeTab === 'reviews' && (
             <div className="reviews-tab">
               <div className="reviews-summary">
@@ -511,6 +518,7 @@ const RestaurantDetailPage = () => {
               </div>
             </div>
           )}
+          */}
 
           {activeTab === 'photos' && (
             <div className="photos-tab">
