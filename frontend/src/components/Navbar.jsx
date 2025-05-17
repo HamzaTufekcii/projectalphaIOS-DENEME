@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
-import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog } from 'react-icons/fa';
+import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog, FaStar } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -91,6 +91,10 @@ const Navbar = () => {
               >
                 <FaList className="nav-icon" /> Listeler
               </Link>
+              <Link to="/reviews" className="nav-link">
+                <FaStar /> Değerlendirmeler
+              </Link>
+
             </>
           )}
         </div>
@@ -98,9 +102,13 @@ const Navbar = () => {
         <div className="navbar-auth">
           {isLoggedIn ? (
             <div className="user-menu">
-              <button className="nav-link" onClick={() => setIsSettingsOpen(true)}>
+              <span
+                className={`nav-link ${isSettingsOpen ? 'active' : ''}`}
+                onClick={() => setIsSettingsOpen(true)}
+              >
                 <FaCog className="nav-icon" /> Ayarlar
-              </button>
+              </span>
+
 
               <Link 
                 to="/profile" 

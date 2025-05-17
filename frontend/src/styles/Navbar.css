@@ -42,11 +42,15 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #ff5a5f;
+  background-color: #f8e5e0;
+  color: #f15a29;
+  border-radius: 4px;
 }
+
 
 .nav-link.active {
   color: #ff5a5f;
@@ -98,7 +102,8 @@
 }
 
 .profile-link:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #f8e5e0;
+    color: #f15a29;
 }
 
 .profile-link.active {
