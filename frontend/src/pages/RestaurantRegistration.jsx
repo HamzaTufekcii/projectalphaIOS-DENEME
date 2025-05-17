@@ -20,6 +20,7 @@ export default function RestaurantRegistration() {
     const [emailError, setEmailError] = useState('');
     const [codeError, setCodeError] = useState('');
 
+
     // Kayıt formu alanları
     const [formData, setFormData] = useState({
         ownerName: '',
@@ -32,6 +33,12 @@ export default function RestaurantRegistration() {
         addressNeighborhood: '',
         cuisine: ''
     });
+
+    const [name, surname] = formData.ownerName.trim().split(' ').reduce((acc, part, i, arr) => {
+        if (i === 0) acc[0] = part; // İlk kelime ismi
+        else acc[1] += (acc[1] ? ' ' : '') + part; // Geri kalanı soyadı gibi al
+        return acc;
+    }, ['', '']);
 
     // Hata mesajları ve kayıt durumu
     const [errors, setErrors] = useState({});
@@ -67,8 +74,7 @@ export default function RestaurantRegistration() {
             return;
         }
 
-        // Backend bağlandığında kullanılacak alan
-        /*
+
         try {
             await axios.post('http://localhost:8080/api/auth/send-verification-code', {
                 email: registerEmail.trim()
@@ -77,10 +83,10 @@ export default function RestaurantRegistration() {
         } catch (err) {
             setEmailError('Kod gönderilemedi: ' + (err.response?.data?.message || err.message));
         }
-        */
+
 
         // Şimdilik doğrudan ilerle
-        setFormStep(2);
+
     };
 
     // Adım 2: Kod doğrulama (şimdilik kod girildiyse geçerli sayılır)
@@ -91,8 +97,7 @@ export default function RestaurantRegistration() {
             return;
         }
 
-        // Backend bağlandığında kullanılacak alan
-        /*
+
         try {
             await axios.post('http://localhost:8080/api/auth/verify-verification-code', {
                 email: registerEmail.trim(),
@@ -102,14 +107,14 @@ export default function RestaurantRegistration() {
         } catch (err) {
             setCodeError('Kod yanlış veya süresi geçmiş olabilir.');
         }
-        */
+
 
         // Şimdilik doğrudan ilerle
-        setFormStep(3);
+
     };
 
     // Adım 3: Form gönderme işlemi ve kontrolleri
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let hasError = false;
         const newErrors = {};
 
@@ -138,8 +143,43 @@ export default function RestaurantRegistration() {
 
         // Tüm hataları aynı anda kullanıcıya göstermek için
         if (Object.keys(newErrors).length > 0) return;
+        try {
+            const requestBody = {
+                email: formData.email.trim(),
+                password: 'isletmetest', // Eğer kullanıcıdan almıyorsan default bir şifre gönder
+                role: 'owner_user',
+                requestBusiness: {
+                    name: formData.name.trim(),
+                    description: formData.cuisine.trim()
+                },
+                requestAddress: {
+                    city: formData.addressCity.trim(),
+                    district: formData.addressDistrict.trim(),
+                    neighborhood: formData.addressNeighborhood.trim()
+                },
+                requestOwner: {
+                    name,
+                    surname,
+                    phone_numb: formData.phone.trim()
+                }
+            };
 
-        console.log('Form submitted:', formData);
+            await axios.post('http://localhost:8080/api/auth/update-owner-user', requestBody);
+
+            setSubmitted(true);
+            setTimeout(() => {
+                setFormData({
+                    ownerName: '', taxNo: '', name: '', email: '', phone: '',
+                    addressCity: '', addressDistrict: '', addressNeighborhood: '', cuisine: ''
+                });
+                setSubmitted(false);
+                navigate('/');
+            }, 3000);
+        } catch (err) {
+            console.error('Kayıt başarısız:', err);
+            setErrors({ form: 'Kayıt sırasında hata oluştu: ' + (err.response?.data?.message || err.message) });
+        }
+        /*console.log('Form submitted:', formData);
         setSubmitted(true);
 
         // Başarılıysa 3 saniye sonra anasayfaya yönlendir
@@ -149,7 +189,7 @@ export default function RestaurantRegistration() {
             });
             setSubmitted(false);
             navigate('/');
-        }, 3000);
+        }, 3000);*/
     };
 
     return (

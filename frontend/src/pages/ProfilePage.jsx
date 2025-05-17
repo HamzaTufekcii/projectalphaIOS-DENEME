@@ -7,7 +7,7 @@ import { FaHeart, FaList, FaUser, FaEdit, FaCog, FaStar, FaExclamationCircle } f
 // Mock data - in production, this would come from the backend
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// Mock user profile data for development
+// Mock user user data for development
 const MOCK_USER_PROFILE = {
   id: 'user123',
   name: 'Ahmet',
@@ -114,7 +114,7 @@ const ProfilePage = () => {
   const currentUserId = userId || getUserIdFromStorage();
   
   useEffect(() => {
-    // Verify authentication
+    // Verify auth
     const token = localStorage.getItem('token');
     if (!token || !currentUserId) {
       navigate('/');
@@ -138,7 +138,7 @@ const ProfilePage = () => {
           }
         };
         
-        // Fetch user profile
+        // Fetch user user
         const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/profile`, config);
         setUserProfile(profileResponse.data);
         setEditFormData(profileResponse.data);
@@ -163,7 +163,7 @@ const ProfilePage = () => {
         }
         
         // For development, use mock data
-        console.log('Using mock data for profile page development');
+        console.log('Using mock data for user page development');
         setUserProfile(MOCK_USER_PROFILE);
         setEditFormData(MOCK_USER_PROFILE);
         setUserLists(MOCK_USER_LISTS);
@@ -180,14 +180,14 @@ const ProfilePage = () => {
   const handleProfileEdit = (e) => {
     e.preventDefault();
     
-    // Save profile changes
+    // Save user changes
     axios.put(`${API_BASE_URL}/users/${currentUserId}/profile`, editFormData)
       .then(response => {
         setUserProfile(editFormData);
         setIsEditing(false);
       })
       .catch(err => {
-        console.error('Error updating profile:', err);
+        console.error('Error updating user:', err);
         // In development, we'll just update the UI anyway
         setUserProfile(editFormData);
         setIsEditing(false);

@@ -1,14 +1,22 @@
 package com.projectalpha.service.auth;
 
+import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.thirdparty.SupabaseTokenResponse;
+import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
+import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.exception.auth.DuplicateEmailException;
 import com.projectalpha.exception.auth.UserNotFoundException;
 import com.projectalpha.exception.auth.UserNotVerifiedException;
 import com.projectalpha.exception.auth.WrongRoleLoginMethod;
 import com.projectalpha.repository.auth.AuthRepository;
 import com.projectalpha.repository.user.UserRepository;
+import com.projectalpha.repository.user.owner.OwnerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat.UUID;
 
 /**
  * Service for handling auth operations.
@@ -18,11 +26,13 @@ public class AuthService {
 
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
+    private final OwnerRepository ownerRepository;
 
     @Autowired
-    public AuthService(AuthRepository authRepository, UserRepository userRepository) {
+    public AuthService(AuthRepository authRepository, UserRepository userRepository, OwnerRepository ownerRepository) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
+        this.ownerRepository = ownerRepository;
     }
 
     /**
@@ -65,7 +75,7 @@ public class AuthService {
     }
 
     /**
-     * Updates a user's password and role.
+     * Updates a diner's password and role.
      * 
      * @param email The user's email
      * @param newPassword The new password to set
@@ -77,9 +87,38 @@ public class AuthService {
         if (userId == null) {
             throw new UserNotFoundException("User not found with email: " + email);
         }
+
         userRepository.createUserProfile(userId, email, role);
         userRepository.updateUserPasswordAndRole(userId, newPassword, role);
+
     }
+    /**
+     * Updates a owner's password and role.
+     *
+     * @param email The user's email
+     * @param newPassword The new password to set
+     * @param role The role to assign to the user
+     * @param request The request came from front-end
+     * @throws Exception If the update fails
+     */
+    public void updateUser(String email, String newPassword, String role, OwnerRegisterRequest request) throws Exception {
+        String userId = userRepository.findUserIdByEmail(email);
+        if (userId == null) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+
+        userRepository.createUserProfile(userId, email, role);
+
+        userRepository.updateUserPasswordAndRole(userId, newPassword, role);
+
+        // Sadece owner_user için business/address oluştur
+        if ("owner_user".equals(role)) {
+            Thread.sleep(300);
+            userId = userId.trim();
+            ownerRepository.createInitialBusinessForOwner(userId, request);
+        }
+    }
+
 
     /**
      * Authenticates a user with email and password.

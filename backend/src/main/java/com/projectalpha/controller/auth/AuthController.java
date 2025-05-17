@@ -2,6 +2,7 @@ package com.projectalpha.controller.auth;
 
 import com.projectalpha.dto.*;
 import com.projectalpha.dto.thirdparty.SupabaseTokenResponse;
+import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
 import com.projectalpha.exception.auth.*;
 import com.projectalpha.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +100,6 @@ public class AuthController {
             String email = body.get("email");
             String password = body.get("password");
             String role = body.get("role");
-            
             if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new GenericResponse(false, "Email and password are required"));
@@ -118,6 +118,29 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new GenericResponse(false, "Error updating user: " + e.getMessage()));
+        }
+    }
+    @PostMapping("/update-owner-user")
+    public ResponseEntity<GenericResponse> updateUser(@RequestBody OwnerRegisterRequest request) {
+        try {
+            if (request.getEmail() == null || request.getEmail().isEmpty() ||
+                    request.getPassword() == null || request.getPassword().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new GenericResponse(false, "Email and password are required"));
+            }
+
+            if (request.getRole() == null || request.getRole().isEmpty()) {
+                request.setRole("user");
+            }
+
+            authService.updateUser(request.getEmail(), request.getPassword(), request.getRole(), request);
+            return ResponseEntity.ok(new GenericResponse(true, "User updated successfully"));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericResponse(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new GenericResponse(false, "Error updating user: " + e.getMessage()));
         }
     }
     

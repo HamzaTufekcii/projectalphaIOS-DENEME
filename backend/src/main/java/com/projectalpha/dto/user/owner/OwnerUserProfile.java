@@ -11,8 +11,9 @@ import java.security.Timestamp;
 public class OwnerUserProfile {
     //ID değiştirilemez.
     @Getter
+    @Setter
     @Id
-    @Column(name = "user_id")
+    @Column(name = "owner_id")
     private String userId;
 
     @Getter
@@ -32,10 +33,6 @@ public class OwnerUserProfile {
     @Setter
     @Getter
     private String surname;
-
-    @Setter
-    @Getter
-    private String address;
 
     @Getter
     private Timestamp created_at; //değiştirilemez.

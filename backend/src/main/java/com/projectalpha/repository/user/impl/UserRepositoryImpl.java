@@ -3,6 +3,7 @@ package com.projectalpha.repository.user.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
+import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -107,7 +108,7 @@ public class UserRepositoryImpl implements UserRepository {
         if ("diner_user".equals(role)) {
             query = "INSERT INTO user_profile_diner (user_id, email) VALUES ('%s', '%s')".formatted(userId, email);
         } else if ("owner_user".equals(role)) {
-            query = "INSERT INTO user_profile_owner (user_id, email) VALUES ('%s', '%s')".formatted(userId, email);
+            query = "INSERT INTO user_profile_owner (owner_id, email) VALUES ('%s', '%s')".formatted(userId, email);
         } else {
             throw new IllegalArgumentException("Geçersiz kullanıcı rolü: " + role);
         }
@@ -125,6 +126,7 @@ public class UserRepositoryImpl implements UserRepository {
             throw new RuntimeException("Profil ekleme başarısız: " + response.body());
         }
     }
+
 
     @Override
     public void updateUserPasswordAndRole(String userId, String password, String role) throws Exception {

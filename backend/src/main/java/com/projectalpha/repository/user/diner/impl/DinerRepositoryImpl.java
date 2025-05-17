@@ -1,6 +1,6 @@
 package com.projectalpha.repository.user.diner.impl;
 
-import com.projectalpha.dto.ListDTO;
+import com.projectalpha.dto.user.diner.ListDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
@@ -79,13 +79,11 @@ public class DinerRepositoryImpl implements DinerRepository {
         public String name;
         public String phone_numb;
         public String surname;
-        public String address;
 
         public DinerUpdateDTO(DinerUserProfile profile) {
             this.name = profile.getName();
             this.phone_numb = profile.getPhone_numb();
             this.surname = profile.getSurname();
-            this.address = profile.getAddress();
         }
     }
 

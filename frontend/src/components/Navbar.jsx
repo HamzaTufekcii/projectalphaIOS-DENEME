@@ -45,7 +45,7 @@ const Navbar = () => {
   };
   
   const handleLogout = () => {
-    // Clear authentication data
+    // Clear auth data
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
@@ -98,7 +98,7 @@ const Navbar = () => {
             <div className="user-menu">
               <Link 
                 to="/profile" 
-                className={`profile-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
+                className={`profile-link ${location.pathname.startsWith('/user') ? 'active' : ''}`}
               >
                 <FaUser className="nav-icon" /> 
                 {user?.name || 'Profilim'}

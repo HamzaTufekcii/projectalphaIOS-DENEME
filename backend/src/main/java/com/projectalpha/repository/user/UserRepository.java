@@ -47,4 +47,5 @@ public interface UserRepository {
      * @param role The role to assign
      */
     void updateUserPasswordAndRole(String userId, String password, String role) throws Exception;
+
 } 

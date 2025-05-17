@@ -3,27 +3,12 @@ package com.projectalpha.controller.user;
 import com.projectalpha.controller.user.diner.DinerController;
 import com.projectalpha.controller.user.owner.OwnerController;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
-import com.projectalpha.dto.GenericResponse;
-import com.projectalpha.dto.UserProfileDTO;
-import com.projectalpha.dto.ListDTO;
 import com.projectalpha.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
-import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
-import com.projectalpha.service.user.diner.DinerService;
-import com.projectalpha.service.user.owner.OwnerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")

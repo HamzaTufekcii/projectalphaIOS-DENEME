@@ -33,10 +33,6 @@ public class DinerUserProfile {
     @Getter
     private String surname;
 
-    @Setter
-    @Getter
-    private String address;
-
     @Getter
     private Timestamp created_at; //değiştirilemez.
 }
