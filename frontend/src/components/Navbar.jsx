@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
-import { FaUser, FaHeart, FaSignOutAlt, FaList } from 'react-icons/fa';
 import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
+import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
