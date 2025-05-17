@@ -27,7 +27,6 @@ public class UserController implements DinerController, OwnerController {
     @Override
     @GetMapping("/diner_user/{userId}/profile")
     public ResponseEntity<?> getDinerProfile(@PathVariable(name = "userId", required = false) String userId) {
-        System.out.println(userId);
         return userService.getDinerProfileByUserId(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -37,7 +36,6 @@ public class UserController implements DinerController, OwnerController {
     @PutMapping("/diner_user/{userId}/profile")
     public ResponseEntity<?> updateDinerProfile(@PathVariable(name = "userId", required = false) String userId,
                                                 @RequestBody DinerUpdateRequest request) {
-        System.out.println(userId);
         userService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
     }

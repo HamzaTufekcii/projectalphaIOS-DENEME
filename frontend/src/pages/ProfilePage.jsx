@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/ProfilePage.css';
 import { FaEdit } from 'react-icons/fa';
@@ -17,20 +17,48 @@ const MOCK_USER_PROFILE = {
 };
 
 const ProfilePage = () => {
+  const { userId } = useParams();
+  const {role} = useParams();
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(false);
-const [isEditingEmail, setIsEditingEmail] = useState(false);
-const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
 
 const [passwordData, setPasswordData] = useState({
   currentPassword: '',
   newPassword: '',
   confirmPassword: ''
 });
+  const getUserIdFromStorage = () => {
+    const userJson = localStorage.getItem('user');
+    if (!userJson) return null;
+
+    try {
+      const userData = JSON.parse(userJson);
+      return userData.id || userData.userId || null;
+    } catch (e) {
+      console.error('Error parsing user data', e);
+      return null;
+    }
+  };
+  const getUserRoleFromStorage = () => {
+    const userJson = localStorage.getItem('user');
+    if (!userJson) return null;
+    try{
+      const userData = JSON.parse(userJson);
+      return userData.app_metadata.role || null;
+    }catch(e){
+      console.error('There is no role in token.', e);
+      return null;
+    }
+  }
+
+  const currentUserId = userId || getUserIdFromStorage().trim();
+  const currentUserRole = role || getUserRoleFromStorage().trim();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -46,14 +74,9 @@ const [passwordData, setPasswordData] = useState({
 
     const fetchUserData = async () => {
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        };
-        const response = await axios.get(`${API_BASE_URL}/users/${userId}/profile`, config);
-        setUserProfile(response.data);
-        setEditFormData(response.data);
+        const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`);
+        setUserProfile(profileResponse.data);
+        setEditFormData(profileResponse.data);
         setIsLoading(false);
       } catch (err) {
         console.error('Profil verisi alınamadı, mock veri kullanılacak:', err);
@@ -78,16 +101,21 @@ const handlePasswordChange = (e) => {
 
   const handleProfileEdit = async (e) => {
     e.preventDefault();
+    const requestBody = {
 
+      email: editFormData.email.trim(),
+      role: currentUserRole,
+
+      requestDiner: {
+        name: editFormData.name.trim(),
+        surname: editFormData.surname.trim(),
+        phone_numb: editFormData.phone_numb.trim(),
+      }
+
+    }
     try {
-      const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      };
-      await axios.put(`${API_BASE_URL}/users/${user.id}/profile`, editFormData, config);
+      axios.put(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`, requestBody);
+
       setUserProfile(editFormData);
       setIsEditing(false);
     } catch (err) {
@@ -132,8 +160,8 @@ const handlePasswordChange = (e) => {
               <label>Cep telefonu</label>
               <input
                 type="text"
-                name="phone"
-                value={editFormData.phone || ''}
+                name="phone_numb"
+                value={editFormData.phone_numb || ''}
                 onChange={handleInputChange}
                 disabled={!isEditing}
               />

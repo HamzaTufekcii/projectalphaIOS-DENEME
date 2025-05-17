@@ -22,9 +22,7 @@ const SettingsPopup = ({ isOpen, onClose, onLogout, onChangePassword }) => {
 
                 {/* Hesap Ayarları */}
                 <div className="settings-section">
-                    <h3>Hesap</h3>
-                    <Button onClick={onChangePassword}>Şifremi Değiştir</Button>
-                    <Button onClick={() => { onLogout(); onClose(); }}>Çıkış Yap</Button>
+
                 </div>
             </div>
         </Popup>
