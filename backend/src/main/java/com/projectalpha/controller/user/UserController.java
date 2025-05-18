@@ -4,6 +4,7 @@ import com.projectalpha.controller.user.diner.DinerController;
 import com.projectalpha.controller.user.diner.favorite.FavoritesController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
+import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
@@ -82,7 +83,7 @@ public class UserController implements DinerController, OwnerController, ListsCo
     public ResponseEntity<?> getDinerFavorites(@PathVariable(name = "userId") String userId) {
 
 
-        List<BusinessDTO> favorites =userService.getDinerFavorites(userId);
+        List<Business> favorites = userService.getDinerFavorites(userId);
         return ResponseEntity.ok(favorites);
     }
     @Override

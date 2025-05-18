@@ -3,6 +3,7 @@ package com.projectalpha.service.user;
 /*import com.projectalpha.dto.ListDTO;
 import com.projectalpha.dto.ReviewDTO;
 import com.projectalpha.dto.UserProfileDTO;*/
+import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
@@ -54,7 +55,7 @@ public class UserService implements DinerService, OwnerService {
         ownerRepository.updateOwnerProfile(userId, profile);
     }
     @Override
-    public List<BusinessDTO> getDinerFavorites(String userId) {
+    public List<Business> getDinerFavorites(String userId) {
         return favoritesRepository.getDinerFavorites(userId);
     }
 }

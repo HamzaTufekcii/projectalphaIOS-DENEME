@@ -105,13 +105,14 @@ const FavoritesPage = () => {
         };
         
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists`);
+        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/favorites`);
         console.log(response.statusCode);
         // Find the favorites list
-        const favList = response.data.find(list => list.isFavorites);
+        const favList = response.data;
+        console.log(response.data);
         
         if (favList) {
-          setFavorites(favList.businesses || []);
+          setFavorites(favList || []);
         } else {
           setFavorites([]);
         }

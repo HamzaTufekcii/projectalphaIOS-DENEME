@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.impl;
 
+import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
@@ -95,9 +96,8 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
             throw new RuntimeException(e);
         }
     }
-
     @Override
-    public List<CustomList> getDinerLists(String userId) {
+    public List<BusinessDTO> getDinerListItems(String userId, String listItemId){
         try {
             // 1. "Favorilerim" listesi ID'sini al
             String listUrl = supabaseConfig.getSupabaseUrl() +
@@ -203,8 +203,12 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
             e.printStackTrace();
             return new ArrayList<>();
         }
-        return null;
+    }
 
+    @Override
+    public List<CustomList> getDinerLists(String userId) {
+        // TODO: Implement this method to create a new list for userId in Supabase
+        return null;
     }
 
     @Override
@@ -237,10 +241,81 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
     }
 
     @Override
-    public List<BusinessDTO> getDinerFavorites(String userId) {
+    public List<Business> getDinerFavorites(String userId) {
+        try {
+            String column = "id";
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + column + "&user_id=eq." + userId;
+
+            HttpRequest profileRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=minimal")
+                    .GET()
+                    .build();
+            HttpResponse<String> profileResponse = httpClient.send(profileRequest, HttpResponse.BodyHandlers.ofString());
+            DinerUserProfile[] gettingId = mapper.readValue(profileResponse.body(), DinerUserProfile[].class);
+            String dinerId = gettingId[0].getId();
+
+            String column2 = "business_id";
+            String favoritesUrl = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?select=" + column2 + "&diner_id=eq." + dinerId;
+
+            HttpRequest listRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(favoritesUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> listResponse = httpClient.send(listRequest, HttpResponse.BodyHandlers.ofString());
+
+            JsonNode itemsRoot = mapper.readTree(listResponse.body());
+            List<String> businessIds = new ArrayList<>();
+            for (JsonNode node : itemsRoot) {
+                if (node.has("business_id")) {
+                    businessIds.add(node.get("business_id").asText());
+                }
+            }
+
+            String businessIdQuery = String.join(",", businessIds);
+
+            String businessUrl = supabaseConfig.getSupabaseUrl() +
+                    "/rest/v1/business?select=*&id=in.(" + businessIdQuery + ")";
 
 
+            HttpRequest businessRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(businessUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
 
+            HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
+
+
+            if (businessResponse.statusCode() != 200) {
+                throw new RuntimeException("İşletme bilgileri alınamadı: " + businessResponse.body());
+            }
+
+            JsonNode businessRoot = mapper.readTree(businessResponse.body());
+            List<Business> businesses = new ArrayList<>();
+            if (businessRoot.isArray()) {
+                for (JsonNode node : businessRoot) {
+                    Business business = mapper.treeToValue(node, Business.class);
+                    businesses.add(business);
+                }
+            }
+
+            return businesses;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 
 }
