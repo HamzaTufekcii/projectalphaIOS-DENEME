@@ -31,6 +31,7 @@ export default function RestaurantRegistration() {
         addressCity: '',
         addressDistrict: '',
         addressNeighborhood: '',
+        addressStreet: '',
         cuisine: ''
     });
 
@@ -171,7 +172,8 @@ export default function RestaurantRegistration() {
                 requestAddress: {
                     city: formData.addressCity.trim(),
                     district: formData.addressDistrict.trim(),
-                    neighborhood: formData.addressNeighborhood.trim()
+                    neighborhood: formData.addressNeighborhood.trim(),
+                    street: formData.addressStreet.trim()
                 },
                 requestOwner: {
                     name,
@@ -187,7 +189,7 @@ export default function RestaurantRegistration() {
             setTimeout(() => {
                 setFormData({
                     ownerName: '', taxNo: '', name: '', email: '', phone: '',
-                    addressCity: '', addressDistrict: '', addressNeighborhood: '', cuisine: ''
+                    addressCity: '', addressDistrict: '', addressNeighborhood: '',addressStreet:'',cuisine: ''
                 });
                 setSubmitted(false);
                 navigate('/');
@@ -380,6 +382,18 @@ export default function RestaurantRegistration() {
                                                 placeholder="Mahalle"
                                                 name="addressNeighborhood"
                                                 value={formData.addressNeighborhood}
+                                                onChange={handleChange}
+                                                className="component-input input-style"
+                                            />
+                                        </div>
+
+                                        <div className="input-container">
+                                            <span className="input-icon">📍</span>
+                                            <CustomInput
+                                                type="text"
+                                                placeholder="Sokak"
+                                                name="addressStreet"
+                                                value={formData.addressStreet}
                                                 onChange={handleChange}
                                                 className="component-input input-style"
                                             />
