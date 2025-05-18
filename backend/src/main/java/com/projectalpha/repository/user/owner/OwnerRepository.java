@@ -48,7 +48,6 @@ public interface OwnerRepository {
      * Owner kullanıcısı için kayıt sırasında otomatik olarak
      * yeni bir Business ve Address oluşturur
      * ve Owner'e isim soyisim telefon numarası bilgisi ekler.
-     *
      *  Uyarı: Owner profil oluşturulmuş var sayılır. (createUserProfile(..., ..., role: 'owner_user'))
      *  ----
      *  1-Supabasede Yeni Business kaydı yaratır (sadece adıyla) ve ownerId ile bağlar. (yani gelen ownerId ve name'yi databaseye yeni bir business satırının içine ekler.)

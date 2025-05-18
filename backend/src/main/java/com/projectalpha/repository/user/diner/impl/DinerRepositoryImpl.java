@@ -1,12 +1,16 @@
 package com.projectalpha.repository.user.diner.impl;
 
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
-import com.projectalpha.dto.user.diner.ListDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
+import com.projectalpha.dto.user.diner.custom_lists.CustomList;
+import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
+import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
-public class DinerRepositoryImpl implements DinerRepository {
+public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository, ListRepository {
 
     private final SupabaseConfig supabaseConfig;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -90,26 +94,42 @@ public class DinerRepositoryImpl implements DinerRepository {
     }
 
     @Override
-    public List<ListDTO> findListsByUserId(String userId) {
+    public List<CustomList> getDinerLists(String userId) {
         // TODO: Implement this method to fetch lists by userId from Supabase
         return null;
     }
 
     @Override
-    public ListDTO createList(String userId, String listName) {
+    public CustomList createList(String userId, CustomListRequest createRequest) {
         // TODO: Implement this method to create a new list for userId in Supabase
         return null;
     }
-
     @Override
-    public void addBusinessToList(String userId, String listId, String businessId) {
-        // TODO: Implement this method to add a business to a list in Supabase
+    public void updateDinerList(String userId, String listId, CustomListRequest updateRequest){
+        // TODO: Implement this method to update a list owned by diner
     }
 
     @Override
-    public void removeBusinessFromList(String userId, String listId, String businessId) {
+    public void addDinerFavoriteItem(String userId, String listItemId, String listId) {
+        // TODO: Implement this method to add a business to a list in Supabase
+    }
+    @Override
+    public void createFavoriteItem(String userId, CustomListItemRequest createRequest) {
+        // TODO: Implement this method to add a business to favorites in Supabase
+    }
+
+    @Override
+    public void removeDinerFavoriteItem(String userId, String listItemId) {
         // TODO: Implement this method to remove a business from a list in Supabase
     }
 
-
+    @Override
+    public void removeDinerList(String userId, String listId){
+        // TODO: Implement this method to remove a business from favorites in Supabase
+    }
+    @Override
+    public List<CustomList> getDinerFavorites(String userId){
+        // TODO: Implement this method to get a favorites from Supabase
+        return null;
+    }
 }

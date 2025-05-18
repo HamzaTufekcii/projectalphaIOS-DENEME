@@ -7,15 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 public interface DinerController {
 
-    //@GetMapping("/diner_user/{userId}/profile")
-    ResponseEntity<?> getDinerProfile(@PathVariable(name = "userId") String userId);
+    ResponseEntity<?> getDinerProfile(@PathVariable String userId);
 
-    //@PutMapping("/{userId}/profile")
-    ResponseEntity<?> updateDinerProfile(@PathVariable(name = "userId") String userId, @RequestBody DinerUpdateRequest request);
+    ResponseEntity<?> updateDinerProfile(@PathVariable String userId, @RequestBody DinerUpdateRequest request);
 
-    //@GetMapping("/{userId}/lists")
-    ResponseEntity<?> getDinerLists(@PathVariable(name = "userId") String userId);
-
-    //@PostMapping("/{userId}/lists")
-    ResponseEntity<?> createDinerList(@PathVariable(name = "userId") String userId, @RequestBody Object body);
 }
