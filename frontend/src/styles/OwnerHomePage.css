@@ -1,0 +1,168 @@
+/* Ana konteyner, ekranın tamamını kapsar */
+.dashboard-container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+/* Üst bar (başlık) */
+.dashboard-header {
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Başlık içeriği */
+.dashboard-header-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Restoran ismi başlık */
+.dashboard-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #111827;
+}
+
+/* Alt başlık */
+.dashboard-subtitle {
+    color: #6b7280;
+}
+
+/* Çıkış butonu */
+.logout-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5563;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.logout-button:hover {
+    color: #111827;
+}
+
+/* Ana içerik bölgesi */
+.dashboard-main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+/* Kartların ızgarası */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+/* Kart yapısı */
+.dashboard-card {
+    background-color: white;
+    border-left: 4px solid transparent;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+/* Kart içeriği */
+.card-content {
+    padding: 24px;
+}
+
+/* Kart başlığı */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.chevron-icon {
+    color: #9ca3af;
+}
+
+/* Kartın gövdesi (istatistik ve açıklama) */
+.card-body {
+    margin-top: 24px;
+}
+
+.card-count {
+    font-size: 28px;
+    font-weight: bold;
+    color: #111827;
+}
+
+.card-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Renk temaları */
+/* Sarı kart */
+.card-yellow {
+    border-color: #fde68a;
+    background-color: #fefce8;
+}
+.card-yellow:hover {
+    background-color: #fef9c3;
+}
+
+/* Mavi kart */
+.card-blue {
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+}
+.card-blue:hover {
+    background-color: #dbeafe;
+}
+
+/* Yeşil kart */
+.card-green {
+    border-color: #bbf7d0;
+    background-color: #ecfdf5;
+}
+.card-green:hover {
+    background-color: #d1fae5;
+}
+
+/* Mor kart */
+.card-purple {
+    border-color: #ddd6fe;
+    background-color: #f5f3ff;
+}
+.card-purple:hover {
+    background-color: #ede9fe;
+}
+
+/* İkon renkleri */
+.icon-yellow {
+    color: #facc15;
+}
+
+.icon-blue {
+    color: #3b82f6;
+}
+
+.icon-green {
+    color: #10b981;
+}
+
+.icon-purple {
+    color: #8b5cf6;
+}

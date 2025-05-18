@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { 
   FaStar, 
   FaSearch, 
@@ -66,7 +66,8 @@ const HomePage = () => {
     // Featured restaurants
     const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
     const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
-    
+    const navigate = useNavigate();
+
     // Expose this component instance to be accessed by Navbar
     useEffect(() => {
         // Bileşeni global olarak erişilebilir yap
@@ -427,7 +428,7 @@ const HomePage = () => {
             
             console.log('İşletme girişi başarılı');
             closePopup();
-
+            navigate('/owner-dashboard'); // OwnerHomepage'e yönlendir
             // Force refresh to update UI
             window.location.reload();
         } catch (err) {
