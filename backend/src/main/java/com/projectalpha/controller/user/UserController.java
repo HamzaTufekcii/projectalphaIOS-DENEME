@@ -4,6 +4,8 @@ import com.projectalpha.controller.user.diner.DinerController;
 import com.projectalpha.controller.user.diner.favorite.FavoritesController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
+import com.projectalpha.dto.business.Business;
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
@@ -13,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -71,13 +75,16 @@ public class UserController implements DinerController, OwnerController, ListsCo
                                              @PathVariable(name = "listId") String listId) {
         return ResponseEntity.status(501).body("removeDinerList() not implemented");
     }
-    //--- DinerFavorite implementations ---
+    //BURADASIN--- DinerFavorite implementations ---
 
 
     @Override
     @GetMapping("/diner_user/{userId}/favorites")
     public ResponseEntity<?> getDinerFavorites(@PathVariable(name = "userId") String userId) {
-        return ResponseEntity.status(501).body("getDinerFavorites() not implemented");
+
+
+        List<Business> favorites = userService.getDinerFavorites(userId);
+        return ResponseEntity.ok(favorites);
     }
     @Override
     @PostMapping("/diner_user/{userId}/favorites")

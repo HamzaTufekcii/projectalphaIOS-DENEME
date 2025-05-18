@@ -1,8 +1,11 @@
 package com.projectalpha.service.user.diner;
 
+import com.projectalpha.dto.business.Business;
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DinerService {
@@ -20,4 +23,6 @@ public interface DinerService {
      * @param request dinerProfile
      */
     void updateProfile(String userId, DinerUpdateRequest request);
+    //yorum kısmını yap!
+    List<Business> getDinerFavorites(String userId);
 }

@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.custom_lists;
 
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 
@@ -14,6 +15,13 @@ public interface ListRepository {
      * @return The diner's lists
      */
     List<CustomList> getDinerLists(String userId);
+    /**
+     * Find diners' lists by their user_id (in database)
+     * getDinerListItems(@PathVariable String userId)
+     * @param userId The dinerId to search for
+     * @return The diner's lists
+     */
+    List<BusinessDTO> getDinerListItems(String userId, String listItemId);
 
     /**
      * Let diners create a new list by their user_id (in database)

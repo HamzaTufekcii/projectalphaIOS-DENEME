@@ -79,7 +79,7 @@ const Navbar = () => {
       const profileResponse = await axios.get(`${API_BASE_URL}/users/${role}/${id}/profile`);
       setUser(profileResponse.data);
     } catch (e) {
-        console.log("sex");
+        console.log("Test");
     }
   }
 
