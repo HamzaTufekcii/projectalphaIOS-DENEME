@@ -80,6 +80,8 @@ public class UserController implements DinerController, OwnerController, ListsCo
     @Override
     @GetMapping("/diner_user/{userId}/favorites")
     public ResponseEntity<?> getDinerFavorites(@PathVariable(name = "userId") String userId) {
+
+
         List<BusinessDTO> favorites =userService.getDinerFavorites(userId);
         return ResponseEntity.ok(favorites);
     }
