@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.impl;
 
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
@@ -18,9 +19,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository, ListRepository {
@@ -128,8 +131,97 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
         // TODO: Implement this method to remove a business from favorites in Supabase
     }
     @Override
-    public List<CustomList> getDinerFavorites(String userId){
-        // TODO: Implement this method to get a favorites from Supabase
-        return null;
+    public List<BusinessDTO> getDinerFavorites(String userId){
+        try {
+            // 1. Adım: "Favorilerim" listesi ID'sini al
+            String listUrl = supabaseConfig.getSupabaseUrl() +
+                    "/rest/v1/custom_list?select=id&user_profile_diner_id=eq." + userId + "&name=eq.ilike.Favorilerim";
+
+            HttpRequest listRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(listUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> listResponse = httpClient.send(listRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (listResponse.statusCode() != 200) {
+                throw new RuntimeException("Liste alınamadı: " + listResponse.body());
+            }
+
+            JsonNode listRoot = mapper.readTree(listResponse.body());
+            if (!listRoot.isArray() || listRoot.size() == 0) {
+                return new ArrayList<>(); // Favorilerim listesi yoksa boş dön
+            }
+
+            String listId = listRoot.get(0).get("id").asText();
+
+            // 2. Adım: Listeye ait işletme ID'lerini çek
+            String itemsUrl = supabaseConfig.getSupabaseUrl() +
+                    "/rest/v1/custom_list_item?select=business_id&list_id=eq." + listId;
+
+            HttpRequest itemsRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(itemsUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> itemsResponse = httpClient.send(itemsRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (itemsResponse.statusCode() != 200) {
+                throw new RuntimeException("Favori işletmeler alınamadı: " + itemsResponse.body());
+            }
+
+            JsonNode itemsRoot = mapper.readTree(itemsResponse.body());
+            if (!itemsRoot.isArray() || itemsRoot.size() == 0) {
+                return new ArrayList<>(); // Hiç favori yoksa boş dön
+            }
+
+            List<String> businessIds = new ArrayList<>();
+            for (JsonNode node : itemsRoot) {
+                businessIds.add(node.get("business_id").asText());
+            }
+
+            // 3. Adım: Supabase'den işletme bilgilerini toplu çek (IN sorgusu)
+            String businessQuery = businessIds.stream()
+                    .map(id -> "\"" + id + "\"")
+                    .collect(Collectors.joining(","));
+
+            String businessUrl = supabaseConfig.getSupabaseUrl() +
+                    "/rest/v1/business?select=*&id=in.(" + businessQuery + ")";
+
+            HttpRequest businessRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(businessUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (businessResponse.statusCode() != 200) {
+                throw new RuntimeException("İşletme bilgileri alınamadı: " + businessResponse.body());
+            }
+
+            JsonNode businessRoot = mapper.readTree(businessResponse.body());
+            List<BusinessDTO> businesses = new ArrayList<>();
+            if (businessRoot.isArray()) {
+                for (JsonNode node : businessRoot) {
+                    BusinessDTO business = mapper.treeToValue(node, BusinessDTO.class);
+                    businesses.add(business);
+                }
+            }
+
+            return businesses;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 }

@@ -3,16 +3,19 @@ package com.projectalpha.service.user;
 /*import com.projectalpha.dto.ListDTO;
 import com.projectalpha.dto.ReviewDTO;
 import com.projectalpha.dto.UserProfileDTO;*/
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.diner.DinerRepository;
+import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
 import com.projectalpha.repository.user.owner.OwnerRepository;
 import com.projectalpha.service.user.diner.DinerService;
 import com.projectalpha.service.user.owner.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 //import java.util.List;
@@ -22,11 +25,13 @@ public class UserService implements DinerService, OwnerService {
 
     private final DinerRepository dinerRepository;
     private final OwnerRepository ownerRepository;
+    private final FavoritesRepository favoritesRepository;
 
     @Autowired
-    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository) {
+    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, FavoritesRepository favoritesRepository) {
         this.dinerRepository = dinerRepository;
         this.ownerRepository = ownerRepository;
+        this.favoritesRepository = favoritesRepository;
     }
 
     @Override
@@ -48,7 +53,10 @@ public class UserService implements DinerService, OwnerService {
     public void updateProfile(String userId, OwnerUserProfile profile) {
         ownerRepository.updateOwnerProfile(userId, profile);
     }
-
+    @Override
+    public List<BusinessDTO> getDinerFavorites(String userId) {
+        return favoritesRepository.getDinerFavorites(userId);
+    }
 }
 
 

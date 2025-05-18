@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.custom_lists.listItem;
 
+import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItem;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
@@ -13,7 +14,7 @@ public interface FavoritesRepository {
      * @param userId The dinerId to search for
      * @return The diner's lists
      */
-    List<CustomList> getDinerFavorites(String userId);
+    List<BusinessDTO> getDinerFavorites(String userId);
     /**
      * Find diners' lists by their user_id (in database)
      * removeDinerFavoriteItem(@PathVariable String userId, @PathVariable String listItemId)
