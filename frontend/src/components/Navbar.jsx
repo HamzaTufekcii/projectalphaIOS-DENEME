@@ -117,14 +117,15 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-links">
-          <Link 
-            to="/" 
+
+          <Link
+              to={currentUserRole === 'owner_user' ? "/owner-dashboard" : "/"}
             className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
           >
             Ana Sayfa
           </Link>
           
-          {isLoggedIn && (
+          {isLoggedIn && currentUserRole !== 'owner_user' && (
             <>
               <Link 
                 to="/favorites" 
