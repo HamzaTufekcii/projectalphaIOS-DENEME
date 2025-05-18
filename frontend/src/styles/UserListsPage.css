@@ -222,6 +222,52 @@
 .error-message {
   color: #e74c3c;
 }
+/* Toggle Sekmesi (KEŞFET / LİSTELERİM) */
+.tab-options {
+  position: relative;
+  display: flex;
+  width: 320px;
+  height: 40px;
+  background: #ffeaea;
+  border-radius: 25px;
+  overflow: hidden;
+  margin: 16px auto;
+}
+
+.tab-option {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-weight: bold;
+  color: #ff7f7f;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.tab-option.active {
+  color: white;
+}
+
+.tab-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: #ff7f7f;
+  border-radius: 25px;
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+
+.tab-background.mine {
+  left: 50%;
+}
+
+.tab-background.discover {
+  left: 0%;
+}
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {

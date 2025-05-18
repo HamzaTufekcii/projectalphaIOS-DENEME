@@ -1,6 +1,6 @@
 /**
  * Authentication Service
- * Handles all API calls related to authentication
+ * Handles all API calls related to auth
  */
 import axios from 'axios';
 
@@ -82,7 +82,7 @@ export const login = async (email, password, role) => {
 };
 
 /**
- * Save authentication data to local storage
+ * Save auth data to local storage
  * @param {Object} authData - Auth data with tokens and user info
  */
 export const saveAuthData = (authData) => {
@@ -92,7 +92,7 @@ export const saveAuthData = (authData) => {
 };
 
 /**
- * Get authentication data from local storage
+ * Get auth data from local storage
  * @returns {Object} Auth data with token and user info
  */
 export const getAuthData = () => {
@@ -104,7 +104,7 @@ export const getAuthData = () => {
 };
 
 /**
- * Clear authentication data from local storage (logout)
+ * Clear auth data from local storage (logout)
  */
 export const logout = () => {
   localStorage.removeItem('token');

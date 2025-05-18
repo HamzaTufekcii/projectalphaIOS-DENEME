@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { 
   FaStar, 
   FaSearch, 
@@ -66,7 +66,8 @@ const HomePage = () => {
     // Featured restaurants
     const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
     const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
-    
+    const navigate = useNavigate();
+
     // Expose this component instance to be accessed by Navbar
     useEffect(() => {
         // Bileşeni global olarak erişilebilir yap
@@ -187,6 +188,7 @@ const HomePage = () => {
 
     // Login and registration functions
     const handleGoBack = () => {
+        resetForm();
         setShowThirdPopup(false);
         setShowPopup(true);
     };
@@ -261,6 +263,7 @@ const HomePage = () => {
 
     // Registration flow
     const handleRegister = async () => {
+
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir e-posta adresi girin.");
             return;
@@ -282,6 +285,8 @@ const HomePage = () => {
                 if (err.response.data.message.includes("User is not verified")) {
                     setError('E-Postanı henüz doğrulamamışsın. Yeni kod e-postana yollandı.');
                     openSecondPopup();
+                }if(err.response.data.message.includes("Email is already registered")) {
+                    alert('Bu e-posta ile oluşturulmuş bir hesap mevcut.');
                 } else {
                     alert('E-posta gönderilemedi: ' + err.response.data.message);
                 }
@@ -371,7 +376,7 @@ const HomePage = () => {
             const role = "diner_user";
             const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
-            
+
             // Store tokens using authService
             saveAuthData(authData);
             
@@ -379,6 +384,7 @@ const HomePage = () => {
 
             // Force refresh to update UI
             window.location.reload();
+
         } catch (err) {
             console.error("Giriş hatası:", err);
 
@@ -422,7 +428,7 @@ const HomePage = () => {
             
             console.log('İşletme girişi başarılı');
             closePopup();
-
+            navigate('/owner-dashboard'); // OwnerHomepage'e yönlendir
             // Force refresh to update UI
             window.location.reload();
         } catch (err) {
@@ -525,6 +531,8 @@ const HomePage = () => {
                 registerEmail={registerEmail}
                 setRegisterEmail={setRegisterEmail}
                 onSendCode={handleRegister}
+                error={error}
+                errors={error}
                 onBack={handleGoBack}
             />
 

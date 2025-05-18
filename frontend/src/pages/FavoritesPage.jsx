@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import axios from 'axios';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
@@ -41,12 +41,39 @@ const MOCK_DATA = [
 ];
 
 const FavoritesPage = () => {
+  const { userId } = useParams();
+  const {role} = useParams();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
+  const getUserIdFromStorage = () => {
+    const userJson = localStorage.getItem('user');
+    if (!userJson) return null;
+
+    try {
+      const userData = JSON.parse(userJson);
+      return userData.id || userData.userId || null;
+    } catch (e) {
+      console.error('Error parsing user data', e);
+      return null;
+    }
+  };
+  const getUserRoleFromStorage = () => {
+    const userJson = localStorage.getItem('user');
+    if (!userJson) return null;
+    try{
+      const userData = JSON.parse(userJson);
+      return userData.app_metadata.role || null;
+    }catch(e){
+      console.error('There is no role in token.', e);
+      return null;
+    }
+  }
+  const currentUserId = userId || getUserIdFromStorage();
+  const currentUserRole = role || getUserRoleFromStorage();
 
   useEffect(() => {
     // Check if user is logged in
@@ -62,30 +89,12 @@ const FavoritesPage = () => {
       return true;
     };
 
-    const getUserId = () => {
-      const userJson = localStorage.getItem('user');
-      if (!userJson) return null;
-      
-      try {
-        const userData = JSON.parse(userJson);
-        return userData.id || userData.userId || null;
-      } catch (e) {
-        console.error('Error parsing user data', e);
-        return null;
-      }
-    };
     
     const fetchFavorites = async () => {
       setIsLoading(true);
       
       if (!checkAuth()) return;
-      
-      const userId = getUserId();
-      if (!userId) {
-        setError('Kullanıcı bilgileri bulunamadı. Lütfen tekrar giriş yapın.');
-        setIsLoading(false);
-        return;
-      }
+
       
       try {
         // Configure request with auth header
@@ -96,13 +105,14 @@ const FavoritesPage = () => {
         };
         
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${userId}/lists`, config);
-        
+        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/favorites`);
+        console.log(response.statusCode);
         // Find the favorites list
-        const favList = response.data.find(list => list.isFavorites);
+        const favList = response.data;
+        console.log(response.data);
         
         if (favList) {
-          setFavorites(favList.businesses || []);
+          setFavorites(favList || []);
         } else {
           setFavorites([]);
         }
