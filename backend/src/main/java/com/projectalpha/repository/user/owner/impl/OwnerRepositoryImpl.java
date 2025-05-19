@@ -1,10 +1,14 @@
 package com.projectalpha.repository.user.owner.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.business.address.AddressDTO;
+import com.projectalpha.dto.user.diner.DinerUserProfile;
+import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
+import com.projectalpha.exception.auth.UserNotFoundException;
 import com.projectalpha.repository.user.owner.OwnerRepository;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,10 +37,10 @@ public class OwnerRepositoryImpl implements OwnerRepository {
     }
 
     @Override
-    public Optional<OwnerUserProfile> findOwnerByID(String userId) {
+    public Optional<OwnerLoginResponse> findOwnerByID(String userId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?user_id=eq." + userId))
+                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?owner_id=eq." + userId))
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
@@ -49,13 +53,43 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                 JsonNode root = mapper.readTree(response.body());
                 if (root.isArray() && root.size() > 0) {
                     OwnerUserProfile profile = mapper.treeToValue(root.get(0), OwnerUserProfile.class);
-                    return Optional.of(profile);
+                    Business businessProfile = getBusinessProfile(userId);
+
+                    OwnerLoginResponse responseProfile = new OwnerLoginResponse(profile, businessProfile);
+
+                    System.out.println(businessProfile);
+                    return Optional.of(responseProfile) ;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+    @Override
+    public Business getBusinessProfile(String ownerId){
+        try {
+            String businessUrl = supabaseConfig.getSupabaseUrl() +
+                      "/rest/v1/business?select=*" + "&owner_id1=eq." + ownerId;
+
+            HttpRequest businessRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(businessUrl))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
+            Business[] businesses = mapper.readValue(businessResponse.body(), Business[].class);
+            return businesses[0];
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.projectalpha.service.user.owner;
 
+import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 
 import java.util.Optional;
@@ -11,7 +12,7 @@ public interface OwnerService {
      * @param userId The ID of the user
      * @return User user data
      */
-    Optional<OwnerUserProfile> getOwnerProfileByUserId(String userId);
+    Optional<OwnerLoginResponse> getOwnerProfileByUserId(String userId);
 
     /**
      * Update ownerProfile

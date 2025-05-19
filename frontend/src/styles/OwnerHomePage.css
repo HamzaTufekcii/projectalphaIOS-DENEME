@@ -10,6 +10,10 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.error-message {
+    color: #e74c3c;
+}
+
 /* Başlık içeriği */
 .dashboard-header-content {
     max-width: 1280px;
@@ -166,3 +170,4 @@
 .icon-purple {
     color: #8b5cf6;
 }
+

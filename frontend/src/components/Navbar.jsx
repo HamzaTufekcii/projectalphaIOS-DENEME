@@ -3,58 +3,31 @@ import {Link, useLocation, useNavigate, useParams} from 'react-router-dom';
 import '../styles/Navbar.css';
 import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
 import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog, FaStar } from 'react-icons/fa';
+import {getUserRoleFromStorage} from '../services/userService';
 import axios from 'axios';
 import {preload} from "react-dom";
 
 const Navbar = () => {
-  const { userId } = useParams();
-  const {role} = useParams();
   const {profileName, setProfileName} =  useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const API_BASE_URL = 'http://localhost:8080/api';
-  const getUserIdFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-
-    try {
-      const userData = JSON.parse(userJson);
-      return userData.id || userData.userId || null;
-    } catch (e) {
-      console.error('Error parsing user data', e);
-      return null;
-    }
-  };
-  const getUserRoleFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-    try{
-      const userData = JSON.parse(userJson);
-      return userData.app_metadata.role || null;
-    }catch(e){
-      console.error('There is no role in token.', e);
-      return null;
-    }
-  }
-
-  const currentUserId = userId || getUserIdFromStorage();
-  const currentUserRole = role || getUserRoleFromStorage();
-
+  const currentUserRole = getUserRoleFromStorage();
   // Check if user is logged in - this runs on component mount and on location changes
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
-      
+      const profileData = JSON.parse(localStorage.getItem('userData'));
       if (token) {
         setIsLoggedIn(true);
         if (userData) {
           try {
             setUser(JSON.parse(userData));
-            handleChangeProfileToName();
+            handleChangeProfileToName(profileData);
+            setProfileName(profileData.name);
           } catch (e) {
             console.error('Error parsing user data', e);
           }
@@ -66,20 +39,13 @@ const Navbar = () => {
     };
     
     checkAuthStatus();
-  }, []); // Re-check auth status when route changes
+  }, [location]); // Re-check auth status when route changes
 
-  const handleChangeProfileToName = async () => {
-
-    if(currentUserId == null || currentUserRole == null) {
-      setUser(null);
-    }
+  const handleChangeProfileToName = (profileData) => {
     try{
-      const id = currentUserId.trim();
-      const role = currentUserRole.trim();
-      const profileResponse = await axios.get(`${API_BASE_URL}/users/${role}/${id}/profile`);
-      setUser(profileResponse.data);
+      setUser(profileData);
     } catch (e) {
-        console.log("Test");
+      console.log("Test");
     }
   }
 
@@ -99,6 +65,8 @@ const Navbar = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('ownerData');
     setIsLoggedIn(false);
     setUser(null);
     
@@ -157,7 +125,6 @@ const Navbar = () => {
               >
                 <FaCog className="nav-icon" /> Ayarlar
               </span>
-
 
               <Link 
                 to="/profile" 
