@@ -40,17 +40,6 @@ export default function RestaurantOwnerDashboard() {
     }, []);
 
     useEffect(() => {
-        if (!isAuthenticated && !isLoading) {
-            const timer = setTimeout(() => {
-                navigate('/');
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [isAuthenticated, isLoading, navigate]);
-
-
-
-    useEffect(() => {
     const fetchRestaurantName = async () => {
         setRestaurantName(ownerData.name);
         setRestaurantId(getUserIdFromStorage());
