@@ -24,7 +24,7 @@ import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPo
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
 import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
-import { login, saveAuthData } from '../services/authService';
+import {login, saveAuthData, updateUser} from '../services/authService';
 import axios from "axios";
 import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
 
@@ -472,25 +472,11 @@ const HomePage = () => {
         try {
             const email = registerEmail.trim();
             const password = registerPassword.trim();
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/update-user",
-                {
-                    email: email,
-                    password: password,
-                    role: "diner_user"
-                }
-            );
-            setError("");
             
             // Auto login after successful registration
             try {
-                const loginResponse = await axios.post(
-                    "http://localhost:8080/api/auth/login",
-                    {
-                        email: email,
-                        password: password
-                    }
-                );
+
+                const loginResponse = await updateUser(email, password, "diner_user");
                 
                 const { access_token, refresh_token, user } = loginResponse.data;
                 

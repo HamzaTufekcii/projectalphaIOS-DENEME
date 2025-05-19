@@ -80,6 +80,21 @@ export const login = async (email, password, role) => {
     throw error.response?.data || error.message || 'Error logging in';
   }
 };
+export const checkPassword = async (email, password, role) => {
+  try {
+    const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: email.trim(),
+          password: password.trim(),
+          role
+        }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message || 'Password is not matched';
+  }
+};
 
 /**
  * Save auth data to local storage

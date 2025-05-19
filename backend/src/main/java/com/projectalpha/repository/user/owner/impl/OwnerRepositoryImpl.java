@@ -7,6 +7,7 @@ import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
+import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.exception.auth.UserNotFoundException;
 import com.projectalpha.repository.user.owner.OwnerRepository;
@@ -57,7 +58,6 @@ public class OwnerRepositoryImpl implements OwnerRepository {
 
                     OwnerLoginResponse responseProfile = new OwnerLoginResponse(profile, businessProfile);
 
-                    System.out.println(businessProfile);
                     return Optional.of(responseProfile) ;
                 }
             }
@@ -93,37 +93,36 @@ public class OwnerRepositoryImpl implements OwnerRepository {
     }
 
     @Override
-    public void updateOwnerProfile(String userId, OwnerUserProfile profile) {
+    public void updateOwnerProfile(String userId, OwnerUpdateRequest request) {
         try {
-            String body = mapper.writeValueAsString(new OwnerUpdateDTO(profile));
+            Map<String, Object> profilePayload = Map.of(
+                    "name", request.getRequestOwner().getName(),
+                    "surname", request.getRequestOwner().getSurname(),
+                    "phone_numb", request.getRequestOwner().getPhone_numb()
+            );
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?user_id=eq." + userId))
+            String profileJson = mapper.writeValueAsString(profilePayload);
+
+            //user_id ile satırı bul. ilgili kolonun bilgilerini değiştir.
+            String column = "id";
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?select=" + column + "&owner_id=eq." + userId;
+
+            HttpRequest profileRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
+                    .header("Prefer", "return=minimal")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(profileJson))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(profileRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
                 throw new RuntimeException("Update failed: " + response.body());
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static class OwnerUpdateDTO {
-        public String name;
-        public String phone_numb;
-        public String surname;
-
-        public OwnerUpdateDTO(OwnerUserProfile profile) {
-            this.name = profile.getName();
-            this.phone_numb = profile.getPhone_numb();
-            this.surname = profile.getSurname();
-        }
+        throw new RuntimeException(e);
+      }
     }
     @Override
     public BusinessDTO saveBusiness(String ownerId, BusinessDTO business) {

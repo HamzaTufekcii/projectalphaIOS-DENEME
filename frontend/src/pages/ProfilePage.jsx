@@ -4,6 +4,7 @@ import axios from 'axios';
 import '../styles/ProfilePage.css';
 import { FaEdit } from 'react-icons/fa';
 import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData, updateUserData} from '../services/userService';
+import {checkPassword, updateUser} from "../services/authService.js";
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -27,6 +28,9 @@ const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isCurrentFalse,setIsCurrentFalse] = useState(false);
+  const [isSucceed, setIsSucceed] = useState(false);
+  const [isLessThanSix, setIsLessThanSix] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const profileData = JSON.parse(localStorage.getItem('userData'));
 const [passwordData, setPasswordData] = useState({
@@ -38,6 +42,7 @@ const [passwordData, setPasswordData] = useState({
 
   const currentUserId = userId || getUserIdFromStorage().trim();
   const currentUserRole = role || getUserRoleFromStorage().trim();
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -70,16 +75,29 @@ const getUserData = async () => {
     const { name, value } = e.target;
     setEditFormData({ ...editFormData, [name]: value });
   };
-const handlePasswordChange = (e) => {
-  const { name, value } = e.target;
-  setPasswordData({ ...passwordData, [name]: value });
-};
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    const updatedPasswordData = { ...passwordData, [name]: value };
+    setPasswordData(updatedPasswordData);
+
+    // check after state is updated
+    if (
+        updatedPasswordData.newPassword.length >= 6 &&
+        updatedPasswordData.confirmPassword.length >= 6
+    ) {
+      setIsLessThanSix(false);
+    } else {
+      setIsLessThanSix(true);
+    }
+  };
 
   const handleProfileEdit = async (e) => {
     e.preventDefault();
     try {
       await updateUserData(editFormData, currentUserId, currentUserRole);
       setUserProfile(editFormData);
+      localStorage.setItem("shouldRunAfterReload", "true");
+      await getUser();
       setIsEditing(false);
     } catch (err) {
       console.error('Güncelleme hatası:', err);
@@ -87,6 +105,48 @@ const handlePasswordChange = (e) => {
       setIsEditing(false);
     }
   };
+  const checkLength = () => {
+    if (
+        passwordData.newPassword.length < 6 ||
+        passwordData.confirmPassword.length < 6
+    ) {
+      setIsLessThanSix(true);
+    } else {
+      setIsLessThanSix(false);
+    }
+  };
+  const handlePasswordEdit = async (e) => {
+    setIsCurrentFalse(false);
+    try {
+
+      const response = await checkPassword(userProfile.email, passwordData.currentPassword, currentUserRole);
+      console.log(response.status);
+      setIsCurrentFalse(false);
+    } catch (err) {
+      const message = err?.response?.data?.message || err?.message || '';
+      if (message.includes("Invalid login credentials")) {
+        setIsCurrentFalse(true);
+        return null;
+      }
+    }setIsCurrentFalse(false);
+
+    try{
+      const responseChange = await updateUser(userProfile.email, passwordData.confirmPassword, currentUserRole);
+      console.log(responseChange.status);
+      setIsSucceed(true);
+      setIsCurrentFalse(false);
+    } catch(err) {
+      setIsSucceed(false);
+      return null;
+    }
+  }
+  const getUser = async () => {
+    if (localStorage.getItem("shouldRunAfterReload") === "true") {
+        localStorage.removeItem("shouldRunAfterReload");
+        setIsLoading(false);
+        window.location.reload();
+    }
+  }
 
   if (isLoading) return <div className="loading-spinner">Yükleniyor...</div>;
 
@@ -213,14 +273,35 @@ const handlePasswordChange = (e) => {
                Yeni şifreler birbiriyle uyuşmuyor.
              </p>
            )}
+           {isCurrentFalse === true && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+                 Mevcut şifreni yanlış girdin.
+               </p>
+           )}
+           {isCurrentFalse === false && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+               </p>
+           )}
+           {isSucceed && passwordData.newPassword === passwordData.confirmPassword && (
+               <div className="verified-badge">
+                  ✔ Şifren değiştirildi.
+               </div>
+           )}
+           {isLessThanSix && isEditingPassword && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+                 Şifren 6 haneden az olmamalıdır.
+               </p>
+           )}
 
            <button
              className="save-button"
              onClick={(e) => {
                e.preventDefault();
+               setIsCurrentFalse(false);
+               setIsSucceed(false);
                if (isEditingPassword) {
                  if (passwordData.newPassword === passwordData.confirmPassword) {
-                   // 🔐 Burada API'ye gönderme işlemi yapılabilir
+                   handlePasswordEdit();
                    console.log('Şifre güncellendi:', passwordData);
                    setIsEditingPassword(false);
                    setPasswordData({
@@ -234,10 +315,13 @@ const handlePasswordChange = (e) => {
                }
              }}
              disabled={
-               isEditingPassword &&
-               (passwordData.newPassword !== passwordData.confirmPassword ||
-                 !passwordData.newPassword ||
-                 !passwordData.currentPassword)
+                isEditingPassword && (
+                    passwordData.newPassword !== passwordData.confirmPassword ||
+                    !passwordData.newPassword ||
+                     !passwordData.currentPassword ||
+                     isLessThanSix
+               )
+
              }
            >
              {isEditingPassword ? 'Kaydet' : 'Düzenle'}
