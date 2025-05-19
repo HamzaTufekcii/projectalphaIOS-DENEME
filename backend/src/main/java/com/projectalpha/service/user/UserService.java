@@ -8,6 +8,7 @@ import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
+import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
@@ -52,8 +53,8 @@ public class UserService implements DinerService, OwnerService {
     }
 
     @Override
-    public void updateProfile(String userId, OwnerUserProfile profile) {
-        ownerRepository.updateOwnerProfile(userId, profile);
+    public void updateProfile(String userId, OwnerUpdateRequest request) {
+        ownerRepository.updateOwnerProfile(userId, request);
     }
     @Override
     public List<Business> getDinerFavorites(String userId) {

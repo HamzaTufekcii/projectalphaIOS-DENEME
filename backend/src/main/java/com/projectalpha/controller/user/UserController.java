@@ -9,6 +9,7 @@ import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
+import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -116,8 +117,8 @@ public class UserController implements DinerController, OwnerController, ListsCo
     @Override
     @PutMapping("/owner_user/{userId}/profile")
     public ResponseEntity<?> updateOwnerProfile(@PathVariable String userId,
-                                                @RequestBody OwnerUserProfile profile) {
-        userService.updateProfile(userId, profile);
+                                                @RequestBody OwnerUpdateRequest request) {
+        userService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
     }
 }

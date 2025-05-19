@@ -6,6 +6,7 @@ import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
+import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import org.springframework.stereotype.Repository;
 
@@ -31,9 +32,9 @@ public interface OwnerRepository {
      * update owners by their user_id (in database)
      *
      * @param userId The ownerId to search for
-     * @param profile ownerProfile
+     * @param request ownerProfile
      */
-    void updateOwnerProfile(String userId, OwnerUserProfile profile);
+    void updateOwnerProfile(String userId, OwnerUpdateRequest request);
 
     /**
      * Yeni bir business (işletme) kaydını veri tabanına ekler.
