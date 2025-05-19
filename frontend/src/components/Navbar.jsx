@@ -81,7 +81,13 @@ const Navbar = () => {
     <nav className="main-navbar">
       <div className="navbar-container">
         <div className="navbar-brand">
-          <Link to="/" className="brand-link">FeastFine</Link>
+
+          <Link
+              to={currentUserRole === 'owner_user' ? "/owner-dashboard" : "/"}
+              className={`brand-link ${location.pathname === '/' ? 'active' : ''}`}
+          >
+            FeastFine
+          </Link>
         </div>
         
         <div className="navbar-links">
