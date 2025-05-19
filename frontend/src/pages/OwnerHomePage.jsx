@@ -4,38 +4,59 @@ import { Star, Tag, Calendar, MessageCircle, LogOut, ChevronRight } from 'lucide
 import { Link } from 'react-router-dom';
 import '../styles/OwnerHomePage.css';
 import axios from 'axios';
+import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
+import {FaExclamationCircle} from "react-icons/fa";
 
 export default function RestaurantOwnerDashboard() {
     const navigate = useNavigate();
     const [restaurantId, setRestaurantId] = useState(null);
     const [restaurantname, setRestaurantName] = useState('');
+    const ownerData = JSON.parse(localStorage.getItem('ownerData'));
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    const handleLoginClick = () => {
+        navigate('/');
+        // If we're on HomePage, trigger the login popup
+        setTimeout(() => {
+            const homePageInstance = window.homePageInstance;
+            if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
+                homePageInstance.openLoginPopup();
+            }
+        }, 100);
+    };
 
-useEffect(() => {
-    const fetchRestaurantName = async () => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        const role = userData?.app_metadata?.role;
-
-        if (role !== 'owner_user') {
-            navigate('/login');
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setIsAuthenticated(false);
+            setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
+            setIsLoading(false);
             return;
         }
+        setIsAuthenticated(true);
+        setIsLoading(false);
+    }, []);
+
+    useEffect(() => {
+        if (!isAuthenticated && !isLoading) {
+            const timer = setTimeout(() => {
+                navigate('/');
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [isAuthenticated, isLoading, navigate]);
 
 
-        // Restaurant ID'yi al (user objesinde nasıl tanımlandığına göre ayarla)
-        const id = userData?.restaurantId || userData?.id;
-        setRestaurantId(id);
 
-        //burada restaurantName i çekmesi gerekiyordu ama çekilemiyor o yüzden otomatik işletme adı atıyor
+    useEffect(() => {
+    const fetchRestaurantName = async () => {
+        setRestaurantName(ownerData.name);
+        setRestaurantId(getUserIdFromStorage());
         try {
-            const response = await axios.get(`http://localhost:8080/api/users/${role}/${id}/profile`);
-
             const name =
-                response.data?.requestBusiness?.name ||  // kayıt sırasında eklenen alan
-                response.data?.business?.name ||         // eğer sistemde kayıtlıysa
-                response.data?.name ||
-                response.data?.restaurantName ||         // olası başka bir alan
-                'İşletme Adı';
+                ownerData.name || 'İşletme Adı';
 
             setRestaurantName(name);
         } catch (err) {
@@ -46,21 +67,31 @@ useEffect(() => {
 
     fetchRestaurantName();
 }, []);
-/*
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/');
-    };
-*/
+
     const stats = {
         reviews: { count: 24, new: 5 },
         promotions: { count: 3, active: 2 },
         reservations: { count: 18, today: 6 },
         questions: { count: 8, unanswered: 3 }
     };
+    if (!isAuthenticated) {
+        return (
+            <div className="not-authenticated">
+                <div className="auth-error">
+                    <FaExclamationCircle className="error-icon" />
+                    <h2>Giriş Gerekli</h2>
+                    <p>{error || 'Bu sayfayı görüntülemek için giriş yapmalısınız.'}</p>
+                    <button className="login-btn" onClick={handleLoginClick}>Giriş Yap</button>
+                </div>
+            </div>
+        );
+    }
 
+    if (error && isAuthenticated) {
+        return <div className="error-message">{error}</div>;
+    }
     return (
+
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="dashboard-header-content">

@@ -3,6 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import axios from 'axios';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
+import {getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -49,29 +50,7 @@ const FavoritesPage = () => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
-  const getUserIdFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
 
-    try {
-      const userData = JSON.parse(userJson);
-      return userData.id || userData.userId || null;
-    } catch (e) {
-      console.error('Error parsing user data', e);
-      return null;
-    }
-  };
-  const getUserRoleFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-    try{
-      const userData = JSON.parse(userJson);
-      return userData.app_metadata.role || null;
-    }catch(e){
-      console.error('There is no role in token.', e);
-      return null;
-    }
-  }
   const currentUserId = userId || getUserIdFromStorage();
   const currentUserRole = role || getUserRoleFromStorage();
 
@@ -97,19 +76,10 @@ const FavoritesPage = () => {
 
       
       try {
-        // Configure request with auth header
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        };
-        
         // Get all user lists
         const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/favorites`);
-        console.log(response.statusCode);
         // Find the favorites list
         const favList = response.data;
-        console.log(response.data);
         
         if (favList) {
           setFavorites(favList || []);

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/ProfilePage.css';
 import { FaEdit } from 'react-icons/fa';
+import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData, updateUserData} from '../services/userService';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -27,35 +28,13 @@ const ProfilePage = () => {
   const [useMockData, setUseMockData] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
-
+  const profileData = JSON.parse(localStorage.getItem('userData'));
 const [passwordData, setPasswordData] = useState({
   currentPassword: '',
   newPassword: '',
   confirmPassword: ''
 });
-  const getUserIdFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
 
-    try {
-      const userData = JSON.parse(userJson);
-      return userData.id || userData.userId || null;
-    } catch (e) {
-      console.error('Error parsing user data', e);
-      return null;
-    }
-  };
-  const getUserRoleFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-    try{
-      const userData = JSON.parse(userJson);
-      return userData.app_metadata.role || null;
-    }catch(e){
-      console.error('There is no role in token.', e);
-      return null;
-    }
-  }
 
   const currentUserId = userId || getUserIdFromStorage().trim();
   const currentUserRole = role || getUserRoleFromStorage().trim();
@@ -71,24 +50,21 @@ const [passwordData, setPasswordData] = useState({
 
     const userData = JSON.parse(userJson);
     const userId = userData.id || userData.userId;
-
-    const fetchUserData = async () => {
-      try {
-        const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`);
-        setUserProfile(profileResponse.data);
-        setEditFormData(profileResponse.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Profil verisi alınamadı, mock veri kullanılacak:', err);
-        setUserProfile(MOCK_USER_PROFILE);
-        setEditFormData(MOCK_USER_PROFILE);
-        setUseMockData(true);
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
+const getUserData = async () => {
+  try{
+    setUserProfile(profileData);
+    setEditFormData(profileData);
+    setIsLoading(false);
+  } catch (err) {
+    console.error('Profil verisi alınamadı, mock veri kullanılacak:', err);
+    setUserProfile(MOCK_USER_PROFILE);
+    setEditFormData(MOCK_USER_PROFILE);
+    setUseMockData(true);
+    setIsLoading(false);
+    }
+  };
+    getUserData();
+  }, [currentUserId, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -101,21 +77,8 @@ const handlePasswordChange = (e) => {
 
   const handleProfileEdit = async (e) => {
     e.preventDefault();
-    const requestBody = {
-
-      email: editFormData.email.trim(),
-      role: currentUserRole,
-
-      requestDiner: {
-        name: editFormData.name.trim(),
-        surname: editFormData.surname.trim(),
-        phone_numb: editFormData.phone_numb.trim(),
-      }
-
-    }
     try {
-      axios.put(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/profile`, requestBody);
-
+      await updateUserData(editFormData, currentUserId, currentUserRole);
       setUserProfile(editFormData);
       setIsEditing(false);
     } catch (err) {

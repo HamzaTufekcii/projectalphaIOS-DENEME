@@ -1,8 +1,10 @@
 package com.projectalpha.repository.user.owner;
 
+import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
+import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import org.springframework.stereotype.Repository;
@@ -17,7 +19,14 @@ public interface OwnerRepository {
      * @param userId The userId to search for
      * @return The owner user if found, otherwise null
      */
-    Optional<OwnerUserProfile> findOwnerByID(String userId);
+    Optional<OwnerLoginResponse> findOwnerByID(String userId);
+    /**
+     * Find a user's business by their user_id (in database)
+     *
+     * @param userId The userId to search for
+     * @return The owner's business if found, otherwise null
+     */
+    Business getBusinessProfile(String userId);
     /**
      * update owners by their user_id (in database)
      *

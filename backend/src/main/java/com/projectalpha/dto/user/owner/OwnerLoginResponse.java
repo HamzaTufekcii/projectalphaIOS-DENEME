@@ -1,15 +1,22 @@
 package com.projectalpha.dto.user.owner;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.user.owner.OwnerUserProfile;
+import com.projectalpha.dto.business.Business;
 import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class OwnerLoginResponse {
 
-    private OwnerUserProfile profile;
-    private Business ownedBusiness;
+    private com.projectalpha.dto.user.owner.OwnerUserProfile profile;
+    private com.projectalpha.dto.business.Business ownedBusiness;
+
+
+    public OwnerLoginResponse(com.projectalpha.dto.user.owner.OwnerUserProfile ownerProfile, com.projectalpha.dto.business.Business businessProfile) {
+        profile = ownerProfile;
+        ownedBusiness = businessProfile;
+    }
 
     @JsonIgnoreProperties
     @Data

@@ -11,7 +11,7 @@ import java.security.Timestamp;
 @Data
 public class OwnerUserProfile {
 
-    private String user_id;
+    private String owner_id;
 
     private String id;
 

@@ -26,6 +26,7 @@ import RestaurantList from '../components/HomePageComponents/RestaurantList';
 import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
 import { login, saveAuthData } from '../services/authService';
 import axios from "axios";
+import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
 
 const HomePage = () => {
     // Auth and registration state
@@ -373,17 +374,18 @@ const HomePage = () => {
         }
         
         try {
+
             const role = "diner_user";
             const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
 
             // Store tokens using authService
             saveAuthData(authData);
-            
             closePopup();
 
-            // Force refresh to update UI
-            window.location.reload();
+            localStorage.setItem("shouldRunAfterReload", "true");
+
+            await getUser(role);
 
         } catch (err) {
             console.error("Giriş hatası:", err);
@@ -401,6 +403,20 @@ const HomePage = () => {
             }
         }
     };
+
+        const getUser = async (role) => {
+            if (localStorage.getItem("shouldRunAfterReload") === "true") {
+                localStorage.removeItem("shouldRunAfterReload");
+
+                await fetchUserData(getUserRoleFromStorage(), getUserIdFromStorage());
+                if(role === 'diner_user'){
+                    window.location.reload();
+                } else if (role === 'owner_user') {
+                    navigate('/owner-dashboard');
+                }
+
+            }
+        }
 
     // Owner login
     const handleOwnerLogin = async () => {
@@ -425,12 +441,15 @@ const HomePage = () => {
 
             // Store tokens using authService
             saveAuthData(authData);
-            
+            closePopup();
+
             console.log('İşletme girişi başarılı');
             closePopup();
-            navigate('/owner-dashboard'); // OwnerHomepage'e yönlendir
-            // Force refresh to update UI
-            window.location.reload();
+
+            localStorage.setItem("shouldRunAfterReload", "true");
+
+            await getUser(role);
+
         } catch (err) {
             console.error("Giriş hatası:", err);
 
