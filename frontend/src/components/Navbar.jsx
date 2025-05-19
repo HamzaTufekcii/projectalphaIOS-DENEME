@@ -27,7 +27,6 @@ const Navbar = () => {
           try {
             setUser(JSON.parse(userData));
             handleChangeProfileToName(profileData);
-            setProfileName(profileData.name);
           } catch (e) {
             console.error('Error parsing user data', e);
           }
