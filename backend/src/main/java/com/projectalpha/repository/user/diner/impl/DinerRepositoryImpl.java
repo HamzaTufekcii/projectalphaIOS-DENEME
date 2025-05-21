@@ -14,16 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
 import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -96,13 +94,21 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
             throw new RuntimeException(e);
         }
     }
+
+
+    // List Implementation//
     @Override
-    public List<BusinessDTO> getDinerListItems(String userId, String listItemId){
+    public List<BusinessDTO> getDinerListItems(String userId,String listId){
+
         try {
-            // 1. "Favorilerim" listesi ID'sini al
+            // Kullanıcının diner profil ID'sini al
+            Optional<DinerUserProfile> profile = findDinerByID(userId);
+            String dinerId = profile
+                    .map(DinerUserProfile::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+
             String listUrl = supabaseConfig.getSupabaseUrl() +
-                    "/rest/v1/custom_list?select=id&user_profile_diner_id=eq." + userId +
-                    "&name=ilike.Favorilerim";
+                    "/rest/v1/custom_list_item?select=business_id&list_id=eq." + listId;
 
             HttpRequest listRequest = HttpRequest.newBuilder()
                     .uri(URI.create(listUrl))
@@ -116,60 +122,28 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
 
 
             if (listResponse.statusCode() != 200) {
-                throw new RuntimeException("Favorilerim listesi alınamadı: " + listResponse.body());
+                throw new RuntimeException("Liste item'ları alınamadı: " + listResponse.body());
             }
 
             JsonNode listRoot = mapper.readTree(listResponse.body());
             if (!listRoot.isArray() || listRoot.size() == 0) {
-                System.out.println("Favorilerim listesi bulunamadı.");
-                return new ArrayList<>();
-            }
-
-            String listId = listRoot.get(0).get("id").asText();
-
-
-            // 2. Listeye ait işletme ID'lerini al
-            String itemsUrl = supabaseConfig.getSupabaseUrl() +
-                    "/rest/v1/custom_list_item?select=business_id&list_id=eq." + listId;
-
-            HttpRequest itemsRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(itemsUrl))
-                    .header("apikey", supabaseConfig.getSupabaseApiKey())
-                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-
-            HttpResponse<String> itemsResponse = httpClient.send(itemsRequest, HttpResponse.BodyHandlers.ofString());
-
-
-            if (itemsResponse.statusCode() != 200) {
-                throw new RuntimeException("Liste içeriği alınamadı: " + itemsResponse.body());
-            }
-
-            JsonNode itemsRoot = mapper.readTree(itemsResponse.body());
-            if (!itemsRoot.isArray() || itemsRoot.size() == 0) {
-                System.out.println("Favori item bulunamadı.");
                 return new ArrayList<>();
             }
 
             List<String> businessIds = new ArrayList<>();
-            for (JsonNode node : itemsRoot) {
-                if (node.has("business_id")) {
-                    businessIds.add(node.get("business_id").asText());
-                }
+            for (JsonNode node : listRoot) {
+                businessIds.add(node.get("business_id").asText());
             }
 
-            if (businessIds.isEmpty()) {
-                System.out.println("Liste boş. İşletme ID yok.");
-                return new ArrayList<>();
-            }
 
-            // 3. İşletme detaylarını çek (IN sorgusu)
-            String businessIdQuery = String.join(",", businessIds);
+            String businessQuery = businessIds.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+
 
             String businessUrl = supabaseConfig.getSupabaseUrl() +
-                    "/rest/v1/business?select=*&id=in.(" + businessIdQuery + ")";
+                    "/rest/v1/business?select=*&id=in.(" + businessQuery + ")";
+
 
 
             HttpRequest businessRequest = HttpRequest.newBuilder()
@@ -182,22 +156,20 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
 
             HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
 
-
             if (businessResponse.statusCode() != 200) {
-                throw new RuntimeException("İşletme bilgileri alınamadı: " + businessResponse.body());
+                throw new RuntimeException("İşletmeler alınamadı: " + businessResponse.body());
             }
+
 
             JsonNode businessRoot = mapper.readTree(businessResponse.body());
             List<BusinessDTO> businesses = new ArrayList<>();
             if (businessRoot.isArray()) {
-                for (JsonNode node : businessRoot) {
-                    BusinessDTO business = mapper.treeToValue(node, BusinessDTO.class);
-                    businesses.add(business);
+                for (JsonNode business : businessRoot) {
+                    businesses.add(mapper.treeToValue(business, BusinessDTO.class));
                 }
             }
 
             return businesses;
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -207,115 +179,255 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
 
     @Override
     public List<CustomList> getDinerLists(String userId) {
-        // TODO: Implement this method to create a new list for userId in Supabase
-        return null;
+    try {
+        Optional<DinerUserProfile> profile = findDinerByID(userId);
+        String dinerId = profile
+                .map(DinerUserProfile::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+
+        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?user_profile_diner_id=eq." + dinerId;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 400) {
+            throw new RuntimeException("Listeler alınamadı: " + response.body());
+        }
+        JsonNode root = mapper.readTree(response.body());
+        List<CustomList> listOfBusinesses = new ArrayList<>();
+
+        if (root.isArray()) {
+            for (JsonNode node : root) {
+                CustomList business = mapper.treeToValue(node, CustomList.class);
+                listOfBusinesses.add(business);
+            }
+        }
+
+        return listOfBusinesses;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException("Listeler alınırken hata oluştu: " + e.getMessage());
+    }
+
     }
 
     @Override
-    public CustomList createList(String userId, CustomListRequest createRequest) {
-        // TODO: Implement this method to create a new list for userId in Supabase
-        return null;
-    }
-    @Override
-    public void updateDinerList(String userId, String listId, CustomListRequest updateRequest){
-        // TODO: Implement this method to update a list owned by diner
-    }
+    public CustomList createDinerList(String userId, CustomListRequest createRequest) {
 
-    @Override
-    public void addDinerFavoriteItem(String userId, String listItemId, String listId) {
-        // TODO: Implement this method to add a business to a list in Supabase
-    }
-    @Override
-    public void createFavoriteItem(String userId, CustomListItemRequest createRequest) {
-        // TODO: Implement this method to add a business to favorites in Supabase
-    }
-
-    @Override
-    public void removeDinerFavoriteItem(String userId, String listItemId) {
-        // TODO: Implement this method to remove a business from a list in Supabase
-    }
-
-    @Override
-    public void removeDinerList(String userId, String listId){
-        // TODO: Implement this method to remove a business from favorites in Supabase
-    }
-
-    @Override
-    public List<Business> getDinerFavorites(String userId) {
         try {
-            String column = "id";
-            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + column + "&user_id=eq." + userId;
+            Optional<DinerUserProfile> profile = findDinerByID(userId);
+            String dinerId = profile
+                    .map(DinerUserProfile::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
 
-            HttpRequest profileRequest = HttpRequest.newBuilder()
+            Map<String, Object> createPayload = Map.of(
+                    "name", createRequest.getName(),
+                    "user_id", userId,
+                    "user_profile_diner_id", dinerId,
+                    "is_public", createRequest.isPublic(),
+                    "like_counter", createRequest.getLikeCount()
+            );
+
+            String requestBody = mapper.writeValueAsString(createPayload);
+
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list";
+
+            HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste oluşturulamadı: " + response.body());
+            }
+
+            JsonNode root = mapper.readTree(response.body());
+            if (!root.isArray() || root.size() == 0) {
+                throw new RuntimeException("Boş Supabase cevabı");
+            }
+
+            return mapper.treeToValue(root.get(0), CustomList.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Liste oluşturulurken hata: " + e.getMessage());
+        }
+    }
+    @Override
+    public CustomList updateDinerList(String userId, String listId, CustomListRequest updateRequest){
+        try{
+        //DinerId elde edilmesi
+        Optional<DinerUserProfile> profile = findDinerByID(userId);
+        String dinerId = profile
+                .map(DinerUserProfile::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+
+        Map<String, Object> updatePayload = Map.of(
+                "name", updateRequest.getName(),
+                "is_public",updateRequest.isPublic(),
+                "like_counter", updateRequest.getLikeCount()
+        );
+
+        String requestBody = mapper.writeValueAsString(updatePayload);
+
+        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(requestBody))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("Content-Type", "application/json")
+                .header("Prefer", "return=representation")
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste güncellenmedi: " + response.body());
+            }
+
+            JsonNode root = mapper.readTree(response.body());
+            if (!root.isArray() || root.size() == 0) {
+                throw new RuntimeException("Boş Supabase cevabı");
+            }
+
+            CustomList responseCustomList = mapper.treeToValue(root.get(0), CustomList.class);
+            return responseCustomList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Liste güncellenirken hata: " + e.getMessage());
+        }
+
+
+    }
+
+
+    @Override
+    public String createListItem(String userId, String businessId, String listId) {//401 Error
+        try {
+
+            Optional<DinerUserProfile> profile = findDinerByID(userId);
+            String dinerId = profile
+                    .map(DinerUserProfile::getId)
+                    .orElse("ID ile sorgu başarısız.");
+
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item";
+
+
+            Map<String, Object> data = Map.of(
+                    "diner_id", dinerId,
+                    "business_id", businessId,
+                    "list_id", listId
+            );
+            String requestBody = mapper.writeValueAsString(data);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation") //  burada minimal yerine temsil (id dahil) istiyoruz
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste öğesi eklenemedi: " + response.body());
+            }
+            //
+            System.out.printf(response.body());
+            //
+            // Supabase response'u bir array döner: [{ "id": "...", ... }]
+            JsonNode root = mapper.readTree(response.body());
+            String generatedId = root.get(0).get("id").asText();
+
+            return generatedId;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("createListItem hatası: " + e.getMessage());
+        }
+    }
+
+
+    @Override
+    public void removeListItem(String userId, String listItemId) {
+        try {
+            Optional<DinerUserProfile> profile = findDinerByID(userId);
+            String dinerId = profile
+                    .map(DinerUserProfile::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?id=eq." + listItemId;
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("DELETE", HttpRequest.BodyPublishers.noBody())
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
                     .header("Prefer", "return=minimal")
-                    .GET()
-                    .build();
-            HttpResponse<String> profileResponse = httpClient.send(profileRequest, HttpResponse.BodyHandlers.ofString());
-            DinerUserProfile[] gettingId = mapper.readValue(profileResponse.body(), DinerUserProfile[].class);
-            String dinerId = gettingId[0].getId();
-
-            String column2 = "business_id";
-            String favoritesUrl = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?select=" + column2 + "&diner_id=eq." + dinerId;
-
-            HttpRequest listRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(favoritesUrl))
-                    .header("apikey", supabaseConfig.getSupabaseApiKey())
-                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
-                    .header("Content-Type", "application/json")
-                    .GET()
                     .build();
 
-            HttpResponse<String> listResponse = httpClient.send(listRequest, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            JsonNode itemsRoot = mapper.readTree(listResponse.body());
-            List<String> businessIds = new ArrayList<>();
-            for (JsonNode node : itemsRoot) {
-                if (node.has("business_id")) {
-                    businessIds.add(node.get("business_id").asText());
-                }
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("İşletme listeden silinemedi: " + response.body());
             }
-
-            String businessIdQuery = String.join(",", businessIds);
-
-            String businessUrl = supabaseConfig.getSupabaseUrl() +
-                    "/rest/v1/business?select=*&id=in.(" + businessIdQuery + ")";
-
-
-            HttpRequest businessRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(businessUrl))
-                    .header("apikey", supabaseConfig.getSupabaseApiKey())
-                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-
-            HttpResponse<String> businessResponse = httpClient.send(businessRequest, HttpResponse.BodyHandlers.ofString());
-
-
-            if (businessResponse.statusCode() != 200) {
-                throw new RuntimeException("İşletme bilgileri alınamadı: " + businessResponse.body());
-            }
-
-            JsonNode businessRoot = mapper.readTree(businessResponse.body());
-            List<Business> businesses = new ArrayList<>();
-            if (businessRoot.isArray()) {
-                for (JsonNode node : businessRoot) {
-                    Business business = mapper.treeToValue(node, Business.class);
-                    businesses.add(business);
-                }
-            }
-
-            return businesses;
-
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Silme işlemi sırasında hata oluştu: " + e.getMessage());
         }
-        return new ArrayList<>();
+        }
+
+    @Override
+    public void removeDinerList(String userId, String listId){
+        //dinerId elde edilmesi
+        try{
+        Optional<DinerUserProfile> profile = findDinerByID(userId);
+        String dinerId = profile
+                .map(DinerUserProfile::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+
+
+        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .method("DELETE", HttpRequest.BodyPublishers.noBody())
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("Content-Type", "application/json")
+                .header("Prefer", "return=minimal")
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste silinemedi: " + response.body());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Silme işlemi sırasında hata oluştu: " + e.getMessage());
+        }
+
     }
 
 }
