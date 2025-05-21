@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface ListsController {
 
+    ResponseEntity<?> getDinerListItems(@PathVariable String userId,@PathVariable String listId);
+
+    ResponseEntity<?> createListItem(@PathVariable String userId, @RequestBody String businessId,@RequestBody String listId );
+
     ResponseEntity<?> getDinerLists(@PathVariable String userId);
 
     ResponseEntity<?> createDinerList(@PathVariable String userId, @RequestBody CustomListRequest createRequest);

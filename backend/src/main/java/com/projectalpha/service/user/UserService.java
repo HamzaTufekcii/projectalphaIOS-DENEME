@@ -16,7 +16,6 @@ import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.UserRepository;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
-import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
 import com.projectalpha.repository.user.owner.OwnerRepository;
 import com.projectalpha.service.user.diner.DinerService;
 import com.projectalpha.service.user.owner.OwnerService;
@@ -33,15 +32,13 @@ public class UserService implements DinerService, OwnerService {
 
     private final DinerRepository dinerRepository;
     private final OwnerRepository ownerRepository;
-    private final FavoritesRepository favoritesRepository;
     private final UserRepository userRepository;
     private final ListRepository listRepository;
 
     @Autowired
-    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, FavoritesRepository favoritesRepository, ListRepository listRepository) {
+    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, ListRepository listRepository, UserRepository userRepository) {
         this.dinerRepository = dinerRepository;
         this.ownerRepository = ownerRepository;
-        this.favoritesRepository = favoritesRepository;
         this.listRepository = listRepository;
         this.userRepository = userRepository;
     }
@@ -94,11 +91,6 @@ public class UserService implements DinerService, OwnerService {
         return listRepository.getDinerLists(userId);
     }
 
-
-
-}
-
-
     /**
      * <p><b> Giriş yapmış kullanıcının şifresini değiştirir. </b></p>
      * <p>-------------</p>
@@ -118,47 +110,3 @@ public class UserService implements DinerService, OwnerService {
             userRepository.changePassword(userId, newPassword);
     }
 }
-
-// /**
-// * Get all lists for a user (including favorites)
-// *
-// * @param userId The ID of the user
-// * @return List of user's lists
-// */
-// List<ListDTO> getUserLists(String userId);
-
-// /**
-// * Create a new list for a user
-// *
-// * @param userId The ID of the user
-// * @param listName The name of the new list
-// * @return The created list
-// */
-// ListDTO createList(String userId, String listName);
-
-// /**
-// * Add a business to a user's list
-// *
-// * @param userId The ID of the user
-// * @param listId The ID of the list
-// * @param businessId The ID of the business to add
-// */
-// void addBusinessToList(String userId, String listId, String businessId);
-
-// /**
-// * Remove a business from a user's list
-// *
-// * @param userId The ID of the user
-// * @param listId The ID of the list
-// * @param businessId The ID of the business to remove
-// */
-// void removeBusinessFromList(String userId, String listId, String businessId);
-
-// /**
-// * Get all reviews written by a user
-// *
-// * @param userId The ID of the user
-// * @return List of user's reviews
-// */
-// List<ReviewDTO> getUserReviews(String userId);
-//

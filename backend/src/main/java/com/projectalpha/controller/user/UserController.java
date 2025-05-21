@@ -1,7 +1,6 @@
 package com.projectalpha.controller.user;
 
 import com.projectalpha.controller.user.diner.DinerController;
-import com.projectalpha.controller.user.diner.favorite.FavoritesController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
 import com.projectalpha.dto.business.Business;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController implements DinerController, OwnerController, ListsController, FavoritesController {
+public class UserController implements DinerController, OwnerController, ListsController {
 
     private final UserService userService;
 
@@ -122,7 +121,8 @@ public class UserController implements DinerController, OwnerController, ListsCo
 
     @Override
     @GetMapping("/diner_user/{userId}/lists/{listId}/items")
-    public ResponseEntity<?> getDinerListItems(@PathVariable String userId,@PathVariable String listId) {
+    public ResponseEntity<?> getDinerListItems(@PathVariable String userId,
+                                               @PathVariable String listId) {
 
             try {
                 List<BusinessDTO> items = userService.getDinerListItems(userId, listId);
@@ -135,8 +135,10 @@ public class UserController implements DinerController, OwnerController, ListsCo
 
 
         @Override
-        @PostMapping("/diner_user/{userId}/list/{listId}/items/{businessId}")
-        public ResponseEntity<?> createListItem(@PathVariable (name="userId") String userId, @PathVariable(name="listId") String listId,@PathVariable(name="businessId") String businessId) {
+        @PostMapping("/diner_user/{userId}/lists/{listId}/items/{businessId}")
+        public ResponseEntity<?> createListItem(@PathVariable(name="userId") String userId,
+                                                @PathVariable(name="listId") String listId,
+                                                @PathVariable(name="businessId") String businessId) {
             try {
                 String listItemId = userService.createListItem(userId, businessId, listId);
                 return ResponseEntity.ok(Map.of("listItemId", listItemId));

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class CustomListItemRequest {
     @JsonProperty("list_id")
-    String list_id;
-    String listItemId;
+    private String listId;
+    private String listItemId;
 
 }

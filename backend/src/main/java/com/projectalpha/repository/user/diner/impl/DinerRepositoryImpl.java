@@ -12,7 +12,6 @@ import com.projectalpha.config.thirdparty.SupabaseConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
-import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.stereotype.Repository;
@@ -25,7 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository, ListRepository {
+public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
     private final SupabaseConfig supabaseConfig;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -101,12 +100,6 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
     public List<BusinessDTO> getDinerListItems(String userId,String listId){
 
         try {
-            // Kullanıcının diner profil ID'sini al
-            Optional<DinerUserProfile> profile = findDinerByID(userId);
-            String dinerId = profile
-                    .map(DinerUserProfile::getId)
-                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
-
             String listUrl = supabaseConfig.getSupabaseUrl() +
                     "/rest/v1/custom_list_item?select=business_id&list_id=eq." + listId;
 
@@ -143,7 +136,6 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
 
             String businessUrl = supabaseConfig.getSupabaseUrl() +
                     "/rest/v1/business?select=*&id=in.(" + businessQuery + ")";
-
 
 
             HttpRequest businessRequest = HttpRequest.newBuilder()
@@ -229,7 +221,7 @@ public class DinerRepositoryImpl implements DinerRepository, FavoritesRepository
 
             Map<String, Object> createPayload = Map.of(
                     "name", createRequest.getName(),
-                    "user_id", userId,
+                    "user_id", dinerId,
                     "user_profile_diner_id", dinerId,
                     "is_public", createRequest.isPublic(),
                     "like_counter", createRequest.getLikeCount()

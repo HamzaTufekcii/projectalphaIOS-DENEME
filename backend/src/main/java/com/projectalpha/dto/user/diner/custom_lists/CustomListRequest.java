@@ -6,8 +6,8 @@ import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-
 public class CustomListRequest {
+
     private String name;
     private boolean isPublic;
     private int likeCount;
