@@ -1,0 +1,82 @@
+/* src/components/RestaurantDetailComponents/SaveToLists.css */
+
+/* Container ve modal temel stilleri */
+.save-to-lists-container {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 1000;
+}
+
+.save-to-lists-modal {
+    background: #fff;
+    color: #000;
+    border-radius: 8px;
+    width: 280px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Başlık */
+.save-to-lists-modal h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+/* Liste seçenekleri */
+.list-options {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.list-options li {
+    margin-bottom: 8px;
+}
+
+/* Checkbox’ları tamamen yuvarlak, iç işaret yok */
+.list-options input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 2px solid #ccc;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Seçili olduğunda dolu kırmızı daire */
+.list-options input[type="checkbox"]:checked {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+/* İç işaret pseudo-element’i tamamen kaldırıldı */
+/* (Yani ::after tanımı yok) */
+
+/* Label hizalama */
+.list-options label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Buton grubu */
+.actions {
+    text-align: right;
+}
+
+.actions button {
+    margin-left: 8px;
+}
+
+/* İptal ve Kaydet butonları */
+.actions button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
