@@ -151,4 +151,23 @@ public class UserRepositoryImpl implements UserRepository {
             throw new RuntimeException("User update failed: " + response.body());
         }
     }
+
+    @Override
+    public void changePassword(String userId, String newPassword) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/auth/v1/admin/users/" + userId))
+                .header("apikey", supabaseConfig.getSupabaseApiKey())
+                .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                .header("Content-Type", "application/json")
+                .method("PUT",HttpRequest.BodyPublishers.ofString("""
+                        {"password": "%s"}
+                 """.formatted(newPassword)))
+                .build();
+
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("User update failed: " + response.body());
+        }
+    }
 } 

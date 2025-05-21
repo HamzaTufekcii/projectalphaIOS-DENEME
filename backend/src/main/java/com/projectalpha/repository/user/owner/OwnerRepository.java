@@ -54,20 +54,39 @@ public interface OwnerRepository {
      */
     AddressDTO saveAddress(String businessId, AddressDTO address);
 
-    /**
-     * Owner kullanıcısı için kayıt sırasında otomatik olarak
-     * yeni bir Business ve Address oluşturur
-     * ve Owner'e isim soyisim telefon numarası bilgisi ekler.
-     *  Uyarı: Owner profil oluşturulmuş var sayılır. (createUserProfile(..., ..., role: 'owner_user'))
-     *  ----
-     *  1-Supabasede Yeni Business kaydı yaratır (sadece adıyla) ve ownerId ile bağlar. (yani gelen ownerId ve name'yi databaseye yeni bir business satırının içine ekler.)
-     *  2-Yeni oluşan Business kaydının idsini alır (businessId : supabase random id atıyor.)
-     *  3-Yeni Address kaydı yaratır ve businessId ile bağlar.
-     *  4-Yeni oluşan adresin idsini business'e ekler. (addressId : supabase random id atıyor.)
+
+     /**
+     * <p>
+     *    <b>
+      *        Owner kullanıcısı için kayıt sırasında otomatik olarak yeni bir Business ve Address oluşturur ve Owner'e isim soyisim telefon numarası bilgisi ekler.
+     *    </b>
+     * </p>
+     * <p>-------------</p>
+     * <p><i>
+     * ⚠ <b>Uyarı</b> ⚠
+     *     <p>Owner profil oluşturulmuş var sayılır.
+     *     <p><i> (createUserProfile(..., ..., role: 'owner_user'))</i></p>
+     *     </p>
+     * </i></p>
+     * <p>-------------</p>
+     * <ol>
+     *      <li>Supabasede Yeni Business kaydı yaratır (sadece adıyla) ve ownerId ile bağlar.
+     *      <p><i>(yani gelen ownerId ve name'yi databasede oluşan businesse ekler.)</i></p>
+     *      </li>
+     *      <li>Yeni oluşan Business kaydının idsini alır
+      *         <p><i>(local değişken String businessId = Supabase random id atıyor.)</i></p>
+      *      </li>
+     *      <li>Yeni Address kaydı yaratır ve businessId ile bağlar.</li>
+     *      <li>Yeni oluşan adresin idsini business'e ekler.
+     *          <p><i>(local değişken String addressId = Supabase random id atıyor.)</i></p>
+     *      </li>
+     * </ol>
+     * @author izzethancelikdemir
      *
-     * @param ownerId Owner kullanıcısının userId'si (Supabase'den gelen ID)
-     * @param request Ön yüzden gelen istek
-     * @return supabasede oluşturulan yeni işletmeyi döndürür
+     * @param ownerId -> (<b>String</b>) Owner kullanıcısının userId'si
+     * <p></p>
+     * @param request -> (<b>OwnerRegisterRequest</b>) Ön yüzden gelen istek
+     * @return -> (<b>BusinessDTO</b>) Yeni oluşturulan işletmeyi döndürür
      */
      BusinessDTO createInitialBusinessForOwner(String ownerId, OwnerRegisterRequest request) throws Exception;
 }
