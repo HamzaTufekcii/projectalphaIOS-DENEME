@@ -7,12 +7,15 @@ import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
+import com.projectalpha.dto.user.diner.custom_lists.CustomList;
+import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.repository.user.UserRepository;
 import com.projectalpha.repository.user.diner.DinerRepository;
-import com.projectalpha.repository.user.diner.custom_lists.listItem.FavoritesRepository;
+import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
 import com.projectalpha.repository.user.owner.OwnerRepository;
 import com.projectalpha.service.user.diner.DinerService;
 import com.projectalpha.service.user.owner.OwnerService;
@@ -29,14 +32,14 @@ public class UserService implements DinerService, OwnerService {
 
     private final DinerRepository dinerRepository;
     private final OwnerRepository ownerRepository;
-    private final FavoritesRepository favoritesRepository;
     private final UserRepository userRepository;
+    private final ListRepository listRepository;
 
     @Autowired
-    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, FavoritesRepository favoritesRepository, UserRepository userRepository) {
+    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, ListRepository listRepository, UserRepository userRepository) {
         this.dinerRepository = dinerRepository;
         this.ownerRepository = ownerRepository;
-        this.favoritesRepository = favoritesRepository;
+        this.listRepository = listRepository;
         this.userRepository = userRepository;
     }
 
@@ -60,8 +63,32 @@ public class UserService implements DinerService, OwnerService {
         ownerRepository.updateOwnerProfile(userId, request);
     }
     @Override
-    public List<Business> getDinerFavorites(String userId) {
-        return favoritesRepository.getDinerFavorites(userId);
+    public List<BusinessDTO> getDinerListItems(String userId,String listId) {
+        return listRepository.getDinerListItems(userId,listId);
+    }
+
+
+    public String createListItem(String userId, String businessId, String listId){
+        return listRepository.createListItem(userId,businessId,listId);
+    }
+
+    public CustomList createList(String userId, CustomListRequest createRequest) {
+        return listRepository.createDinerList(userId, createRequest);
+    }
+
+    public CustomList updateList(String userId,String listId, CustomListRequest updateRequest) {
+        return listRepository.updateDinerList(userId, listId, updateRequest);
+    }
+
+    public void removeDinerList(String userId, String listId) {
+        listRepository.removeDinerList(userId,listId);
+    }
+
+    public void removeListItem(String userId, String listItemId) {
+        listRepository.removeListItem(userId,listItemId);
+    }
+    public List<CustomList> getDinerLists(String userId) {
+        return listRepository.getDinerLists(userId);
     }
 
     /**
@@ -83,5 +110,3 @@ public class UserService implements DinerService, OwnerService {
             userRepository.changePassword(userId, newPassword);
     }
 }
-
-

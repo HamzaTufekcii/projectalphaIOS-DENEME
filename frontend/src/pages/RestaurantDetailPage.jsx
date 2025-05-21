@@ -1,15 +1,19 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaArrowLeft, FaChevronLeft, FaChevronRight, FaTag, FaTimes, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
-import { getRestaurantById, getFavorites, toggleFavorite as toggleFavoriteService } from '../services/restaurantService';
+import { getRestaurantById } from '../services/restaurantService';
+import SaveButton from '../components/RestaurantDetailComponents/SaveButton';
+import SaveToLists from '../components/RestaurantDetailComponents/SaveToLists';
 import '../styles/RestaurantDetailPage.css';
 import RestaurantReviews from "../components/RestaurantDetailComponents/RestaurantReviews.jsx";
 
 const RestaurantDetailPage = () => {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
-  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showListModal, setShowListModal] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -33,12 +37,8 @@ const RestaurantDetailPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [restaurantData, favoritesData] = await Promise.all([
-          getRestaurantById(Number(id)),
-          getFavorites()
-        ]);
+        const restaurantData = await getRestaurantById(Number(id));
         setRestaurant(restaurantData);
-        setFavorites(favoritesData);
       } catch (err) {
         console.error('Error fetching restaurant details:', err);
         setError('Restoran detayları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
@@ -50,21 +50,7 @@ const RestaurantDetailPage = () => {
     fetchData();
   }, [id]);
 
-  const toggleFavorite = async (e) => {
-    e.preventDefault();
-    try {
-      const isFavorite = favorites.includes(Number(id));
-      await toggleFavoriteService(Number(id), !isFavorite);
-      
-      if (isFavorite) {
-        setFavorites(favorites.filter(fav => fav !== Number(id)));
-      } else {
-        setFavorites([...favorites, Number(id)]);
-      }
-    } catch (err) {
-      console.error('Error toggling favorite status:', err);
-    }
-  };
+
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => 
@@ -241,7 +227,6 @@ const RestaurantDetailPage = () => {
     );
   }
 
-  const isFavorite = favorites.includes(Number(id));
 
   return (
     <div className="restaurant-detail-page">
@@ -285,13 +270,24 @@ const RestaurantDetailPage = () => {
       <div className="restaurant-info-container">
         <div className="restaurant-header-row">
           <h1 className="restaurant-name">{restaurant.name}</h1>
-          <button 
-            className={`save-button ${isFavorite ? 'saved' : ''}`}
-            onClick={toggleFavorite}
-            aria-label={isFavorite ? "Favorilerden çıkar" : "Favorilere ekle"}
-          >
-            {isFavorite ? 'Kaydedildi!' : 'Kaydet'}
-          </button>
+          <div className="save-wrapper">
+                <SaveButton
+                  itemId={Number(id)}
+                  isSaved={isSaved}
+                  onToggle={(next) => setIsSaved(next)}
+                  onCustomize={() => setShowListModal(true)}
+                />
+                {showListModal && (
+                    <SaveToLists
+                    itemId={Number(id)}
+                    onClose={(hasAny) => {
+                          setShowListModal(false);
+                          // Eğer artık hiçbir liste seçili değilse: butonu + yap
+                              if (!hasAny) setIsSaved(false);
+                        }}
+                    />
+                )}
+              </div>
         </div>
 
         <div className="rating-row">

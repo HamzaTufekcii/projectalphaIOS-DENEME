@@ -1,17 +1,18 @@
 package com.projectalpha.controller.user;
 
 import com.projectalpha.controller.user.diner.DinerController;
-import com.projectalpha.controller.user.diner.favorite.FavoritesController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
+import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController implements DinerController, OwnerController, ListsController, FavoritesController {
+public class UserController implements DinerController, OwnerController, ListsController {
 
     private final UserService userService;
 
@@ -66,54 +67,99 @@ public class UserController implements DinerController, OwnerController, ListsCo
     @Override
     @GetMapping("/diner_user/{userId}/lists")
     public ResponseEntity<?> getDinerLists(@PathVariable(name = "userId") String userId) {
-        // DinerService'de list fonksiyonu yok, o yüzden 501 dönüyoruz
-        return ResponseEntity.status(501).body("getDinerLists() not implemented yet");
+        try {
+            List<CustomList> lists = userService.getDinerLists(userId);
+            return ResponseEntity.ok(lists);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Listeler alınamadı: " + e.getMessage());
+
+        }
     }
 
     @Override
     @PostMapping("/diner_user/{userId}/lists")
     public ResponseEntity<?> createDinerList(@PathVariable(name = "userId") String userId,
                                              @RequestBody CustomListRequest createRequest) {
-        // DinerService'de list oluşturma yok, 501 dönüyoruz
-        return ResponseEntity.status(501).body("createDinerList() not implemented yet");
+        try {
+            CustomList createdList = userService.createList(userId, createRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Liste oluşturulamadı: " + e.getMessage());
+        }
     }
     @Override
-    @PutMapping("diner_user/{userId}/lists/{listId}")
+    @PatchMapping ("diner_user/{userId}/lists/{listId}")
     public ResponseEntity<?> updateDinerList(@PathVariable(name = "userId") String userId,
                                              @PathVariable(name = "listId") String listId,
                                              @RequestBody CustomListRequest updateRequest){
-        return ResponseEntity.status(501).body("updateDinerList() not implemented yet");
+        try {
+            CustomList updatedList = userService.updateList(userId, listId, updateRequest);
+            return ResponseEntity.ok(updatedList); // güncellenmiş liste dön
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Liste güncellenemedi: " + e.getMessage());
+        }
     }
     @Override
-    @PatchMapping("/diner_user/{userId}/lists/{listId}")
+    @DeleteMapping ("/diner_user/{userId}/lists/{listId}")
     public ResponseEntity<?> removeDinerList(@PathVariable(name = "userId") String userId,
                                              @PathVariable(name = "listId") String listId) {
-        return ResponseEntity.status(501).body("removeDinerList() not implemented");
+        try {
+            userService.removeDinerList(userId, listId);
+            return ResponseEntity.ok("Liste başarıyla silindi.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Liste silinemedi: " + e.getMessage());
+        }
+
+
     }
     //BURADASIN--- DinerFavorite implementations ---
 
 
     @Override
-    @GetMapping("/diner_user/{userId}/favorites")
-    public ResponseEntity<?> getDinerFavorites(@PathVariable(name = "userId") String userId) {
-        List<Business> favorites = userService.getDinerFavorites(userId);
-        return ResponseEntity.ok(favorites);
+    @GetMapping("/diner_user/{userId}/lists/{listId}/items")
+    public ResponseEntity<?> getDinerListItems(@PathVariable String userId,
+                                               @PathVariable String listId) {
+
+            try {
+                List<BusinessDTO> items = userService.getDinerListItems(userId, listId);
+                return ResponseEntity.ok(items);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Liste item'ları alınamadı: " + e.getMessage());
+            }
     }
+
+
+        @Override
+        @PostMapping("/diner_user/{userId}/lists/{listId}/items/{businessId}")
+        public ResponseEntity<?> createListItem(@PathVariable(name="userId") String userId,
+                                                @PathVariable(name="listId") String listId,
+                                                @PathVariable(name="businessId") String businessId) {
+            try {
+                String listItemId = userService.createListItem(userId, businessId, listId);
+                return ResponseEntity.ok(Map.of("listItemId", listItemId));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Hata: " + e.getMessage());
+            }
+        }
+
     @Override
-    @PostMapping("/diner_user/{userId}/favorites")
-    public ResponseEntity<?> createDinerFavoriteItem(@PathVariable(name = "userId") String userId, @RequestBody CustomListItemRequest createRequest){
-        return ResponseEntity.status(501).body("createDinerFavoriteItem() not implemented");
-    }
-    @Override
-    @PatchMapping("/diner_user/{userId}/favorites/{listItemId}")
-    public ResponseEntity<?> removeDinerFavoriteItem(@PathVariable(name = "userId") String userId,
-                                                     @PathVariable(name = "listItemId") String listItemId) {
-        return ResponseEntity.status(501).body("removeDinerFavorite() not implemented");
-    }
-    @Override
-    @PutMapping("/diner_user/{userId}/favorites/{listItemId}/add_to/{listId}")
-    public ResponseEntity<?> addDinerFavoriteItem(@PathVariable String userId, @PathVariable String listItemId, @PathVariable String listId) {
-        return ResponseEntity.status(501).body("addDinerFavoriteItem() not implemented");
+    @DeleteMapping("/diner_user/{userId}/list-items/{listItemId}")
+    public ResponseEntity<?> removeListItem(@PathVariable(name = "userId") String userId,
+                                            @PathVariable(name = "listItemId") String listItemId) {
+        try {
+            userService.removeListItem(userId, listItemId);
+            return ResponseEntity.ok("Liste'den item başarıyla silindi.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Liste'den item silinemedi: " + e.getMessage());
+        }
     }
 
 

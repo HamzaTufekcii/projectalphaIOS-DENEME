@@ -844,4 +844,8 @@
   background-color: rgba(0, 0, 0, 0.5);
   padding: 8px 15px;
   border-radius: 20px;
-} 
+}
+.save-wrapper {
+  position: relative;      /* içindeki absolute’ları bu kutuya göre hizalar */
+  display: inline-block;   /* genişliği içeriğe sarar, buton kadar yer kaplar */
+}

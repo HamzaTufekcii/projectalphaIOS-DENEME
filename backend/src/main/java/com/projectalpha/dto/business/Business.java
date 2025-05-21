@@ -14,7 +14,7 @@ public class Business {
 
     private String addresses;
 
-    private int price_range;
+    private String price_range;
 
     private int avg_rating;
 
