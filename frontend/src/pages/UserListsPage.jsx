@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/UserListsPage.css';
-import CreateList from '../components/RestaurantDetailComponents/CreateList';  // ← eklendi
+import CreateList from '../components/RestaurantDetailComponents/CreateList';
+import axios from "axios";  // ← eklendi
+import {getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
 
 // Mock verilerinizi buraya ekleyin:
 const MOCK_PUBLIC_LISTS = [
@@ -15,7 +17,9 @@ const MOCK_USER_LISTS = [
 export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const currentUserId = getUserIdFromStorage();
+  const currentUserRole = getUserRoleFromStorage();
+  const API_URL = 'http://localhost:8080/api/users';
   // Yeni: “Liste Oluştur” modal kontrolü
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -33,12 +37,14 @@ export default function UserListsPage() {
   // viewMode’a göre mock listesini yükle
   useEffect(() => {
     setIsLoading(true);
-    const lists = viewMode === 'discover' ? MOCK_PUBLIC_LISTS : MOCK_USER_LISTS;
+    const response = axios.get(`${API_URL}/${currentUserRole}/${currentUserId}/lists`);
+
+    const lists = viewMode === 'discover' ? MOCK_PUBLIC_LISTS : response.data || [];
     setTimeout(() => {
       setUserLists(lists || []);
       setIsLoading(false);
     }, 300);
-  }, [viewMode]);
+  }, [currentUserId, currentUserRole, viewMode]);
 
   const handleSelectView = (mode) => {
     navigate(`/lists?mode=${mode}`);

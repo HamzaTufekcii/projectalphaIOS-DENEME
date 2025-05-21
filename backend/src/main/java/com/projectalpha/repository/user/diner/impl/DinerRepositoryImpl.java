@@ -365,7 +365,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
                     .map(DinerUserProfile::getId)
                     .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
 
-            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?id=eq." + listItemId;
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?id=eq." + listItemId + "&diner_id=eq." + dinerId;
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -385,7 +385,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Silme işlemi sırasında hata oluştu: " + e.getMessage());
-        }
+         }
         }
 
     @Override
