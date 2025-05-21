@@ -3,7 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/ProfilePage.css';
 import { FaEdit } from 'react-icons/fa';
-import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData, updateUserData} from '../services/userService';
+import {
+  getUserIdFromStorage,
+  getUserRoleFromStorage,
+  fetchUserData,
+  updateUserData,
+  changePassword
+} from '../services/userService';
 import {checkPassword, updateUser} from "../services/authService.js";
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -118,7 +124,6 @@ const getUserData = async () => {
   const handlePasswordEdit = async (e) => {
     setIsCurrentFalse(false);
     try {
-
       const response = await checkPassword(userProfile.email, passwordData.currentPassword, currentUserRole);
       console.log(response.status);
       setIsCurrentFalse(false);
@@ -131,7 +136,7 @@ const getUserData = async () => {
     }setIsCurrentFalse(false);
 
     try{
-      const responseChange = await updateUser(userProfile.email, passwordData.confirmPassword, currentUserRole);
+      const responseChange = await changePassword(currentUserId, passwordData.confirmPassword);
       console.log(responseChange.status);
       setIsSucceed(true);
       setIsCurrentFalse(false);

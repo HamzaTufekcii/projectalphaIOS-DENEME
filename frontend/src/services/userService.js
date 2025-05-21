@@ -18,6 +18,18 @@ export const saveUserData = (userData, role) => {
         localStorage.removeItem('ownerData');
     }
 }
+export const changePassword = async (id, newPassword) => {
+    try{
+        const response =
+            await axios.patch(`${API_URL}/${id}/change-password`,
+                 { newPassword: newPassword.trim() },
+                { headers: {'Content-Type': 'application/json'} }
+            );
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Password is not matched';
+    }
+}
 export const getUserData = (role) => {
     if(role === 'diner_user'){
         const userData = JSON.parse(localStorage.getItem('userData'));

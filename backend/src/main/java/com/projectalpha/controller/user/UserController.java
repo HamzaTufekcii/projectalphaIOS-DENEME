@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -29,6 +30,19 @@ public class UserController implements DinerController, OwnerController, ListsCo
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+
+    //------General User------\\
+    @PatchMapping("/{userId}/change-password")
+    public ResponseEntity<?>changePassword(@PathVariable(name = "userId") String userId,
+                                           @RequestBody Map<String, String> body) throws Exception {
+        String newPassword = body.get("newPassword");
+        userService.changePassword(userId, newPassword);
+
+        return ResponseEntity.ok().build();
+    }
+
+
 
     // -------- Diner Implementation --------
     @Override
@@ -82,8 +96,6 @@ public class UserController implements DinerController, OwnerController, ListsCo
     @Override
     @GetMapping("/diner_user/{userId}/favorites")
     public ResponseEntity<?> getDinerFavorites(@PathVariable(name = "userId") String userId) {
-
-
         List<Business> favorites = userService.getDinerFavorites(userId);
         return ResponseEntity.ok(favorites);
     }

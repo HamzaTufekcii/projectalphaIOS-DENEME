@@ -96,6 +96,7 @@ export const checkPassword = async (email, password, role) => {
   }
 };
 
+
 /**
  * Save auth data to local storage
  * @param {Object} authData - Auth data with tokens and user info
