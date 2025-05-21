@@ -287,4 +287,24 @@
     flex-direction: column;
     gap: 5px;
   }
-} 
+}
+/* “Liste Oluştur” butonunu tab’larla uyumlu hale getiren stil */
+.create-list-btn {
+  margin-left: 16px;
+  background-color: #ff7f7f;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.create-list-btn:hover {
+  background-color: #ff5252;
+}
+
+.create-list-btn:active {
+  background-color: #e74c3c;
+}

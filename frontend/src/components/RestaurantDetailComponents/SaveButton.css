@@ -1,0 +1,32 @@
+/* src/components/RestaurantDetailComponents/SaveButton.css */
+
+/* Temel buton: hiçbir arka plan veya kenarlık */
+.save-button {
+    width: 40px;
+    height: 40px;
+    background: none !important;
+    border: none !important;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Saved durumunda da arka planı kaldır */
+.save-button.saved {
+    background: none !important;
+    border: none !important;
+}
+
+/* + ve ✔ ikonlarının tek yaptığımız değişiklik: renkleri */
+/* Plus hâli gri, tick hâli siyah */
+.save-button .icon {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff5a5f;     /* + */
+}
+
+.save-button.saved .icon {
+    color: #ff5a5f;     /* ✔, isteğe bağlı başka bir renk */
+}
