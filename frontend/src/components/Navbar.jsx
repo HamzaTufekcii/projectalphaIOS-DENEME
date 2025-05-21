@@ -113,8 +113,8 @@ const Navbar = () => {
               >
                 <FaList className="nav-icon" /> Listeler
               </Link>
-              <Link to="/reviews" className="nav-link">
-                <FaStar /> Değerlendirmeler
+              <Link to="/my-reviews" className={`nav-link ${location.pathname === '/my-reviews' ? 'active' : ''}`}>
+                <FaStar /> Değerlendirmelerim
               </Link>
 
             </>

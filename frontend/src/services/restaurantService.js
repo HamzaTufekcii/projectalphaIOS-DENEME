@@ -184,6 +184,16 @@ export const getRestaurants = async (filters = {}) => {
   */
 };
 
+
+export const getAllRestaurants = async () => {
+  const all = [...await getFeaturedRestaurants(), ...await getRestaurants()];
+
+  // ID'ye göre tekrarları temizle (opsiyonel ama tavsiye edilir)
+  const deduplicated = Array.from(new Map(all.map(r => [r.id, r])).values());
+  return deduplicated;
+};
+
+
 /**
  * Get restaurant details by ID
  * @param {number} id - Restaurant ID

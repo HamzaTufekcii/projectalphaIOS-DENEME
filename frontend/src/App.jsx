@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import OwnerHomePage from './pages/OwnerHomePage';
 import OwnerReviewsPage from './pages/OwnerReviewsPage';
 import OwnerPromotionsPage from './pages/OwnerPromotionsPage';
+import MyReviewsPage from './pages/MyReviewsPage';
 import './styles/HomePage.css';
 import './styles/App.css';
 
@@ -31,6 +32,7 @@ function App() {
             {/* Sadece normal kullanıcıya açık sayfalar */}
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/lists" element={<UserListsPage />} />
+            <Route path="/my-reviews" element={<MyReviewsPage/>} />
             {/* Giriş */}
             <Route path="/login" element={<div>Login Page</div>} />
             {/* İşletme kullanıcılarının paneli */}
