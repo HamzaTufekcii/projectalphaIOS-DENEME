@@ -18,6 +18,18 @@ export const saveUserData = (userData, role) => {
         localStorage.removeItem('ownerData');
     }
 }
+export const changePassword = async (id, newPassword) => {
+    try{
+        const response =
+            await axios.patch(`${API_URL}/${id}/change-password`,
+                 { newPassword: newPassword.trim() },
+                { headers: {'Content-Type': 'application/json'} }
+            );
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Password is not matched';
+    }
+}
 export const getUserData = (role) => {
     if(role === 'diner_user'){
         const userData = JSON.parse(localStorage.getItem('userData'));
@@ -64,20 +76,41 @@ export const fetchUserData = async (role, id) => {
     }
 };
 export const updateUserData = async (newData, id, role) => {
-    const requestBody = {
-        email: newData.email.trim(),
-        role,
+    if(role === 'owner_user'){
+        const requestBody = {
+            email: newData.email.trim(),
+            role,
 
-        requestDiner: {
-            name: newData.name.trim(),
-            surname: newData.surname.trim(),
-            phone_numb: newData.phone_numb.trim(),
+            requestOwner: {
+                name: newData.name.trim(),
+                surname: newData.surname.trim(),
+                phone_numb: newData.phone_numb.trim(),
+            }
+        }
+        try {
+            await axios.put(`${API_URL}/${role}/${id}/profile`, requestBody);
+            await fetchUserData(role, id);
+
+        } catch (err) {
+            console.error('Güncelleme hatası:', err);
         }
     }
-    try {
-        await axios.put(`${API_URL}/${role}/${id}/profile`, requestBody);
-        await fetchUserData(role, id);
-    } catch (err) {
-        console.error('Güncelleme hatası:', err);
+    if(role === 'diner_user') {
+        const requestBody = {
+            email: newData.email.trim(),
+            role,
+
+            requestDiner: {
+                name: newData.name.trim(),
+                surname: newData.surname.trim(),
+                phone_numb: newData.phone_numb.trim(),
+            }
+        }
+        try {
+            await axios.put(`${API_URL}/${role}/${id}/profile`, requestBody);
+            await fetchUserData(role, id);
+        } catch (err) {
+            console.error('Güncelleme hatası:', err);
+        }
     }
 }

@@ -48,4 +48,13 @@ public interface UserRepository {
      */
     void updateUserPasswordAndRole(String userId, String password, String role) throws Exception;
 
+    /**
+     * Updates a user password.
+     *
+     * @param userId The userId to change user
+     * @param newPassword The new password to set
+     * @throws Exception If the update fails
+     */
+    void changePassword(String userId, String newPassword) throws Exception;
+
 } 

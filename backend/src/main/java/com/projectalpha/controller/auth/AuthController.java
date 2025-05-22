@@ -1,6 +1,7 @@
 package com.projectalpha.controller.auth;
 
 import com.projectalpha.dto.*;
+import com.projectalpha.dto.GenericResponse;
 import com.projectalpha.dto.thirdparty.SupabaseTokenResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
 import com.projectalpha.exception.auth.*;

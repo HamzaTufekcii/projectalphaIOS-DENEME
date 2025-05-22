@@ -24,5 +24,6 @@ public interface DinerService {
      */
     void updateProfile(String userId, DinerUpdateRequest request);
     //yorum kısmını yap!
-    List<Business> getDinerFavorites(String userId);
+    List<BusinessDTO> getDinerListItems(String userId,String listId);
+
 }

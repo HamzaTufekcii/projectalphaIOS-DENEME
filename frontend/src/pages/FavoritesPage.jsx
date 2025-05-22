@@ -77,7 +77,7 @@ const FavoritesPage = () => {
       
       try {
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/favorites`);
+        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists/${currentUserFavoriteID}`);
         // Find the favorites list
         const favList = response.data;
         

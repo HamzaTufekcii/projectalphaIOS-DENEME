@@ -6,6 +6,7 @@ import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
+import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import org.springframework.stereotype.Repository;
 
@@ -31,9 +32,9 @@ public interface OwnerRepository {
      * update owners by their user_id (in database)
      *
      * @param userId The ownerId to search for
-     * @param profile ownerProfile
+     * @param request ownerProfile
      */
-    void updateOwnerProfile(String userId, OwnerUserProfile profile);
+    void updateOwnerProfile(String userId, OwnerUpdateRequest request);
 
     /**
      * Yeni bir business (işletme) kaydını veri tabanına ekler.
@@ -53,20 +54,39 @@ public interface OwnerRepository {
      */
     AddressDTO saveAddress(String businessId, AddressDTO address);
 
-    /**
-     * Owner kullanıcısı için kayıt sırasında otomatik olarak
-     * yeni bir Business ve Address oluşturur
-     * ve Owner'e isim soyisim telefon numarası bilgisi ekler.
-     *  Uyarı: Owner profil oluşturulmuş var sayılır. (createUserProfile(..., ..., role: 'owner_user'))
-     *  ----
-     *  1-Supabasede Yeni Business kaydı yaratır (sadece adıyla) ve ownerId ile bağlar. (yani gelen ownerId ve name'yi databaseye yeni bir business satırının içine ekler.)
-     *  2-Yeni oluşan Business kaydının idsini alır (businessId : supabase random id atıyor.)
-     *  3-Yeni Address kaydı yaratır ve businessId ile bağlar.
-     *  4-Yeni oluşan adresin idsini business'e ekler. (addressId : supabase random id atıyor.)
+
+     /**
+     * <p>
+     *    <b>
+      *        Owner kullanıcısı için kayıt sırasında otomatik olarak yeni bir Business ve Address oluşturur ve Owner'e isim soyisim telefon numarası bilgisi ekler.
+     *    </b>
+     * </p>
+     * <p>-------------</p>
+     * <p><i>
+     * ⚠ <b>Uyarı</b> ⚠
+     *     <p>Owner profil oluşturulmuş var sayılır.
+     *     <p><i> (createUserProfile(..., ..., role: 'owner_user'))</i></p>
+     *     </p>
+     * </i></p>
+     * <p>-------------</p>
+     * <ol>
+     *      <li>Supabasede Yeni Business kaydı yaratır (sadece adıyla) ve ownerId ile bağlar.
+     *      <p><i>(yani gelen ownerId ve name'yi databasede oluşan businesse ekler.)</i></p>
+     *      </li>
+     *      <li>Yeni oluşan Business kaydının idsini alır
+      *         <p><i>(local değişken String businessId = Supabase random id atıyor.)</i></p>
+      *      </li>
+     *      <li>Yeni Address kaydı yaratır ve businessId ile bağlar.</li>
+     *      <li>Yeni oluşan adresin idsini business'e ekler.
+     *          <p><i>(local değişken String addressId = Supabase random id atıyor.)</i></p>
+     *      </li>
+     * </ol>
+     * @author izzethancelikdemir
      *
-     * @param ownerId Owner kullanıcısının userId'si (Supabase'den gelen ID)
-     * @param request Ön yüzden gelen istek
-     * @return supabasede oluşturulan yeni işletmeyi döndürür
+     * @param ownerId -> (<b>String</b>) Owner kullanıcısının userId'si
+     * <p></p>
+     * @param request -> (<b>OwnerRegisterRequest</b>) Ön yüzden gelen istek
+     * @return -> (<b>BusinessDTO</b>) Yeni oluşturulan işletmeyi döndürür
      */
      BusinessDTO createInitialBusinessForOwner(String ownerId, OwnerRegisterRequest request) throws Exception;
 }
