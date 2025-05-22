@@ -16,27 +16,30 @@ import {
   FaLocationArrow
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
-import Button from '../components/Button';
-import CustomInput from '../components/CustomInput';
+
 import LoginPopup from '../components/HomePageComponents/LoginPopup';
 import ConfirmationPopup from '../components/HomePageComponents/ConfirmationPopup';
 import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPopup';
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
-import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
+
+// Business service methods
+import {
+    getTopRated,
+    searchBusinesses
+} from '../services/businessService';
 import { login, saveAuthData } from '../services/authService';
-import axios from "axios";
-import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
+import axios from 'axios';
+import { getUserIdFromStorage, getUserRoleFromStorage, fetchUserData } from '../services/userService';
 
 const HomePage = () => {
-    // Auth and registration state
+    // Authentication & registration state
     const [showPopup, setShowPopup] = useState(false);
     const [showSecondPopup, setShowSecondPopup] = useState(false);
     const [showThirdPopup, setShowThirdPopup] = useState(false);
     const [showFourthPopup, setShowFourthPopup] = useState(false);
     const [selectedTab, setSelectedTab] = useState('user');
     const [registerEmail, setRegisterEmail] = useState('');
-    const [registerName, setRegisterName] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerPasswordControl, setRegisterPasswordControl] = useState('');
     const [confirmationCode, setConfirmationCode] = useState('');
@@ -45,15 +48,9 @@ const HomePage = () => {
     const [userLoginPassword, setUserLoginPassword] = useState('');
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
-    const [token, setToken] = useState('');
-    const [errors, setErrors] = useState({
-        email: '',
-        password: '',
-        ownerEmail: '',
-        ownerPassword: ''
-    });
-    
-    // Search and filter state
+    const [errors, setErrors] = useState({});
+
+    // Search & filter state
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState('all');
@@ -62,37 +59,30 @@ const HomePage = () => {
 
     // Location state
     const [userLocation, setUserLocation] = useState(null);
-    const [locationStatus, setLocationStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
-    
-    // Featured restaurants
+    const [locationStatus, setLocationStatus] = useState('idle');
+
+    // Featured (top-rated) restaurants
     const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
     const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
     const navigate = useNavigate();
 
-    // Expose this component instance to be accessed by Navbar
+    // Make component accessible globally (e.g., for Navbar)
     useEffect(() => {
-        // Bileşeni global olarak erişilebilir yap
-        window.homePageInstance = {
-            openLoginPopup: openPopup
-        };
-        
-        // Cleanup: Component unmount olduğunda referansı temizle
-        return () => {
-            window.homePageInstance = null;
-        };
+        window.homePageInstance = { openLoginPopup: openPopup };
+        return () => { window.homePageInstance = null; };
     }, []);
-    
-    // Get user location when component mounts
+
+    // On mount: get location & load featured
     useEffect(() => {
         getUserLocation();
         loadFeaturedRestaurants();
     }, []);
-    
-    // Load featured restaurants
+
+    /** Load top-rated restaurants */
     const loadFeaturedRestaurants = async () => {
         try {
             setIsLoadingFeatured(true);
-            const data = await getFeaturedRestaurants();
+            const data = await getTopRated(5);
             setFeaturedRestaurants(data);
         } catch (err) {
             console.error('Error loading featured restaurants:', err);
@@ -123,19 +113,22 @@ const HomePage = () => {
             console.error('Geolocation is not supported by this browser.');
         }
     };
-    
-    // Handle search submission
+
+    /** Handle search submission */
     const handleSearch = async (e) => {
         e.preventDefault();
-        
         if (!searchTerm.trim()) return;
-        
+
         try {
             setIsSearching(true);
-            const results = await getRestaurants({ 
-                searchTerm: searchTerm,
-                ...activeFilters
-            });
+            let results = await searchBusinesses(searchTerm);
+            // Apply extra filters client-side
+            if (activeFilters.hasActivePromo) {
+                results = results.filter(r => r.hasActivePromo);
+            }
+            if (activeFilters.tag) {
+                results = results.filter(r => r.type.toLowerCase().includes(activeFilters.tag));
+            }
             setSearchResults(results);
         } catch (err) {
             console.error('Error searching restaurants:', err);
@@ -143,21 +136,22 @@ const HomePage = () => {
             setIsSearching(false);
         }
     };
-    
-    // Clear search results
+
+    /** Clear search */
     const clearSearch = () => {
         setSearchTerm('');
         setSearchResults([]);
         setActiveFilters({});
+        setSelectedFilter('all');
     };
 
     // Handle filter click
     const handleFilterClick = (filter) => {
         setSelectedFilter(filter);
-        
+
         // Apply the filter based on the selected category
         let newFilters = {};
-        
+
         switch(filter) {
             case 'all':
                 newFilters = {};

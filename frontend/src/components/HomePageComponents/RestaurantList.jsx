@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import RestaurantCard from './RestaurantCard';
 import './RestaurantList.css';
-import { getRestaurants, getFavorites } from '../../services/restaurantService';
 import { FaSort, FaFilter } from 'react-icons/fa';
+import {
+    getAllBusinesses, getActivePromotions, getByTag,
+    getBusinessesByOwner, getTopRated, searchBusinesses
+} from '../../services/businessService.js';
 
 /**
  * RestaurantList component to display a list of restaurants
@@ -32,27 +35,41 @@ const RestaurantList = ({
     
     // Fetch restaurants and favorites on component mount
     useEffect(() => {
-      const fetchData = async () => {
-        try {
-          setLoading(true);
-          const [restaurantData, favoritesData] = await Promise.all([
-            getRestaurants(activeFilters),
-            getFavorites()
-          ]);
-          
-          // Apply sorting to restaurant data
-          const sortedRestaurants = sortRestaurants(restaurantData, sortOption);
-          setRestaurants(sortedRestaurants);
-          setFavorites(favoritesData);
-        } catch (err) {
-          console.error('Error fetching data:', err);
-          setError('Failed to load restaurants. Please try again later.');
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchData();
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                let data;
+                // filters kriterine göre uygun metodu seç
+                if (activeFilters.hasActivePromo) {
+                    data = await getActivePromotions();
+                } else if (activeFilters.tag) {
+                    data = await getByTag(activeFilters.tag);
+                } else if (activeFilters.ownerId) {
+                    data = await getBusinessesByOwner(activeFilters.ownerId);
+                } else if (activeFilters.top) {
+                    data = await getTopRated(activeFilters.top);
+                } else {
+                    data = await getAllBusinesses();
+                }
+
+                // client-side ek filtreler (ör. isim ara)
+                if (activeFilters.searchTerm) {
+                    data = data.filter(r => r.name.toLowerCase().includes(activeFilters.searchTerm.toLowerCase()));
+                }
+
+                const sorted = sortRestaurants(data, sortOption);
+                setRestaurants(sorted);
+                // favorites fonksiyonunu daha sonra entegre et
+                setFavorites([]);
+            } catch (err) {
+                console.error('Error fetching restaurants:', err);
+                setError('Failed to load restaurants.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [activeFilters, sortOption]);
 
     // Handle toggling favorites
