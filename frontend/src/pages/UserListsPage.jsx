@@ -1,61 +1,59 @@
-// src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/UserListsPage.css';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
-import axios from "axios";  // ← eklendi
-import {getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
-
-// Mock verilerinizi buraya ekleyin:
-const MOCK_PUBLIC_LISTS = [
-  // …
-];
-const MOCK_USER_LISTS = [
-  // …
-];
+import ListBox from '../components/ListBox';
+import { getUserLists, getPublicLists } from '../services/listService';
 
 export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentUserId = getUserIdFromStorage();
-  const currentUserRole = getUserRoleFromStorage();
-  const API_URL = 'http://localhost:8080/api/users';
-  // Yeni: “Liste Oluştur” modal kontrolü
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [viewMode, setViewMode] = useState('discover');
-  const [userLists, setUserLists] = useState([]);
+  const [lists, setLists] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // URL’deki mode parametresine göre güncelle
+  // URL parametresinden sekme durumunu al
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const modeFromURL = params.get('mode');
-    setViewMode(modeFromURL === 'mine' ? 'mine' : 'discover');
+    const mode = new URLSearchParams(location.search).get('mode');
+    setViewMode(mode === 'mine' ? 'mine' : 'discover');
   }, [location.search]);
 
-  // viewMode’a göre mock listesini yükle
-  useEffect(() => {
+  // Servisten listeleri çek
+  const fetchLists = async () => {
     setIsLoading(true);
-    const response = axios.get(`${API_URL}/${currentUserRole}/${currentUserId}/lists`);
-
-    const lists = viewMode === 'discover' ? MOCK_PUBLIC_LISTS : response.data || [];
-    setTimeout(() => {
-      setUserLists(lists || []);
+    try {
+      const data = viewMode === 'mine'
+          ? await getUserLists()
+          : await getPublicLists();
+      setLists(data);
+    } catch (err) {
+      console.error('Liste çekme hatası:', err);
+    } finally {
       setIsLoading(false);
-    }, 300);
-  }, [currentUserId, currentUserRole, viewMode]);
+    }
+  };
 
+  // viewMode her değiştiğinde veya component mount olduğunda çalış
+  useEffect(() => {
+    fetchLists();
+  }, [viewMode]);
+
+  // sekme seçimi
   const handleSelectView = (mode) => {
     navigate(`/lists?mode=${mode}`);
+  };
+
+  // liste kutusuna tıklayınca ilgili iç sayfaya yönlendir
+  const handleClick = (listId) => {
+    navigate(`/lists/${listId}`);
   };
 
   return (
       <div className="user-lists-page">
         <div className="user-lists-header">
           <h1>{viewMode === 'discover' ? 'Keşfet' : 'Listelerim'}</h1>
-
-          {/* Kaydırmalı sekme */}
           <div className="tab-options">
             <div className={`tab-background ${viewMode}`} />
             <div
@@ -71,53 +69,41 @@ export default function UserListsPage() {
               LİSTELERİM
             </div>
           </div>
-
-          {/* Yeni “Liste Oluştur” butonu */}
-           <button
-             className="tab-option create-list-btn"
-             onClick={() => setShowCreateModal(true)}
-           >
-             Liste Oluştur
-           </button>
+          {viewMode === 'mine' && (
+              <button
+                  className="create-list-btn"
+                  onClick={() => setShowCreateModal(true)}
+              >
+                Liste Oluştur
+              </button>
+          )}
         </div>
 
-        {/* İçerik */}
         {isLoading ? (
             <div className="loading-spinner">Yükleniyor...</div>
-        ) : userLists.length > 0 ? (
+        ) : lists.length > 0 ? (
             <div className="lists-container">
-              {userLists.map(list => (
-                  <div key={list.id} className="list-card">
-                    <div className="list-card-header">
-                      <h2>{list.name}</h2>
-                      <p>Oluşturan: {list.userName}</p>
-                    </div>
-                    <div className="list-items">
-                      {list.businesses.map(b => (
-                          <div key={b.id} className="business-item">
-                            <img src={b.imageUrl} alt={b.name} />
-                            <div className="business-info">
-                              <h3>{b.name}</h3>
-                              <p>{b.category} • {b.address}</p>
-                              <p>Puan: {b.rating} • {b.priceRange}</p>
-                            </div>
-                          </div>
-                      ))}
-                    </div>
-                  </div>
+              {lists.map((list) => (
+                  <ListBox
+                      key={list.id}
+                      list={list}
+                      onClick={handleClick}
+                  />
               ))}
             </div>
         ) : (
-            <div className="empty-lists">Henüz gösterilecek liste yok.</div>
+            <div className="empty-lists">
+              {viewMode === 'discover'
+                  ? 'Keşfet bölümü henüz hazır değil.'
+                  : 'Henüz gösterilecek liste yok.'}
+            </div>
         )}
 
-        {/* CreateList modal */}
         {showCreateModal && (
             <CreateList
                 onClose={() => setShowCreateModal(false)}
-                onCreated={() => {
-                  // Eğer gerçek API’ye bağlanacaksanız listeyi yeniden çek:
-                  // fetchLists();
+                onCreated={async () => {
+                  await fetchLists();
                   setShowCreateModal(false);
                 }}
             />

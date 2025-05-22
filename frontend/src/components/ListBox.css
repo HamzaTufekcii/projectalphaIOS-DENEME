@@ -1,0 +1,15 @@
+.list-box {
+    border: 2px solid #ff5a5f; /* FeastFine kırmızısına yakın */
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #333;
+    background: #fff;
+    transition: background .1s ease;
+}
+
+.list-box:hover {
+    background: rgba(255, 90, 95, 0.1);
+}
