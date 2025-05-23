@@ -280,10 +280,10 @@ export default function MyReviews() {
                                             <div className="review-actions">
                                                 <div className="action-buttons">
                                                     <button onClick={() => handleStartEdit(review)} className="edit-button" title="Edit review">
-                                                        <Edit size={18} />
+                                                        <Edit size={20} />
                                                     </button>
                                                     <button onClick={() => handleDeleteReview(review.id)} className="delete-button" title="Delete review">
-                                                        <Trash2 size={18} />
+                                                        <Trash2 size={20} />
                                                     </button>
                                                 </div>
                                             </div>
