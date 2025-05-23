@@ -1,14 +1,15 @@
+// src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
+import EditList from '../components/RestaurantDetailComponents/EditList';
 import ListBox from '../components/ListBox';
-import { Star, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, Edit, Trash2 } from 'lucide-react';
 import {
   getUserLists,
   getPublicLists,
   deleteList,
 } from '../services/listService';
-import {  } from '../services/listService';
 import '../styles/UserListsPage.css';
 import { getUserIdFromStorage } from '../services/userService';
 
@@ -16,17 +17,14 @@ export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [viewMode, setViewMode]         = useState('discover');
-  const [lists, setLists]               = useState([]);
-  const [isLoading, setIsLoading]       = useState(false);
+  const [viewMode, setViewMode]     = useState('discover');
+  const [lists, setLists]           = useState([]);
+  const [isLoading, setIsLoading]   = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [confirmListId, setConfirmListId]     = useState(null);
 
-  const [showCreateModal, setShowCreateModal]   = useState(false);
-  const [confirmListId,   setConfirmListId]     = useState(null);
-
-  // Düzenleme modalı için
-  const [showEditModal,   setShowEditModal]     = useState(false);
-  const [editingListId,   setEditingListId]     = useState(null);
-  const [editingListName, setEditingListName]   = useState('');
+  // Düzenleme için tek obje state’i
+  const [editingList, setEditingList] = useState(null);
 
   // URL query’den sekmeyi al
   useEffect(() => {
@@ -49,15 +47,17 @@ export default function UserListsPage() {
       setIsLoading(false);
     }
   };
-  useEffect(() => { fetchLists(); }, [viewMode]);
+  useEffect(() => {
+    fetchLists();
+  }, [viewMode]);
 
   // Liste içi sayfaya yönlendir
-  const handleClick = (listId) => {
+  const handleClick = listId => {
     navigate(`/lists/${listId}`);
   };
 
   // Silme onayı aç/kapat
-  const onDeleteClick     = (listId) => setConfirmListId(listId);
+  const onDeleteClick = listId => setConfirmListId(listId);
   const handleCancelDelete = () => setConfirmListId(null);
   const handleConfirmDelete = async () => {
     try {
@@ -118,14 +118,10 @@ export default function UserListsPage() {
                         <div className="list-card-actions">
                           <button
                               className="edit-list-btn"
-                              onClick={() => {
-                                setEditingListId(list.id);
-                                setEditingListName(list.name);
-                                setShowEditModal(true);
-                              }}
-                              title="Liste adını düzenle"
+                              onClick={() => setEditingList(list)}
+                              title="Listeyi düzenle"
                           >
-                            <Edit   size={20} />
+                            <Edit size={20} />
                           </button>
                           <button
                               className="delete-list-btn"
@@ -174,56 +170,17 @@ export default function UserListsPage() {
             />
         )}
 
-        {/* Düzenle Modal */}
-        {showEditModal && (
-            <div className="confirm-overlay">
-              <div className="confirm-modal">
-                <h3>Liste Adını Düzenle</h3>
-                <input
-                    className="edit-input"
-                    type="text"
-                    value={editingListName}
-                    onChange={e => setEditingListName(e.target.value)}
-                />
-                <div className="confirm-buttons">
-                  <button
-                      className="btn confirm"
-                      onClick={async () => {
-                        try {
-                          await updateListName(
-                              getUserIdFromStorage(),
-                              editingListId,
-                              editingListName
-                          );
-                          setLists(ls =>
-                              ls.map(l =>
-                                  l.id === editingListId
-                                      ? { ...l, name: editingListName }
-                                      : l
-                              )
-                          );
-                        } catch (err) {
-                          console.error('Güncelleme hatası', err);
-                        } finally {
-                          setShowEditModal(false);
-                          setEditingListId(null);
-                        }
-                      }}
-                  >
-                    Tamam
-                  </button>
-                  <button
-                      className="btn cancel"
-                      onClick={() => {
-                        setShowEditModal(false);
-                        setEditingListId(null);
-                      }}
-                  >
-                    İptal
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* Düzenle Modal yerine EditList bileşeni */}
+        {editingList && (
+            <EditList
+                list={editingList}
+                onClose={() => setEditingList(null)}
+                onUpdated={updatedList => {
+                  setLists(prev =>
+                      prev.map(l => (l.id === updatedList.id ? updatedList : l))
+                  );
+                }}
+            />
         )}
       </div>
   );
