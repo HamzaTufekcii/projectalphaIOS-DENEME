@@ -16,6 +16,29 @@ export const addToFavorites = async (userId, itemId) => {
 export const removeFromList = async (userId, listId,itemId) => {
     await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`);
 }
+export const createList = async (userId, name, isPublic) => {
+    const response = await axios.post(
+        `${API_URL}/diner_user/${userId}/lists`,
+        {
+        name: name,
+        isPublic: isPublic,
+    });
+    return response.data;
+}//"/diner_user/{userId}/lists"
+export const removeList = async (userId, listId) => {
+
+    await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}`);
+}
+
+export const updateList = async (userId, name, isPublic, listId) => {
+    const response = await axios.patch(
+        `${API_URL}/diner_user/${userId}/lists/${listId}`,
+        {
+            name: name,
+            isPublic: isPublic,
+        });
+    return response.data;
+}
 
 
 // Mock veri
@@ -66,19 +89,7 @@ export function getPublicLists() {
 }
 
 /** Yeni bir liste oluşturur */
-export function createList({ name, isPrivate }) {
-    const newList = {
-        id: Date.now().toString(),
-        name,
-        isPrivate: !!isPrivate,
-        containsItem: false,
-        businesses: []
-    };
-    mockUserLists = [newList, ...mockUserLists];
-    return new Promise(resolve =>
-        setTimeout(() => resolve(newList), 200)
-    );
-}
+
 
 /** Var olan bir listeyi siler (mockUserLists’ten kaldırır) */
 export function deleteList(listId) {

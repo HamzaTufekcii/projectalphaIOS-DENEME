@@ -66,43 +66,41 @@
   font-weight: 600;
 }
 
+/* ———————————————— */
 /* Kaydet / İptal butonları */
-.save-button,
-.cancel-button {
-  padding: 10px 20px;
+/* ———————————————— */
+.profile-section .save-button,
+.profile-section .cancel-button {
+  /* Arka planı olduğu gibi bıraktık (şeffaf) */
+  background-color: transparent;
+  /* Sadece metni kırmızı yaptık */
+  color: #ff5a5f;
+  /* Kenarlığı kaldırdık */
   border: none;
-  border-radius: 6px;
+  /* Tıklanabilir alan boyutu */
+  padding: 10px 20px;
   font-weight: 500;
   font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.save-button {
-  background-color: #ff5a5f;
-  color: white;
+  /* Geçiş animasyonu */
+  transition: color 0.2s ease;
   margin-top: 10px;
 }
 
-.save-button:hover {
-  background-color: #e74c3c;
+.profile-section .save-button:hover,
+.profile-section .cancel-button:hover {
+  /* Hover’da metin hafif koyulsun */
+  color: #e14b50;
 }
 
-.save-button:disabled {
-  background-color: #ccc;
+.profile-section .save-button:disabled,
+.profile-section .cancel-button:disabled {
+  /* Disabled durumu gri ve tıklanmaz */
+  color: #ccc;
   cursor: not-allowed;
 }
 
-.cancel-button {
-  background-color: #f0f0f0;
-  color: #333;
-  margin-left: 10px;
-}
-
-.cancel-button:hover {
-  background-color: #ddd;
-}
-
+/* Yükleniyor göstergesi */
 .loading-spinner {
   display: flex;
   justify-content: center;
@@ -126,8 +124,8 @@
     padding: 20px;
   }
 
-  .save-button,
-  .cancel-button {
+  .profile-section .save-button,
+  .profile-section .cancel-button {
     width: 100%;
     margin-left: 0;
     margin-bottom: 10px;
