@@ -97,6 +97,7 @@ export default function MyReviews() {
 
     const handleDeleteReview = id => {
         if (window.confirm('Bu yorumu silmek istediğinize emin misiniz?')) {
+
             setReviews(prev => prev.filter(r => r.id !== id));
         }
     };
@@ -204,16 +205,6 @@ export default function MyReviews() {
                                                     {expandedReviews[review.id] ? 'Daha Az' : 'Daha Fazla'}
                                                 </button>
                                             )}
-                                            <div className="review-actions">
-                                                <div className="action-buttons">
-                                                    <button onClick={() => handleStartEdit(review)} className="edit-button" title="Düzenle">
-                                                        <Edit size={20}/>
-                                                    </button>
-                                                    <button onClick={() => handleDeleteReview(review.id)} className="delete-button" title="Sil">
-                                                        <Trash2 size={20}/>
-                                                    </button>
-                                                </div>
-                                            </div>
                                         </>
                                     )}
                                 </div>

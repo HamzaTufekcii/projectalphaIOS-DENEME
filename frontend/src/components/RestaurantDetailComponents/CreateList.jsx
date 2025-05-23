@@ -30,6 +30,8 @@ export default function CreateList({ onClose, onCreated }) {
             console.error(err);
         } finally {
             setSaving(false);
+            window.location.reload();
+
         }
     };
 
