@@ -20,9 +20,9 @@ export const createList = async (userId, name, isPublic) => {
     const response = await axios.post(
         `${API_URL}/diner_user/${userId}/lists`,
         {
-            name: name,
-            isPublic: isPublic,
-        });
+        name: name,
+        isPublic: isPublic,
+    });
     return response.data;
 }//"/diner_user/{userId}/lists"
 export const removeList = async (userId, listId) => {

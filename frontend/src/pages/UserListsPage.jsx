@@ -8,7 +8,7 @@ import { Star, Edit, Trash2 } from 'lucide-react';
 import {
   getUserLists,
   getPublicLists,
-  deleteList,
+  deleteList, removeList, updateList,
 } from '../services/listService';
 import '../styles/UserListsPage.css';
 import { getUserIdFromStorage } from '../services/userService';
@@ -61,7 +61,7 @@ export default function UserListsPage() {
   const handleCancelDelete = () => setConfirmListId(null);
   const handleConfirmDelete = async () => {
     try {
-      await deleteList(confirmListId);
+      await removeList(getUserIdFromStorage(),confirmListId);
       setLists(prev => prev.filter(l => l.id !== confirmListId));
     } catch (err) {
       console.error('Liste silme hatası:', err);
@@ -181,6 +181,7 @@ export default function UserListsPage() {
                   );
                 }}
             />
+
         )}
       </div>
   );

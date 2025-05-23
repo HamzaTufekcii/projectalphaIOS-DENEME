@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createList } from '../../services/listService';
 import './CreateList.css';
+import {getUserIdFromStorage} from "../../services/userService.js";
 
 export default function CreateList({ onClose, onCreated }) {
     const [title, setTitle]         = useState('');
@@ -23,10 +24,7 @@ export default function CreateList({ onClose, onCreated }) {
         if (!title.trim()) return;
         setSaving(true);
         try {
-            const newList = await createList({
-                name: title.trim(),
-                isPrivate,
-            });
+            const newList = await createList(getUserIdFromStorage(),title.trim(),!isPrivate);
             onCreated(newList);
         } catch (err) {
             console.error(err);
