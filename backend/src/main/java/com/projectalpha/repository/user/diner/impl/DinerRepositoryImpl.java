@@ -2,6 +2,8 @@ package com.projectalpha.repository.user.diner.impl;
 
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.review.ReviewSupabase;
+import com.projectalpha.dto.user.diner.DinerLoginResponse;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
@@ -36,7 +38,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     }
 
     @Override
-    public Optional<DinerUserProfile> findDinerByID(String userId) {
+    public Optional<DinerLoginResponse> findDinerByID(String userId, List<ReviewSupabase> dinerReviews) {
         try {
             String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
             HttpRequest request = HttpRequest.newBuilder()
@@ -51,14 +53,60 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             if (response.statusCode() == 200) {
                 JsonNode root = mapper.readTree(response.body());
                 if (root.isArray() && root.size() > 0) {
-                    DinerUserProfile profile = mapper.treeToValue(root.get(0), DinerUserProfile.class);
+
+                    DinerUserProfile dinerProfileResponse = mapper.treeToValue(root.get(0), DinerUserProfile.class);
+
+                    DinerLoginResponse profile = new DinerLoginResponse(dinerProfileResponse, dinerReviews);
+
                     return Optional.of(profile);
+
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+    public String findDinerId(String userId) {
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = mapper.readTree(response.body());
+                if (root.isArray() && root.size() > 0) {
+
+                    DinerUserProfile dinerProfileResponse = mapper.treeToValue(root.get(0), DinerUserProfile.class);
+                    String dinerId = dinerProfileResponse.getId();
+                    return dinerId;
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }public DinerUserProfile findDinerProfile(String userId) {
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -172,10 +220,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     @Override
     public List<CustomList> getDinerLists(String userId) {
     try {
-        Optional<DinerUserProfile> profile = findDinerByID(userId);
-        String dinerId = profile
-                .map(DinerUserProfile::getId)
-                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+        String dinerId = findDinerId(userId);
 
         String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?user_profile_diner_id=eq." + dinerId;
 
@@ -214,10 +259,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     public CustomList createDinerList(String userId, CustomListRequest createRequest) {
 
         try {
-            Optional<DinerUserProfile> profile = findDinerByID(userId);
-            String dinerId = profile
-                    .map(DinerUserProfile::getId)
-                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+            String dinerId = findDinerId(userId);
 
             Map<String, Object> createPayload = Map.of(
                     "name", createRequest.getName(),
@@ -261,11 +303,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     @Override
     public CustomList updateDinerList(String userId, String listId, CustomListRequest updateRequest){
         try{
-        //DinerId elde edilmesi
-        Optional<DinerUserProfile> profile = findDinerByID(userId);
-        String dinerId = profile
-                .map(DinerUserProfile::getId)
-                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+            String dinerId = findDinerId(userId);
 
         Map<String, Object> updatePayload = Map.of(
                 "name", updateRequest.getName(),
@@ -275,7 +313,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
         String requestBody = mapper.writeValueAsString(updatePayload);
 
-        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId;
+        String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId + "&user_id=eq." + dinerId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -311,11 +349,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     @Override
     public String createListItem(String userId, String businessId, String listId) {//401 Error
         try {
-
-            Optional<DinerUserProfile> profile = findDinerByID(userId);
-            String dinerId = profile
-                    .map(DinerUserProfile::getId)
-                    .orElse("ID ile sorgu başarısız.");
+            String dinerId = findDinerId(userId);
 
             String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item";
 
@@ -360,10 +394,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     @Override
     public void removeListItem(String userId, String listItemId) {
         try {
-            Optional<DinerUserProfile> profile = findDinerByID(userId);
-            String dinerId = profile
-                    .map(DinerUserProfile::getId)
-                    .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+            String dinerId = findDinerId(userId);
 
             String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?id=eq." + listItemId + "&diner_id=eq." + dinerId;
 
@@ -392,10 +423,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     public void removeDinerList(String userId, String listId){
         //dinerId elde edilmesi
         try{
-        Optional<DinerUserProfile> profile = findDinerByID(userId);
-        String dinerId = profile
-                .map(DinerUserProfile::getId)
-                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı"));
+            String dinerId = findDinerId(userId);
 
 
         String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId;

@@ -5,6 +5,8 @@ import com.projectalpha.dto.ReviewDTO;
 import com.projectalpha.dto.UserProfileDTO;*/
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.review.ReviewSupabase;
+import com.projectalpha.dto.user.diner.DinerLoginResponse;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
@@ -13,6 +15,7 @@ import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemReque
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
+import com.projectalpha.repository.reviews.ReviewsRepository;
 import com.projectalpha.repository.user.UserRepository;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
@@ -34,23 +37,31 @@ public class UserService implements DinerService, OwnerService {
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
     private final ListRepository listRepository;
+    private final ReviewsRepository reviewsRepository;
 
     @Autowired
-    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, ListRepository listRepository, UserRepository userRepository) {
+    public UserService(DinerRepository dinerRepository, OwnerRepository ownerRepository, ListRepository listRepository, UserRepository userRepository, ReviewsRepository reviewsRepository) {
         this.dinerRepository = dinerRepository;
         this.ownerRepository = ownerRepository;
         this.listRepository = listRepository;
         this.userRepository = userRepository;
+        this.reviewsRepository = reviewsRepository;
     }
 
     @Override
-    public Optional<DinerUserProfile> getDinerProfileByUserId(String userId) {
-        return dinerRepository.findDinerByID(userId);
+    public Optional<DinerLoginResponse> getDinerProfileByUserId(String userId) {
+        String dinerId = dinerRepository.findDinerId(userId);
+        List<ReviewSupabase> dinerReviews = reviewsRepository.getReviewByUserId(dinerId);
+        return dinerRepository.findDinerByID(userId, dinerReviews);
     }
 
     @Override
     public Optional<OwnerLoginResponse> getOwnerProfileByUserId(String userId) {
-        return ownerRepository.findOwnerByID(userId);
+        String businessId = ownerRepository.getBusinessProfile(userId).getId();
+
+        List<ReviewSupabase> businessReviews = reviewsRepository.getReviewsByBusinessId(businessId);
+
+        return ownerRepository.findOwnerByID(userId, businessReviews);
     }
 
     @Override
@@ -109,4 +120,5 @@ public class UserService implements DinerService, OwnerService {
     public void changePassword(String userId, String newPassword) throws Exception {
             userRepository.changePassword(userId, newPassword);
     }
+
 }

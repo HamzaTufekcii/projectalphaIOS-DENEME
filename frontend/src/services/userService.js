@@ -9,7 +9,8 @@ const API_URL = 'http://localhost:8080/api/users';
  */
 export const saveUserData = (userData, role) => {
     if(role === 'diner_user'){
-        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('userData', JSON.stringify(userData.profile));
+        localStorage.setItem('userReviews', JSON.stringify(userData?.dinerReviews));
     } else if(role === 'owner_user') {
         localStorage.setItem('userData', JSON.stringify(userData.profile));
         localStorage.setItem('ownerData', JSON.stringify(userData?.ownedBusiness));

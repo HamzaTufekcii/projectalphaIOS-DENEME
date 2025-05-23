@@ -236,7 +236,7 @@ const HomePage = () => {
         setUserLoginPassword('');
         setOwnerLoginEmail('');
         setOwnerLoginPassword('');
-        setRegisterName('');
+        //setRegisterName('');
         setRegisterEmail('');
         setRegisterPassword('');
         setRegisterPasswordControl('');

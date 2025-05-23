@@ -12,8 +12,10 @@ import InsideListPage from './pages/InsideListPage';
 import OwnerHomePage from './pages/OwnerHomePage';
 import OwnerReviewsPage from './pages/OwnerReviewsPage';
 import OwnerPromotionsPage from './pages/OwnerPromotionsPage';
+import MyReviewsPage from './pages/MyReviewspage';
 import './styles/HomePage.css';
 import './styles/App.css';
+
 
 function App() {
   return (
@@ -22,22 +24,30 @@ function App() {
           <Navbar />
           <div className="page-content">
             <Routes>
-              {/* Genel kullanıcı sayfaları */}
+              {/* Genel kullanıcı ve işletme rotaları */}
               <Route path="/" element={<HomePage />} />
+              <Route path="/business-register" element={<RestaurantRegistration />} />
+              <Route path="/business/:id" element={<RestaurantDetailPage />} />
+              {/* Profil */}
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
+              {/* Sadece normal kullanıcıya açık sayfalar */}
               <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/lists" element={<UserListsPage />} />
+              <Route path="/my-reviews" element={<MyReviewsPage />} />
               <Route path="/lists/:listId" element={<InsideListPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              {/* Giriş */}
+              <Route path="/login" element={<div>Login Page</div>} />
+              {/* İşletme kullanıcılarının paneli */}
+              <Route path="/owner-dashboard" element={<OwnerHomePage />} />
+              <Route path="/restaurant/:id/reviews" element={<OwnerReviewsPage />} />
+              <Route path="/restaurant/:id/promotions" element={<OwnerPromotionsPage/>} />
+              <Route path="/restaurant/:id/reservations" element={<div>Rezervasyonlar</div>} />
+              <Route path="/restaurant/:id/questions" element={<div>Müşteri Soruları</div>} />
 
-              {/* Restoran kayıt ve detay sayfaları */}
-              <Route path="/restaurants/new" element={<RestaurantRegistration />} />
+              {/* For backward compatibility */}
               <Route path="/restaurant/:id" element={<RestaurantDetailPage />} />
-              <Route path="/restaurants/:id" element={<RestaurantDetailPage />} />
-
-              {/* İşletme(Owner) sayfaları */}
-              <Route path="/owner" element={<OwnerHomePage />} />
-              <Route path="/owner/reviews" element={<OwnerReviewsPage />} />
-              <Route path="/owner/promotions" element={<OwnerPromotionsPage />} />
+              <Route path="/owner-register" element={<RestaurantRegistration />} />
             </Routes>
           </div>
         </div>

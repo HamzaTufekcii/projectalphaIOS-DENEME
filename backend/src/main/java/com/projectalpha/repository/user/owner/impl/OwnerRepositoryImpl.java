@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.business.address.AddressDTO;
+import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
@@ -22,6 +23,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,7 +40,7 @@ public class OwnerRepositoryImpl implements OwnerRepository {
     }
 
     @Override
-    public Optional<OwnerLoginResponse> findOwnerByID(String userId) {
+    public Optional<OwnerLoginResponse> findOwnerByID(String userId, List<ReviewSupabase> businessReviews) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_owner?owner_id=eq." + userId))
@@ -56,7 +58,7 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                     OwnerUserProfile profile = mapper.treeToValue(root.get(0), OwnerUserProfile.class);
                     Business businessProfile = getBusinessProfile(userId);
 
-                    OwnerLoginResponse responseProfile = new OwnerLoginResponse(profile, businessProfile);
+                    OwnerLoginResponse responseProfile = new OwnerLoginResponse(profile, businessProfile, businessReviews);
 
                     return Optional.of(responseProfile) ;
                 }

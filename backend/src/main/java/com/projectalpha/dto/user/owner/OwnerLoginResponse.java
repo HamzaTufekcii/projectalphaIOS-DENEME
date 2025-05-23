@@ -1,9 +1,12 @@
 package com.projectalpha.dto.user.owner;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import com.projectalpha.dto.business.Business;
 import lombok.Data;
+
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
@@ -11,11 +14,13 @@ public class OwnerLoginResponse {
 
     private com.projectalpha.dto.user.owner.OwnerUserProfile profile;
     private com.projectalpha.dto.business.Business ownedBusiness;
+    private List<ReviewSupabase> businessReviews;
 
 
-    public OwnerLoginResponse(com.projectalpha.dto.user.owner.OwnerUserProfile ownerProfile, com.projectalpha.dto.business.Business businessProfile) {
-        profile = ownerProfile;
-        ownedBusiness = businessProfile;
+    public OwnerLoginResponse(com.projectalpha.dto.user.owner.OwnerUserProfile ownerProfile, com.projectalpha.dto.business.Business businessProfile, List<ReviewSupabase> businessReviews) {
+        this.profile = ownerProfile;
+        this.ownedBusiness = businessProfile;
+        this.businessReviews = businessReviews;
     }
 
     @JsonIgnoreProperties

@@ -17,7 +17,7 @@ public class Business {
     private String owner_id1;
     private String name;
     private String addresses;
-    private int price_range;
+    private String price_range;
     private int avg_rating;
     private String created_at;
     private String description;

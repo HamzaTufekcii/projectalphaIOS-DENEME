@@ -2,6 +2,7 @@ package com.projectalpha.service.user.diner;
 
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.user.diner.DinerLoginResponse;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 
@@ -15,7 +16,7 @@ public interface DinerService {
      * @param userId The ID of the user
      * @return User user data
      */
-    Optional<DinerUserProfile> getDinerProfileByUserId(String userId);
+    Optional<DinerLoginResponse> getDinerProfileByUserId(String userId);
     /**
      * Update dinerProfile
      *
