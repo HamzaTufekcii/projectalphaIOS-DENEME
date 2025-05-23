@@ -1,8 +1,9 @@
 // src/components/RestaurantDetailComponents/SaveButton.jsx
 import React from 'react';
 import { FaPlus, FaCheck } from 'react-icons/fa';   // ← İKONLAR BURADA
-import { toggleFavorite } from '../../services/listService';
+import { addToList } from '../../services/listService';
 import './SaveButton.css';
+
 
 export default function SaveButton({ itemId, isSaved, onToggle, onCustomize }) {
     const handleClick = async e => {
@@ -11,7 +12,7 @@ export default function SaveButton({ itemId, isSaved, onToggle, onCustomize }) {
             // önce parent state’i güncelle
             onToggle(true);
             // sonra API çağrısı
-            try { await toggleFavorite(itemId, true); }
+            try { await addToList(itemId, true); }
             catch { onToggle(false); }
         } else {
             onCustomize();

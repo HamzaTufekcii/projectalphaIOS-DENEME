@@ -13,7 +13,7 @@ const RestaurantDetailPage = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showListModal, setShowListModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState();
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -272,7 +272,7 @@ const RestaurantDetailPage = () => {
             <h1 className="restaurant-name">{restaurant.name}</h1>
             <div className="save-wrapper">
               <SaveButton
-                  itemId={Number(id)}
+                  itemId={String(id)}
                   isSaved={isSaved}
                   onToggle={(next) => setIsSaved(next)}
                   onCustomize={() => setShowListModal(true)}

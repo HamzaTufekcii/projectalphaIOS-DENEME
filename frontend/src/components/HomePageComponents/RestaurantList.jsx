@@ -8,6 +8,8 @@ import {
     getAllBusinesses, getActivePromotions, getByTag,
     getBusinessesByOwner, getTopRated, searchBusinesses
 } from '../../services/businessService.js';
+import {addToFavorites, addToList, getUserListItems, removeFromList} from "../../services/listService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../../services/userService.js";
 
 /**
  * RestaurantList component to display a list of restaurants
@@ -32,8 +34,10 @@ const RestaurantList = ({
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [activeFilters, setActiveFilters] = useState(filters);
-    
+    const currentUserId = getUserIdFromStorage();
+    const currentUserFavoriteID = getUserFavoritesIdFromStorage();
     // Fetch restaurants and favorites on component mount
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -59,8 +63,13 @@ const RestaurantList = ({
 
                 const sorted = sortRestaurants(data, sortOption);
                 setRestaurants(sorted);
-                // favorites fonksiyonunu daha sonra entegre et
-                setFavorites([]);
+                const favList = await getUserListItems(currentUserId, currentUserFavoriteID);
+
+                if (favList) {
+                    setFavorites(favList || []);
+                } else {
+                    setFavorites([]);
+                }
             } catch (err) {
                 console.error('Error fetching restaurants:', err);
                 setError('Failed to load restaurants.');
@@ -70,17 +79,25 @@ const RestaurantList = ({
         };
 
         fetchData();
-    }, [activeFilters, sortOption]);
+    }, [activeFilters, sortOption, currentUserId, currentUserFavoriteID]);
+
 
     // Handle toggling favorites
-    const toggleFavorite = (id, e) => {
+    const toggleFavorite = async (id, e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (favorites.includes(id)) {
-            setFavorites(favorites.filter(fav => fav !== id));
+
+        if (favorites.some(fav => fav.id === id)) {
+            await removeFromList(currentUserId, currentUserFavoriteID, id);
+            const favList = await getUserListItems(currentUserId, currentUserFavoriteID);
+            setFavorites(favList);
+
         } else {
-            setFavorites([...favorites, id]);
+            await addToFavorites(currentUserId, id);
+            const favList = await getUserListItems(currentUserId, currentUserFavoriteID);
+            setFavorites(favList);
+
         }
     };
     

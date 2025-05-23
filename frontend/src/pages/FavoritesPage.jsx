@@ -4,6 +4,7 @@ import axios from 'axios';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
 import {getUserFavoritesIdFromStorage, getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
+import {getUserListItems, removeFromList} from "../services/listService.js";
 
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -43,8 +44,6 @@ const MOCK_DATA = [
 ];
 
 const FavoritesPage = () => {
-  const { userId } = useParams();
-  const {role} = useParams();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,8 +52,7 @@ const FavoritesPage = () => {
   const [useMockData, setUseMockData] = useState(false);
 
   const currentUserFavoriteID = getUserFavoritesIdFromStorage();
-  const currentUserId = userId || getUserIdFromStorage();
-  const currentUserRole = role || getUserRoleFromStorage();
+  const currentUserId =  getUserIdFromStorage();
 
   useEffect(() => {
     // Check if user is logged in
@@ -79,9 +77,9 @@ const FavoritesPage = () => {
       
       try {
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists/${currentUserFavoriteID}/items`);
+        const response = await getUserListItems(currentUserId, currentUserFavoriteID);
         // Find the favorites list
-        const favList = response.data;
+        const favList = response;
         
         if (favList) {
           setFavorites(favList || []);
@@ -139,20 +137,8 @@ const FavoritesPage = () => {
     }
     
     try {
-      // Configure request with auth header
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      };
-      
-      // Find favorites list ID
-      const listsResponse = await axios.get(`${API_BASE_URL}/users/${userId}/lists`, config);
-      const favList = listsResponse.data.find(list => list.isFavorites);
-      
-      if (favList) {
-        await axios.delete(`${API_BASE_URL}/users/${userId}/lists/${favList.id}/businesses/${businessId}`, config);
-        
+      if (favorites) {
+        await removeFromList(currentUserId, currentUserFavoriteID,businessId);
         // Update state to remove the business
         setFavorites(prevFavorites => 
           prevFavorites.filter(business => business.id !== businessId)

@@ -1,13 +1,14 @@
 // src/components/RestaurantDetailComponents/SaveToLists.jsx
 console.log("SaveToLists geldi")
 import React, { useState, useEffect } from 'react';
-import { toggleFavorite } from '../../services/listService';
+import { } from '../../services/listService';
 import {
     getUserLists,
     addToList,
     removeFromList
 } from '../../services/listService';
 import './SaveToLists.css';
+import {getUserIdFromStorage} from "../../services/userService.js";
 
 export default function SaveToLists({ itemId, onClose }) {
     const [lists, setLists]       = useState([]);
@@ -17,13 +18,13 @@ export default function SaveToLists({ itemId, onClose }) {
 
     useEffect(() => {
         let mounted = true;
-        getUserLists()
+        getUserLists(getUserIdFromStorage())
             .then(fetched => {
                 if (!mounted) return;
                 // En başa Favoriler’i ekle
                 const favList = {
                     id: 'favorites',
-                    name: 'Favoriler',
+                    name: 'Favorilerim',
                     containsItem: true
                 };
                 const allLists = [favList, ...fetched];

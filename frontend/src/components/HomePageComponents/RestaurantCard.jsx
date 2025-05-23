@@ -12,7 +12,9 @@ import './RestaurantCard.css';
  */
 const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = false }) => {
   const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails } = restaurant;
-  const isFavorite = favorites.includes(id);
+  const isFavorite = favorites.some(fav => fav.id === id);
+  const token = localStorage.getItem('token');
+  const isLogin = token !== null;
 
   return (
     <div className={`restaurant-card ${featured ? 'featured' : ''}`}>
@@ -23,6 +25,7 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
             className="favorite-button" 
             onClick={(e) => toggleFavorite(id, e)}
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            disabled={!isLogin}
           >
             {isFavorite ? <FaHeart className="heart filled" /> : <FaRegHeart className="heart" />}
           </button>
