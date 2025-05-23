@@ -13,7 +13,7 @@ const RestaurantDetailPage = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showListModal, setShowListModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState();
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -32,6 +32,8 @@ const RestaurantDetailPage = () => {
     'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     'https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
   ];
+  const token = localStorage.getItem('token');
+  const isLogin = token !== null;
 
   useEffect(() => {
 
@@ -49,6 +51,7 @@ const RestaurantDetailPage = () => {
     };
     fetchData();
   }, [id]);
+
 
 
 
@@ -270,10 +273,14 @@ const RestaurantDetailPage = () => {
         <div className="restaurant-info-container">
           <div className="restaurant-header-row">
             <h1 className="restaurant-name">{restaurant.name}</h1>
-            <div className="save-wrapper">
+            <div
+                className="save-wrapper"
+                style={{ display: isLogin ? 'inline-block' : 'none' }}
+            >
               <SaveButton
-                  itemId={Number(id)}
+                  itemId={String(id)}
                   isSaved={isSaved}
+
                   onToggle={(next) => setIsSaved(next)}
                   onCustomize={() => setShowListModal(true)}
               />

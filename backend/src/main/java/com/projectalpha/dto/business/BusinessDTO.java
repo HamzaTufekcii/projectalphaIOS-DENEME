@@ -20,4 +20,8 @@ public class BusinessDTO {
 
     private String description;
 
+    private String price_range;
+
+    private int avg_rating;
+
 }

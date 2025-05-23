@@ -11,20 +11,29 @@ import './RestaurantCard.css';
  * @param {boolean} featured - Whether this is a featured restaurant
  */
 const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = false }) => {
-  const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails } = restaurant;
-  const isFavorite = favorites.includes(id);
+
+  const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails , address , tags } = restaurant;
+  const isFavorite = favorites.some(fav => fav.id === id);
+  const token = localStorage.getItem('token');
+  const isLogin = token !== null;
+
 
   return (
     <div className={`restaurant-card ${featured ? 'featured' : ''}`}>
       <Link to={`/restaurant/${id}`} className="restaurant-link">
         <div className="restaurant-image">
           <img src={image} alt={name} />
-          <button 
-            className="favorite-button" 
-            onClick={(e) => toggleFavorite(id, e)}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          <button
+              className="favorite-button"
+              onClick={(e) => toggleFavorite(id, e)}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              disabled={!isLogin}
+              style={{ display: isLogin ? 'inline-block' : 'none' }}
           >
-            {isFavorite ? <FaHeart className="heart filled" /> : <FaRegHeart className="heart" />}
+            {isFavorite
+                ? <FaHeart className="heart filled" />
+                : <FaRegHeart className="heart" />
+            }
           </button>
           
           {hasActivePromo && (
@@ -39,12 +48,25 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
             <h3>{name}</h3>
             {priceRange && <span className="price-range">{priceRange}</span>}
           </div>
-          
+
+          {/* Mutfak Türü */}
           <p className="restaurant-type">{type}</p>
-          
-          <p className="restaurant-distance">
-            <FaMapMarkerAlt /> {distance}
-          </p>
+
+          {address && (
+              <p className="restaurant-location">
+                <FaMapMarkerAlt /> {address.city}, {address.district}
+              </p>
+          )}
+
+          {tags && tags.length > 0 && (
+              <div className="tag-list">
+                {tags.map(tag => (
+                    <span key={tag.id} className="tag">
+                  {tag.name.trim()}
+                </span>
+                ))}
+              </div>
+          )}
           
           <div className="rating">
             <FaStar className="star" />

@@ -57,7 +57,7 @@ public class UserService implements DinerService, OwnerService {
     @Override
     public List<ReviewSupabase> getDinerReviews(String userId) {
         String dinerId = dinerRepository.findDinerId(userId);
-        return reviewsRepository.getReviewByUserId(dinerId);
+        return reviewsRepository.getReviewsByUserId(dinerId);
     }
 
     @Override
@@ -100,8 +100,8 @@ public class UserService implements DinerService, OwnerService {
         listRepository.removeDinerList(userId,listId);
     }
 
-    public void removeListItem(String userId, String listItemId) {
-        listRepository.removeListItem(userId,listItemId);
+    public void removeListItem(String userId, String listId,String listItemId) {
+        listRepository.removeListItem(userId, listId, listItemId);
     }
     public List<CustomList> getDinerLists(String userId) {
         return listRepository.getDinerLists(userId);

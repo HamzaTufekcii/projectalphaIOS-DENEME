@@ -84,14 +84,16 @@ export const getUserRoleFromStorage = () => {
         return null;
     }
 }
+
 export const getUserReviews = async (id) => {
     try {
         const response = await axios.get(`${API_URL}/diner_user/${id}/reviews`);
-        return response.data;
+        return response.data.data;
     } catch (error) {
         throw error.response?.data || error.message || 'Error getting reviews';
     }
 }
+
 export const fetchUserData = async (role, id) => {
     try {
         const profileResponse = await axios.get(`${API_URL}/${role}/${id}/profile`);

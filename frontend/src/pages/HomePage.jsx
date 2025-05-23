@@ -24,6 +24,7 @@ import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup'
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
 
 // Business service methods
+import {mapBusiness} from "../utils/businessMapper.js";
 import {
     getTopRated,
     searchBusinesses
@@ -82,8 +83,9 @@ const HomePage = () => {
     const loadFeaturedRestaurants = async () => {
         try {
             setIsLoadingFeatured(true);
-            const data = await getTopRated(5);
-            setFeaturedRestaurants(data);
+            const raw = await getTopRated(5);
+            const mapped = raw.map(mapBusiness);
+            setFeaturedRestaurants(mapped);
         } catch (err) {
             console.error('Error loading featured restaurants:', err);
         } finally {
@@ -710,13 +712,17 @@ const HomePage = () => {
                         <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
                         <div className="featured-cards">
                             {featuredRestaurants.map(restaurant => (
-                                <Link 
-                                    to={`/restaurant/${restaurant.id}`} 
-                                    className="restaurant-card featured" 
+                                <Link
+                                    to={`/restaurant/${restaurant.id}`}
+                                    className="restaurant-card featured"
                                     key={restaurant.id}
                                 >
                                     <div className="card-header">
-                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                        <img
+                                            src={restaurant.image}
+                                            alt={restaurant.name}
+                                            className="restaurant-img"
+                                        />
                                         {restaurant.hasActivePromo && (
                                             <div className="promo-tag">
                                                 <FaStar className="promo-icon" />
@@ -730,11 +736,29 @@ const HomePage = () => {
                                             <span className="price-range">{restaurant.priceRange}</span>
                                         </div>
                                         <div className="restaurant-details">
+                                            {/* Mutfak Türü */}
                                             <span className="restaurant-type">{restaurant.type}</span>
-                                            <div className="distance">
-                                                <FaMapMarkerAlt className="location-icon" />
-                                                <span>{restaurant.distance}</span>
-                                            </div>
+
+                                            {/* Adres Bilgisi */}
+                                            {restaurant.address && (
+                                                <div className="location">
+                                                    <FaMapMarkerAlt className="location-icon" />
+                                                    <span>
+                                                {restaurant.address.city}, {restaurant.address.district}
+                                              </span>
+                                                </div>
+                                            )}
+
+                                            {/* Tag Listesi */}
+                                            {restaurant.tags && restaurant.tags.length > 0 && (
+                                                <div className="tag-list">
+                                                    {restaurant.tags.map(tag => (
+                                                        <span key={tag.id} className="tag">
+                                                        {tag.name.trim()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="rating-container">
                                             <FaStar className="star-icon" />
@@ -746,6 +770,7 @@ const HomePage = () => {
                         </div>
                     </section>
                 )}
+
 
                 {/* All Restaurants Section */}
                 <section className="all-restaurants-section">

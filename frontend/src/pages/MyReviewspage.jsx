@@ -1,42 +1,10 @@
 // GEREKLİ KÜTÜPHANELER VE SERVİSLER
 import { useState, useEffect } from 'react';
 import { Star, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { getAllBusinesses } from '../services/businessService.js';
+// import { getAllBusinesses } from '../services/businessService.js'; // Kaldırıldı
 import '../styles/MyReviewsPage.css';
 import Button from '../components/Button.jsx';
-import {getUserIdFromStorage, getUserReviews} from "../services/userService.js";
-
-// Geçici mock yorum verileri (Backend entegrasyonu tamamlanana kadar kullanılıyor)
-
-
-
-//getAllRestaurants ile restaurantService dosyasında olan restoran verileri alındı onlara mock yorumlar eklendi
-const sampleReviews = [
-    {
-        id: "78",
-        comment: "örnek yorum",
-        rating: 5,
-        created_at: "2025-05-17T12:58:51.952659+00:00",
-        business_id: "67",
-        review_photo_url: "örnek_url"
-    },
-    {
-        id: "79",
-        comment: "örnek yorum",
-        rating: 5,
-        created_at: "2025-05-17T12:58:51.952659+00:00",
-        business_id: "67",
-        review_photo_url: "örnek_url"
-    },
-    {
-        id: "80",
-        comment: "örnek yorum",
-        rating: 5,
-        created_at: "2025-05-17T12:58:51.952659+00:00",
-        business_id: "67",
-        review_photo_url: "örnek_url"
-    }
-];
+import { getUserIdFromStorage, getUserReviews } from '../services/userService.js';
 
 // yıldızlı puanlama gösterimi
 const StarRating = ({ rating }) => {
@@ -63,13 +31,12 @@ const StarRating = ({ rating }) => {
     );
 };
 
-//kullanıcın tüm yorumları burada listeleniyor
+// kullanıcının tüm yorumları burada listeleniyor
 export default function MyReviews() {
     // ----------------------
     // STATE TANIMLARI
     // ----------------------
-    const [reviews, setReviews] = useState([]); // ✅ Gerçek backend'de: sampleReviews yerine setReviews(await getUserReviews())
-    const [restaurants, setRestaurants] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
     const [filterRestaurant, setFilterRestaurant] = useState('');
@@ -79,211 +46,171 @@ export default function MyReviews() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // yorumları çek
     useEffect(() => {
         const fetchUserReviews = async () => {
             try {
-                const userReviews = await getUserReviews(getUserIdFromStorage());
-                setReviews(userReviews.data);
+                const data = await getUserReviews(getUserIdFromStorage());
+                setReviews(data);
             } catch (err) {
-                console.error("Yorumlar alınamadı:", err);
-                setError("Yorumlar yüklenemedi.");
+                console.error('Yorumlar alınamadı:', err);
+                setError('Yorumlar yüklenemedi.');
                 setReviews([]);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchUserReviews();
     }, []);
 
-    // Tüm restoranları çek (restaurantService.js 'den)
-    useEffect(() => {
-        const fetchRestaurants = async () => {
-            try {
-                setIsLoading(true);
-                const allRestaurants = await getAllBusinesses();
-                setRestaurants(allRestaurants);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching restaurants:', error);
-                setError('Failed to load restaurants. Please try again later.');
-                setIsLoading(false);
-            }
-        };
+    // enrichedReviews: gömülü business objesinden name, photo, description al
+    const enrichedReviews = reviews.map(r => ({
+        ...r,
+        restaurantName: r.business.name,
+        restaurantImage: r.business.photo?.[0]?.url || '/api/placeholder/100/100',
+        cuisine: r.business.description
+    }));
 
-        fetchRestaurants();
-    }, []);
+    // filtre dropdown'u için unique restoran listesi oluştur
+    const restaurantsForFilter = [...new Map(
+        reviews.map(r => [r.business_id, r.business.name])
+    ).entries()]
+        .map(([id, name]) => ({ id, name }));
 
-    //yorumlarla restoranları eşlemeyi yapar
-    const enrichedReviews = reviews.map(review => {
-        const restaurant = restaurants.find(r => r.id === review.business_id) || {};
-        return {
-            ...review,
-            restaurantName: restaurant.name || 'Unknown Restaurant',
-            restaurantImage: restaurant.image || '/api/placeholder/100/100',
-            cuisine: restaurant.type || 'Unknown'
-        };
-    });
-
-    //filtreleme ve sıralama
+    // filtreleme ve sıralama
     const filteredAndSortedReviews = [...enrichedReviews]
-        .filter(review =>
-            filterRestaurant === '' || review.business_id === parseInt(filterRestaurant)
-        )
+        .filter(r => !filterRestaurant || r.business_id === filterRestaurant)
         .sort((a, b) => {
             if (sortBy === 'date') {
-                return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
-            } else if (sortBy === 'rating') {
+                const da = new Date(a.created_at), db = new Date(b.created_at);
+                return sortOrder === 'asc' ? da - db : db - da;
+            }
+            if (sortBy === 'rating') {
                 return sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
             }
             return 0;
         });
 
-    //açılıp kapanır yorum metni(burası kaldırılabilir)
-    const toggleExpanded = (reviewId) => {
-        setExpandedReviews(prev => ({
-            ...prev,
-            [reviewId]: !prev[reviewId]
-        }));
+    const toggleExpanded = id => {
+        setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
-    //yorum silme(olmalı mı?)
-    const handleDeleteReview = (reviewId) => {
-        if (window.confirm('Are you sure you want to delete this review?')) {
-            // ✅ Gerçek backend'de: await deleteReview(reviewId);
-            setReviews(reviews.filter(review => review.id !== reviewId));
+    const handleDeleteReview = id => {
+        if (window.confirm('Bu yorumu silmek istediğinize emin misiniz?')) {
+            setReviews(prev => prev.filter(r => r.id !== id));
         }
     };
 
-    //yorum düzenleme
-    const handleStartEdit = (review) => {
+    const handleStartEdit = review => {
         setEditingReview(review.id);
         setEditedText(review.comment);
     };
 
-    //düzenlenen yorumu kaydetme
-    const handleSaveEdit = (reviewId) => {
-        // ✅ Gerçek backend'de: await updateReview(reviewId, editedText);
-        setReviews(reviews.map(review =>
-            review.id === reviewId
-                ? { ...review, comment: editedText }
-                : review
-        ));
+    const handleSaveEdit = id => {
+        setReviews(prev => prev.map(r => r.id === id ? { ...r, comment: editedText } : r));
         setEditingReview(null);
         setEditedText('');
     };
 
-    //düzenlemeyi iptal etme
     const handleCancelEdit = () => {
         setEditingReview(null);
         setEditedText('');
     };
 
-
     if (isLoading) return <div className="loading-indicator">Loading reviews...</div>;
     if (error) return <div className="error-message">{error}</div>;
-
 
     return (
         <div className="reviews-container">
             <h1 className="page-title">Değerlendirmelerim</h1>
 
-            {/* ------------------ FİLTRELER VE SIRALAMA ------------------ */}
+            {/* FİLTRELER VE SIRALAMA */}
             <div className="filters-container">
                 <div className="filters-layout">
                     <div className="filter-group">
                         <label className="filter-label">Restorana Göre Filtrele</label>
                         <select
                             value={filterRestaurant}
-                            onChange={(e) => setFilterRestaurant(e.target.value)}
+                            onChange={e => setFilterRestaurant(e.target.value)}
                             className="filter-select"
                         >
-                            <option value="">Bütün Restoranlar</option>
-                            {restaurants.map(restaurant => (
-                                <option key={restaurant.id} value={restaurant.id}>{restaurant.name}</option>
+                            <option value="">Tüm Restoranlar</option>
+                            {restaurantsForFilter.map(r => (
+                                <option key={r.id} value={r.id}>{r.name}</option>
                             ))}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <label className="filter-label">Filtrele</label>
+                        <label className="filter-label">Sırala</label>
                         <div className="sort-controls">
                             <select
                                 value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
+                                onChange={e => setSortBy(e.target.value)}
                                 className="filter-select"
                             >
                                 <option value="date">Tarih</option>
                                 <option value="rating">Puanlama</option>
                             </select>
                             <button
-                                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
                                 className="sort-direction-button"
                             >
-                                {sortOrder === 'asc' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                {sortOrder === 'asc' ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* ------------------ YORUM KARTLARI ------------------ */}
+            {/* YORUM KARTLARI */}
             <div className="reviews-list">
                 {filteredAndSortedReviews.length > 0 ? (
                     filteredAndSortedReviews.map(review => (
                         <div key={review.id} className="review-card">
                             <div className="review-content">
-                                {/* GÖRSEL */}
                                 <div className="restaurant-image-container-reviews">
-                                    <img
-                                        src={review.restaurantImage}
-                                        alt={review.restaurantName}
-                                        className="restaurant-image-reviews"
-                                    />
+                                    <img src={review.restaurantImage} alt={review.restaurantName} className="restaurant-image-reviews" />
                                 </div>
-
-                                {/* YORUM DETAYLARI */}
                                 <div className="review-details">
                                     <div className="review-header">
                                         <h3 className="restaurant-name">{review.restaurantName}</h3>
                                         <span className="review-date">{new Date(review.created_at).toLocaleDateString()}</span>
                                     </div>
-
                                     <div className="review-meta">
                                         <span className="cuisine-tag">{review.cuisine}</span>
                                         <StarRating rating={review.rating} />
                                     </div>
 
                                     {editingReview === review.id ? (
-                                        // DÜZENLEME FORMU
                                         <div className="edit-review-form">
-                                            <textarea
-                                                value={editedText}
-                                                onChange={(e) => setEditedText(e.target.value)}
-                                                className="review-text-edit"
-                                            />
+                      <textarea
+                          value={editedText}
+                          onChange={e => setEditedText(e.target.value)}
+                          className="review-text-edit"
+                      />
                                             <div className="edit-controls">
-                                                <button onClick={handleCancelEdit} className="cancel-button">Cancel</button>
-                                                <button onClick={() => handleSaveEdit(review.id)} className="save-button">Save</button>
+                                                <button onClick={handleCancelEdit} className="cancel-button">İptal</button>
+                                                <button onClick={() => handleSaveEdit(review.id)} className="save-button">Kaydet</button>
                                             </div>
                                         </div>
                                     ) : (
                                         <>
-                                            {/* YORUM METNİ */}
                                             <p className={!expandedReviews[review.id] && review.comment.length > 120 ? 'review-text truncated' : 'review-text'}>
                                                 {review.comment}
                                             </p>
-                                            {/* DAHA FAZLA GÖSTER */}
                                             {review.comment.length > 120 && (
                                                 <button onClick={() => toggleExpanded(review.id)} className="read-more-button">
-                                                    {expandedReviews[review.id] ? 'Read less' : 'Read more'}
+                                                    {expandedReviews[review.id] ? 'Daha Az' : 'Daha Fazla'}
                                                 </button>
                                             )}
-                                            {/* DÜZENLE / SİL */}
                                             <div className="review-actions">
                                                 <div className="action-buttons">
-                                                    <button onClick={() => handleStartEdit(review)} className="edit-button" title="Edit review">
-                                                        <Edit size={18} />
+                                                    <button onClick={() => handleStartEdit(review)} className="edit-button" title="Düzenle">
+                                                        <Edit size={20}/>
                                                     </button>
-                                                    <button onClick={() => handleDeleteReview(review.id)} className="delete-button" title="Delete review">
-                                                        <Trash2 size={18} />
+                                                    <button onClick={() => handleDeleteReview(review.id)} className="delete-button" title="Sil">
+                                                        <Trash2 size={20}/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -295,31 +222,25 @@ export default function MyReviews() {
                     ))
                 ) : (
                     <div className="no-reviews-message">
-                        <p>No reviews match your filters.</p>
+                        <p>Filtrenize uygun yorum bulunamadı.</p>
                     </div>
                 )}
             </div>
 
-            {/* ------------------ ÖZET BÖLÜMÜ ------------------ */}
+            {/* ÖZET BÖLÜMÜ */}
             <div className="summary-container">
-                <h3 className="summary-title">Your Review Summary</h3>
+                <h3 className="summary-title">Özet</h3>
                 <div className="stats-grid">
                     <div className="stat-card">
                         <div className="stat-value">{reviews.length}</div>
                         <div className="stat-label">Toplam Değerlendirme</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-value">
-                            {reviews.length > 0
-                                ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
-                                : "0.0"}
-                        </div>
+                        <div className="stat-value">{reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}</div>
                         <div className="stat-label">Ortalama Puan</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-value">
-                            {new Set(reviews.map(review => review.business_id)).size}
-                        </div>
+                        <div className="stat-value">{new Set(reviews.map(r => r.business_id)).size}</div>
                         <div className="stat-label">Ziyaret Edilen Restoranlar</div>
                     </div>
                 </div>

@@ -61,9 +61,10 @@ public interface ListRepository {
      * Find diners' lists by their user_id (in database)
      * removelistItem(@PathVariable String userId, @PathVariable String listItemId)
      * @param userId The dinerId to search for
+     * @param listId The listId to search for
      * @param listItemId The listItemId to remove for
      */
-    void removeListItem(String userId, String listItemId);
+    void removeListItem(String userId, String listId, String listItemId);
     /**
      * Create new favorite item
      * createDinerFavoriteItem(@PathVariable String userId, @RequestBody CustomListItemRequest createRequest)

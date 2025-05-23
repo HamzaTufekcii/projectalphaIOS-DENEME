@@ -1,42 +1,45 @@
 // src/services/listService.js
 
 import axios from 'axios';
+import {getUserFavoritesIdFromStorage} from "./userService.js";
 
 const API_URL = 'http://localhost:8080/api/users';
-const getAuthAxios = () => {
-    const token = localStorage.getItem('token');
-    return axios.create({
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-};
-export async function addToList(itemId, listId) {
-    mockUserLists = mockUserLists.map(l => {
-        if (l.id === listId) {
-            return {
-                ...l,
-                containsItem: true,
-                businesses: [...l.businesses, { id: itemId }]
-            };
-        }
-        return l;
-    });
-    return Promise.resolve();
+
+export const addToList = async (userId, listId, itemId) => {
+    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`, {});
+    return response.data;
 }
-export async function removeFromList(itemId, listId) {
-    mockUserLists = mockUserLists.map(l => {
-        if (l.id === listId) {
-            return {
-                ...l,
-                containsItem: false,
-                businesses: l.businesses.filter(b => b.id !== itemId)
-            };
-        }
-        return l;
-    });
-    return Promise.resolve();
+export const addToFavorites = async (userId, itemId) => {
+    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${getUserFavoritesIdFromStorage()}/items/${itemId}`, {});
+    return response.data;
 }
+export const removeFromList = async (userId, listId,itemId) => {
+    await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`);
+}
+export const createList = async (userId, name, isPublic) => {
+    const response = await axios.post(
+        `${API_URL}/diner_user/${userId}/lists`,
+        {
+        name: name,
+        isPublic: isPublic,
+    });
+    return response.data;
+}//"/diner_user/{userId}/lists"
+export const removeList = async (userId, listId) => {
+
+    await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}`);
+}
+
+export const updateList = async (userId, name, isPublic, listId) => {
+    const response = await axios.patch(
+        `${API_URL}/diner_user/${userId}/lists/${listId}`,
+        {
+            name: name,
+            isPublic: isPublic,
+        });
+    return response.data;
+}
+
 
 // Mock veri
 let mockUserLists = [
@@ -61,8 +64,12 @@ let mockUserLists = [
 export const getUserLists = async (id) => {
 
     const listResponse = await axios.get(`${API_URL}/diner_user/${id}/lists`);
+    const lists = listResponse.data;
 
-    return listResponse.data;
+// "favorilerim" isimli listeyi filtrele (isim küçük-büyük harfe duyarlı olabilir ona göre kontrol yap)
+    const filteredLists = lists.filter(list => list.name.toLowerCase() !== 'favorilerim');
+
+    return filteredLists;
 
 }
 export const getUserListItems = async(id,listId) => {
@@ -82,40 +89,10 @@ export function getPublicLists() {
 }
 
 /** Yeni bir liste oluşturur */
-export function createList({ name, isPrivate }) {
-    const newList = {
-        id: Date.now().toString(),
-        name,
-        isPrivate: !!isPrivate,
-        containsItem: false,
-        businesses: []
-    };
-    mockUserLists = [newList, ...mockUserLists];
-    return new Promise(resolve =>
-        setTimeout(() => resolve(newList), 200)
-    );
-}
+
 
 /** Var olan bir listeyi siler (mockUserLists’ten kaldırır) */
 export function deleteList(listId) {
     mockUserLists = mockUserLists.filter(l => l.id !== listId);
     return Promise.resolve();
 }
-export const toggleFavorite = async (id, isFavorite) => {
-    try {
-        const authAxios = getAuthAxios();
-        const action = isFavorite ? 'add' : 'remove';
-
-        // This will be replaced with actual API call when backend is ready
-        console.log(`${action} restaurant ${id} ${isFavorite ? 'to' : 'from'} favorites`);
-        return { success: true };
-
-        /*
-        const response = await authAxios.post(`${API_URL}/favorites/${action}`, { restaurantId: id });
-        return response.data;
-        */
-    } catch (error) {
-        console.error('Error updating favorites:', error);
-        throw error.response?.data || error.message || 'Error updating favorites';
-    }
-};
