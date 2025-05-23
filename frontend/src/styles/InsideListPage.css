@@ -1,11 +1,22 @@
 .inside-list-page {
     padding: 24px;
 }
-.inside-list-page h2 {
+
+.page-title {
+    font-size: 1.5rem;
     margin-bottom: 16px;
 }
-.restaurant-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+
+/* Yeni eklenen stiller */
+.empty-container {
+    display: flex;
+    justify-content: center;  /* yatay merkez */
+    align-items: center;      /* (isteğe bağlı dikey merkez) */
+    padding: 40px 0;
+}
+
+.empty-message {
+    color: #666;
+    font-size: 1rem;
+    margin: 0;
 }
