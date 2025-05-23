@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
 import ListBox from '../components/ListBox';
+import { Star, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   getUserLists,
   getPublicLists,
@@ -124,14 +125,14 @@ export default function UserListsPage() {
                               }}
                               title="Liste adını düzenle"
                           >
-                            ✏️
+                            <Edit   size={20} />
                           </button>
                           <button
                               className="delete-list-btn"
                               onClick={() => onDeleteClick(list.id)}
                               title="Listeyi sil"
                           >
-                            🗑️
+                            <Trash2 size={20} />
                           </button>
                         </div>
                     )}

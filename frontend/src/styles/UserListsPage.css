@@ -46,12 +46,11 @@
   margin-top: 8px;   /* burası yeni satır */
 }
 .delete-list-btn:hover {
-  color: #900;
+  color: #ff5a5f;    /* hover’da pembe ikon rengi */
+  background-color: transparent; /* hover’da arka plan YOK */
 }
 
-.delete-list-btn:hover {
-  color: #900;
-}
+
 
 /* ===== Silme Onay Modal ===== */
 .confirm-overlay {
@@ -391,15 +390,38 @@
   font-size: 1.4rem;
   padding: 6px;
   cursor: pointer;
-  color: #555;
+  color:  #ff5a5f;;
   transition: color 0.2s;
 }
 .edit-list-btn:hover {
-  color: #333;
+  background-color: rgba(255, 90, 95, 0.1);
 }
 .list-card-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-left: 12px;
+}
+.edit-list-btn svg {
+  color: #ff5a5f;
+  transition: color 0.2s;
+}
+.edit-list-btn:hover svg {
+  color: #e04a4f;
+}
+
+.delete-list-btn svg {
+  color: #888;
+  transition: color 0.2s;
+}
+.delete-list-btn:hover svg {
+  color: #c00;
+}
+
+.list-card-actions button {
+  background-color: transparent; /* butonların normalde arkaplanı yok */
+  border: none;
+  padding: 6px;
+  border-radius: 4px; /* hover’da hafif yuvarlak köşe */
+  transition: background-color 0.2s, color 0.2s;
 }
