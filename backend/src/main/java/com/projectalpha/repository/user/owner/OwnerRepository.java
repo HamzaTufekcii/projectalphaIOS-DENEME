@@ -3,6 +3,7 @@ package com.projectalpha.repository.user.owner;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.business.address.AddressDTO;
+import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerRegisterRequest;
@@ -10,6 +11,7 @@ import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.dto.user.owner.OwnerUserProfile;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,9 +20,10 @@ public interface OwnerRepository {
      * Find a user by their user_id (in database)
      *
      * @param userId The userId to search for
+     * @param businessReviews List of business reviews for the user's business (if any)
      * @return The owner user if found, otherwise null
      */
-    Optional<OwnerLoginResponse> findOwnerByID(String userId);
+    Optional<OwnerLoginResponse> findOwnerByID(String userId, List<ReviewSupabase> businessReviews);
     /**
      * Find a user's business by their user_id (in database)
      *

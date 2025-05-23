@@ -1,5 +1,7 @@
 package com.projectalpha.repository.user.diner;
 
+import com.projectalpha.dto.review.ReviewSupabase;
+import com.projectalpha.dto.user.diner.DinerLoginResponse;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
@@ -14,9 +16,10 @@ public interface DinerRepository {
      * Find diners by their user_id (in database)
      *
      * @param userId The dinerId to search for
+     * @param dinerReviews List of diner reviews
      * @return The diner user if found, otherwise null
      */
-    Optional<DinerUserProfile> findDinerByID(String userId);
+    Optional<DinerLoginResponse> findDinerByID(String userId, List<ReviewSupabase> dinerReviews);
     /**
      * update diners by their user_id (in database)
      *
@@ -25,4 +28,5 @@ public interface DinerRepository {
      */
     void updateDinerProfile(String userId, DinerUpdateRequest request);
 
+    String findDinerId(String userId);
 }

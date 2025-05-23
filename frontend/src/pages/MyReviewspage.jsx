@@ -1,44 +1,41 @@
 // GEREKLİ KÜTÜPHANELER VE SERVİSLER
 import { useState, useEffect } from 'react';
 import { Star, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { getAllRestaurants } from '../services/restaurantService.js';
+import { getAllBusinesses } from '../services/businessService.js';
 import '../styles/MyReviewsPage.css';
 import Button from '../components/Button.jsx';
 
 // Geçici mock yorum verileri (Backend entegrasyonu tamamlanana kadar kullanılıyor)
-/*
-useEffect(() => {
-    const fetchUserReviews = async () => {
-        const userReviews = await getUserReviews(userId); // backend'den kullanıcıya ait yorumları getir
-        setReviews(userReviews);
-    };
-    fetchUserReviews();
-}, []);
-*/
+
+
+
 //getAllRestaurants ile restaurantService dosyasında olan restoran verileri alındı onlara mock yorumlar eklendi
 const sampleReviews = [
-    {
-        id: 1,
-        restaurantId: 3,
-        rating: 4,
-        reviewText: "Harika yemek ve özenli servis. Ortam gerçekten çok temiz ve nezihti. Yüksek fiyatlı ama özel günlerde kesinlikle tercih edilebilir.",
-        date: "May 15, 2025"
-    },
-    {
-        id: 2,
-        restaurantId: 4,
-        rating: 5,
-        reviewText: "Rahatlıkla bir şeyler içip arkadaşlarınızla eğlenebileceğiniz bir ortam. Pub olmasına rağmen ortam ferah ve rahattı. Müzik rahatsız edici değildi.",
-        date: "May 10, 2025"
-    },
-    {
-        id: 3,
-        restaurantId: 1,
-        rating: 3,
-        reviewText: "Çok cozy ve romantik bir mekan. Fakat fazla küçük olmasından kaynaklı uzun süre sıra bekledik ve rezervasyon yaptıramadık. Ayrıca dışarıdaki ısıtma sistemi yeterli değildi.",
-        date: "May 3, 2025"
-    }
-];
+        {
+            id: "78",
+            comment: "örnek yorum",
+            rating: 5,
+            created_at: "2025-05-17T12:58:51.952659+00:00",
+            business_id: "67",
+            review_photo_url: "örnek_url"
+        },
+        {
+            id: "78",
+            comment: "örnek yorum",
+            rating: 5,
+            created_at: "2025-05-17T12:58:51.952659+00:00",
+            business_id: "67",
+            review_photo_url: "örnek_url"
+        },
+        {
+            id: "78",
+            comment: "örnek yorum",
+            rating: 5,
+            created_at: "2025-05-17T12:58:51.952659+00:00",
+            business_id: "67",
+            review_photo_url: "örnek_url"
+        }
+    ];
 
 // yıldızlı puanlama gösterimi
 const StarRating = ({ rating }) => {
@@ -81,13 +78,20 @@ export default function MyReviews() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    useEffect(() => {
+        const fetchUserReviews = async () => {
+            const userReviews = JSON.parse(localStorage.getItem('userReviews')); // backend'den kullanıcıya ait yorumları getir
+            setReviews(userReviews);
+        };
+        fetchUserReviews();
+    }, []);
 
     // Tüm restoranları çek (restaurantService.js 'den)
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
                 setIsLoading(true);
-                const allRestaurants = await getAllRestaurants();
+                const allRestaurants = await getAllBusinesses();
                 setRestaurants(allRestaurants);
                 setIsLoading(false);
             } catch (error) {
@@ -102,7 +106,7 @@ export default function MyReviews() {
 
     //yorumlarla restoranları eşlemeyi yapar
     const enrichedReviews = reviews.map(review => {
-        const restaurant = restaurants.find(r => r.id === review.restaurantId) || {};
+        const restaurant = restaurants.find(r => r.id === review.business_id) || {};
         return {
             ...review,
             restaurantName: restaurant.name || 'Unknown Restaurant',
@@ -114,7 +118,7 @@ export default function MyReviews() {
     //filtreleme ve sıralama
     const filteredAndSortedReviews = [...enrichedReviews]
         .filter(review =>
-            filterRestaurant === '' || review.restaurantId === parseInt(filterRestaurant)
+            filterRestaurant === '' || review.business_id === parseInt(filterRestaurant)
         )
         .sort((a, b) => {
             if (sortBy === 'date') {
@@ -144,7 +148,7 @@ export default function MyReviews() {
     //yorum düzenleme
     const handleStartEdit = (review) => {
         setEditingReview(review.id);
-        setEditedText(review.reviewText);
+        setEditedText(review.comment);
     };
 
     //düzenlenen yorumu kaydetme
@@ -152,7 +156,7 @@ export default function MyReviews() {
         // ✅ Gerçek backend'de: await updateReview(reviewId, editedText);
         setReviews(reviews.map(review =>
             review.id === reviewId
-                ? { ...review, reviewText: editedText }
+                ? { ...review, comment: editedText }
                 : review
         ));
         setEditingReview(null);
@@ -232,7 +236,7 @@ export default function MyReviews() {
                                 <div className="review-details">
                                     <div className="review-header">
                                         <h3 className="restaurant-name">{review.restaurantName}</h3>
-                                        <span className="review-date">{review.date}</span>
+                                        <span className="review-date">{new Date(review.created_at).toLocaleDateString()}</span>
                                     </div>
 
                                     <div className="review-meta">
@@ -256,11 +260,11 @@ export default function MyReviews() {
                                     ) : (
                                         <>
                                             {/* YORUM METNİ */}
-                                            <p className={!expandedReviews[review.id] && review.reviewText.length > 120 ? 'review-text truncated' : 'review-text'}>
-                                                {review.reviewText}
+                                            <p className={!expandedReviews[review.id] && review.comment.length > 120 ? 'review-text truncated' : 'review-text'}>
+                                                {review.comment}
                                             </p>
                                             {/* DAHA FAZLA GÖSTER */}
-                                            {review.reviewText.length > 120 && (
+                                            {review.comment.length > 120 && (
                                                 <button onClick={() => toggleExpanded(review.id)} className="read-more-button">
                                                     {expandedReviews[review.id] ? 'Read less' : 'Read more'}
                                                 </button>
@@ -307,7 +311,7 @@ export default function MyReviews() {
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">
-                            {new Set(reviews.map(review => review.restaurantId)).size}
+                            {new Set(reviews.map(review => review.business_id)).size}
                         </div>
                         <div className="stat-label">Ziyaret Edilen Restoranlar</div>
                     </div>

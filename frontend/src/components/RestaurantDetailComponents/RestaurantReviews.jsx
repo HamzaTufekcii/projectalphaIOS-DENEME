@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import './RestaurantReviews.css';
 import CustomInput from "../CustomInput.jsx";
 import Button from "../Button.jsx";
+import {getBusinessReviews} from "../../services/businessService.js";
 
 const RestaurantReviews = ({ restaurantId }) => {
     const [reviews, setReviews] = useState([]);
@@ -22,42 +23,48 @@ const RestaurantReviews = ({ restaurantId }) => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [sortOrder, setSortOrder] = useState('desc'); // başta en yüksek puanlılar gelsin
 
-    // Fetch reviews and statistics (In a real app, this would call an API)
     useEffect(() => {
-        // Mock data for demonstration
-        const mockData = {
-            reviews: [
-                {
-                    id: 1,
-                    name: 'Ahmet Y.',
-                    rating: 5,
-                    comment: 'Harika bir deneyimdi! Atmosfer mükemmeldi ve yemekler lezzetliydi. Makarna çeşitlerini ve tatlı olarak tiramisu\'yu kesinlikle tavsiye ederim.',
-                    date: new Date(2025, 4, 14) // May 14, 2025
-                },
-                {
-                    id: 2,
-                    name: 'Zeynep K.',
-                    rating: 4,
-                    comment: 'Servis ve ambiyans çok güzeldi. Yemekler iyiydi, ancak porsiyon boyutlarına göre biraz pahalı. Muhtemelen özel günler için tekrar geleceğim.',
-                    date: new Date(2025, 4, 9) // May 9, 2025
-                },
-                {
-                    id: 3,
-                    name: 'Selin B.',
-                    rating: 5,
-                    comment: 'Şehrin en iyi İtalyan restoranı! Lazanya efsaneydi ve servis çok hızlıydı. Kesinlikle tekrar geleceğiz.',
-                    date: new Date(2025, 4, 5) // May 5, 2025
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            setUserReview(prev => ({
+                ...prev,
+                name: `${userData.name} ${userData.surname}`
+            }));
+        }
+    }, []);
+    useEffect(() => {
+        const fetchReviews = async () => {
+            const fetchedReviews = await getBusinessReviews(restaurantId);
+
+            const mappedReviews = fetchedReviews.map((review) => ({
+                id: review.id,
+                name: "Anonim", // backend'de isim yoksa placeholder
+                rating: review.rating,
+                comment: review.comment,
+                date: new Date(review.created_at),
+            }));
+
+            setReviews(mappedReviews);
+
+            // İstatistikleri hesapla
+            const total = mappedReviews.length;
+            const average = total > 0 ? mappedReviews.reduce((sum, r) => sum + r.rating, 0) / total : 0;
+            const distribution = [0, 0, 0, 0, 0]; // index 0 = 1 yıldız, index 4 = 5 yıldız
+
+            mappedReviews.forEach((r) => {
+                if (r.rating >= 1 && r.rating <= 5) {
+                    distribution[r.rating - 1]++;
                 }
-            ],
-            statistics: {
-                average: 4.7,
-                total: 120,
-                distribution: [84, 24, 10, 3, 0] // 1-star to 5-star counts
-            }
+            });
+
+            setStatistics({
+                total,
+                average,
+                distribution,
+            });
         };
 
-        setReviews(mockData.reviews);
-        setStatistics(mockData.statistics);
+        fetchReviews();
     }, [restaurantId]);
 
     // Calculate percentage for rating distribution bars
@@ -153,6 +160,7 @@ const RestaurantReviews = ({ restaurantId }) => {
                     ))}
                 </div>
             </div>
+
 
             {/* Yorum yapma formu*/}
             <div className="review-form-container">

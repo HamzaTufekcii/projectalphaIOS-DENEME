@@ -179,4 +179,5 @@ public class UserController implements DinerController, OwnerController, ListsCo
         userService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
     }
+
 }

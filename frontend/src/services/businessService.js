@@ -70,3 +70,9 @@ export const getByTag = async (tagId) => {
     const res = await axios.get(`${API_BASE}/tag/${tagId}`);
     return res.data.data;
 };
+
+export const getBusinessReviews = async (businessId) => {
+    const res = await axios.get(`${API_BASE}/reviews/${businessId}`);
+    console.log(res.data.data);
+    return res.data.data;
+}
