@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import RestaurantCard from './RestaurantCard';
 import './RestaurantList.css';
 import { FaSort, FaFilter } from 'react-icons/fa';
+import { mapBusiness } from '../../utils/businessMapper.js';
 import {
     getAllBusinesses, getActivePromotions, getByTag,
     getBusinessesByOwner, getTopRated, searchBusinesses
@@ -55,6 +56,8 @@ const RestaurantList = ({
                 } else {
                     data = await getAllBusinesses();
                 }
+
+                data = data.map(mapBusiness);
 
                 // client-side ek filtreler (ör. isim ara)
                 if (activeFilters.searchTerm) {

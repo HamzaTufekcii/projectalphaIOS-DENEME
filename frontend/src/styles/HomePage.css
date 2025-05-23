@@ -513,6 +513,13 @@ body {
     font-size: 14px;
 }
 
+.featured-section .restaurant-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
 .distance {
     display: flex;
     align-items: center;
