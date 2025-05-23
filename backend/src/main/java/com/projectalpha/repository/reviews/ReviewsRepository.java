@@ -10,14 +10,12 @@ import java.util.Optional;
 
 public interface ReviewsRepository {
 
-    List<ReviewSupabase> getReviewByUserId(String userId);
+    List<ReviewSupabase> getReviewsByUserId(String userId);
 
     void saveReview(String userId, String businessId, newReviewRequest review);
 
     void deleteReview(String reviewId);
 
     List<ReviewSupabase> getReviewsByBusinessId(String businessId);
-
-
 
 }
