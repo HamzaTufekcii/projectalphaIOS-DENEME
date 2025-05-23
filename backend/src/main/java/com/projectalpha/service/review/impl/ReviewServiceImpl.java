@@ -18,7 +18,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
 
-    public List<ReviewSupabase> getReviewByUserId(String userId){ return repo.getReviewByUserId(userId); }
+    public List<ReviewSupabase> getReviewsByUserId(String userId){ return repo.getReviewsByUserId(userId); }
 
     public void saveReview(String userId, String businessId, newReviewRequest review){repo.saveReview(userId,businessId,review);}
 

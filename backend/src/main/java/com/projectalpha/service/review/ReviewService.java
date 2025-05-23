@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ReviewService {
 
-    List<ReviewSupabase> getReviewByUserId(String userId);
+    List<ReviewSupabase> getReviewsByUserId(String userId);
 
     void saveReview(String userId, String businessId, newReviewRequest review);
 

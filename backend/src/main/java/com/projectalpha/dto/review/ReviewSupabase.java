@@ -2,6 +2,7 @@ package com.projectalpha.dto.review;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.projectalpha.dto.business.BusinessSummaryDTO;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -28,4 +29,5 @@ public class ReviewSupabase {
     @JsonProperty("review_photo_url")
     private String reviewPhotoUrl;
 
+    private BusinessSummaryDTO business;
 }

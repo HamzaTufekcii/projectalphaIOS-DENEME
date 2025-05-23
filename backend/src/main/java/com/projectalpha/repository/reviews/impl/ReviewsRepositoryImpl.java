@@ -38,36 +38,50 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
         this.dinerRepository = dinerRepository;
     }
 
-    public List<ReviewSupabase> getReviewByUserId(String userId) {
+    @Override
+    public List<ReviewSupabase> getReviewsByUserId(String userId) {
         try {
-            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/review?user_id=eq." + userId;
+            String url = supabaseConfig.getSupabaseUrl()
+                    + "/rest/v1/review"
+                    + "?select="
+                    // review alanları
+                    + "id,comment,rating,created_at,review_photo_url,user_id,business_id,"
+                    // business ilişkisinin gömülmesi; tablo adı “photo”
+                    + "business:business_id("
+                    + "name,"
+                    + "avg_rating,"
+                    + "description,"
+                    + "photo(id,url,caption,isCover)"
+                    + ")"
+                    // filtre ve sıralama
+                    + "&user_id=eq." + userId
+                    + "&order=created_at.desc";
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(java.net.URI.create(url))
+                    .uri(URI.create(url))
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
                 throw new RuntimeException("Değerlendirmeler alınamadı: " + response.body());
             }
-            JsonNode root = mapper.readTree(response.body());
-            List<ReviewSupabase> listOfReviews = new ArrayList<>();
 
+            System.out.println(response.body());
+
+            JsonNode root = mapper.readTree(response.body());
+            List<ReviewSupabase> reviews = new ArrayList<>();
             if (root.isArray()) {
                 for (JsonNode node : root) {
-                    ReviewSupabase review = mapper.treeToValue(node, ReviewSupabase.class);
-                    listOfReviews.add(review);
+                    reviews.add(mapper.treeToValue(node, ReviewSupabase.class));
                 }
             }
-
-            return listOfReviews;
-
+            return reviews;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Değerlendirmeler alınırken hata oluştu: " + e.getMessage());
+            throw new RuntimeException("Değerlendirmeler alınırken hata oluştu: " + e.getMessage(), e);
         }
     }
 
