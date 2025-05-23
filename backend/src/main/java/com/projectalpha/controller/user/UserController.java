@@ -3,6 +3,7 @@ package com.projectalpha.controller.user;
 import com.projectalpha.controller.user.diner.DinerController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
+import com.projectalpha.dto.GenericResponse;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
@@ -10,6 +11,7 @@ import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
+import com.projectalpha.service.review.ReviewService;
 import com.projectalpha.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,10 +28,12 @@ import java.util.Map;
 public class UserController implements DinerController, OwnerController, ListsController {
 
     private final UserService userService;
+    private final ReviewService reviewService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ReviewService reviewService) {
         this.userService = userService;
+        this.reviewService = reviewService;
     }
 
 
@@ -60,6 +64,19 @@ public class UserController implements DinerController, OwnerController, ListsCo
                                                 @RequestBody DinerUpdateRequest request) {
         userService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @GetMapping("/diner_user/{userId}/reviews")
+    public ResponseEntity<?> getDinerReviews(@PathVariable(name = "userId") String userId) {
+        try {
+            return ResponseEntity.ok(
+                    new GenericResponse<>(true, "Reviews", userService.getDinerReviews(userId))
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new GenericResponse<>(false, "Invalid user ID"));
+        }
     }
 
     // ---- DinerList Implementations ----

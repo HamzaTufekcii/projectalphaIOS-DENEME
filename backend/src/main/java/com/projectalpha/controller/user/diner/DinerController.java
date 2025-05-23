@@ -11,4 +11,6 @@ public interface DinerController {
 
     ResponseEntity<?> updateDinerProfile(@PathVariable String userId, @RequestBody DinerUpdateRequest request);
 
+    ResponseEntity<?> getDinerReviews(@PathVariable String userId);
+
 }

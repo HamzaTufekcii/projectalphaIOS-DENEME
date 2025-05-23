@@ -1,6 +1,11 @@
 // src/services/listService.js
 
-// 1️⃣ Kullanıcının oluşturduğu listeler; her liste businesses dizisi tutuyor
+import axios from 'axios';
+
+const API_URL = 'http://localhost:8080/api/users';
+
+
+// Mock veri
 let mockUserLists = [
     {
         id: 'u1',
@@ -9,7 +14,6 @@ let mockUserLists = [
         isPrivate: false,
         businesses: []
     },
-
     {
         id: 'u3',
         name: 'Favori Kahvaltıcılar',
@@ -19,74 +23,48 @@ let mockUserLists = [
     }
 ];
 
-// 2️⃣ Keşfet sekmesi için statik public listeler
-const mockPublicLists = [
-    { id: 'p1', name: 'Keşif Listesi 1' },
-    { id: 'p2', name: 'Keşif Listesi 2' },
-    { id: 'p3', name: 'Keşif Listesi 3' }
-];
 
-/** Kullanıcının listelerini getirir */
-export async function getUserLists() {
-    return new Promise(resolve => setTimeout(() => resolve([...mockUserLists]), 200));
+/** Kullanıcının kendi listelerini döner */
+export const getUserLists = async (id) => {
+
+    const listResponse = await axios.get(`${API_URL}/diner_user/${id}/lists`);
+
+    return listResponse.data;
+
+}
+export const getUserListItems = async(id,listId) => {
+    const listItemResponse = await axios.get(`${API_URL}/diner_user/${id}/lists/${listId}/items`);
+
+    return listItemResponse.data;
 }
 
-/** Keşfet sekmesi için public listeleri getirir */
-export async function getPublicLists() {
-    return new Promise(resolve => setTimeout(() => resolve([...mockPublicLists]), 200));
+/** Halka açık listeleri döner */
+export function getPublicLists() {
+    return new Promise(resolve =>
+        setTimeout(
+            () => resolve(mockUserLists.filter(l => !l.isPrivate)),
+            200
+        )
+    );
 }
 
-/** Tek bir listeyi ve içindeki işletmeleri döner */
-export async function getListDetails(listId) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const list = mockUserLists.find(l => l.id === listId);
-            if (!list) reject(new Error('Liste bulunamadı'));
-            else resolve({ ...list });
-        }, 200);
-    });
-}
-
-/** Item'ı bir listeye ekler (containsItem ve businesses güncellenir) */
-export async function addToList(itemId, listId) {
-    mockUserLists = mockUserLists.map(l => {
-        if (l.id === listId) {
-            return {
-                ...l,
-                containsItem: true,
-                businesses: [...l.businesses, { id: itemId }]
-            };
-        }
-        return l;
-    });
-    return Promise.resolve();
-}
-
-/** Item'ı listeden çıkarır */
-export async function removeFromList(itemId, listId) {
-    mockUserLists = mockUserLists.map(l => {
-        if (l.id === listId) {
-            return {
-                ...l,
-                containsItem: false,
-                businesses: l.businesses.filter(b => b.id !== itemId)
-            };
-        }
-        return l;
-    });
-    return Promise.resolve();
-}
-
-/** Yeni bir liste oluşturur (sadece kullanıcı listelerine ekler) */
-export async function createList({ name, isPrivate }) {
+/** Yeni bir liste oluşturur */
+export function createList({ name, isPrivate }) {
     const newList = {
         id: Date.now().toString(),
         name,
         isPrivate: !!isPrivate,
         containsItem: false,
-        userName: 'Sen',
         businesses: []
     };
     mockUserLists = [newList, ...mockUserLists];
-    return new Promise(resolve => setTimeout(() => resolve(newList), 200));
+    return new Promise(resolve =>
+        setTimeout(() => resolve(newList), 200)
+    );
+}
+
+/** Var olan bir listeyi siler (mockUserLists’ten kaldırır) */
+export function deleteList(listId) {
+    mockUserLists = mockUserLists.filter(l => l.id !== listId);
+    return Promise.resolve();
 }

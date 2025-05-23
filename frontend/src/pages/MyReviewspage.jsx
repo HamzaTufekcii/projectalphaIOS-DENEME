@@ -4,6 +4,7 @@ import { Star, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getAllBusinesses } from '../services/businessService.js';
 import '../styles/MyReviewsPage.css';
 import Button from '../components/Button.jsx';
+import {getUserIdFromStorage, getUserReviews} from "../services/userService.js";
 
 // Geçici mock yorum verileri (Backend entegrasyonu tamamlanana kadar kullanılıyor)
 
@@ -11,31 +12,31 @@ import Button from '../components/Button.jsx';
 
 //getAllRestaurants ile restaurantService dosyasında olan restoran verileri alındı onlara mock yorumlar eklendi
 const sampleReviews = [
-        {
-            id: "78",
-            comment: "örnek yorum",
-            rating: 5,
-            created_at: "2025-05-17T12:58:51.952659+00:00",
-            business_id: "67",
-            review_photo_url: "örnek_url"
-        },
-        {
-            id: "78",
-            comment: "örnek yorum",
-            rating: 5,
-            created_at: "2025-05-17T12:58:51.952659+00:00",
-            business_id: "67",
-            review_photo_url: "örnek_url"
-        },
-        {
-            id: "78",
-            comment: "örnek yorum",
-            rating: 5,
-            created_at: "2025-05-17T12:58:51.952659+00:00",
-            business_id: "67",
-            review_photo_url: "örnek_url"
-        }
-    ];
+    {
+        id: "78",
+        comment: "örnek yorum",
+        rating: 5,
+        created_at: "2025-05-17T12:58:51.952659+00:00",
+        business_id: "67",
+        review_photo_url: "örnek_url"
+    },
+    {
+        id: "79",
+        comment: "örnek yorum",
+        rating: 5,
+        created_at: "2025-05-17T12:58:51.952659+00:00",
+        business_id: "67",
+        review_photo_url: "örnek_url"
+    },
+    {
+        id: "80",
+        comment: "örnek yorum",
+        rating: 5,
+        created_at: "2025-05-17T12:58:51.952659+00:00",
+        business_id: "67",
+        review_photo_url: "örnek_url"
+    }
+];
 
 // yıldızlı puanlama gösterimi
 const StarRating = ({ rating }) => {
@@ -67,7 +68,7 @@ export default function MyReviews() {
     // ----------------------
     // STATE TANIMLARI
     // ----------------------
-    const [reviews, setReviews] = useState(sampleReviews); // ✅ Gerçek backend'de: sampleReviews yerine setReviews(await getUserReviews())
+    const [reviews, setReviews] = useState([]); // ✅ Gerçek backend'de: sampleReviews yerine setReviews(await getUserReviews())
     const [restaurants, setRestaurants] = useState([]);
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
@@ -80,8 +81,14 @@ export default function MyReviews() {
 
     useEffect(() => {
         const fetchUserReviews = async () => {
-            const userReviews = JSON.parse(localStorage.getItem('userReviews')); // backend'den kullanıcıya ait yorumları getir
-            setReviews(userReviews);
+            try {
+                const userReviews = await getUserReviews(getUserIdFromStorage());
+                setReviews(userReviews.data);
+            } catch (err) {
+                console.error("Yorumlar alınamadı:", err);
+                setError("Yorumlar yüklenemedi.");
+                setReviews([]);
+            }
         };
         fetchUserReviews();
     }, []);

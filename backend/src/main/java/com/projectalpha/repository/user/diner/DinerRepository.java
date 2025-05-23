@@ -16,10 +16,10 @@ public interface DinerRepository {
      * Find diners by their user_id (in database)
      *
      * @param userId The dinerId to search for
-     * @param dinerReviews List of diner reviews
+     * @param dinerLists List of diner lists
      * @return The diner user if found, otherwise null
      */
-    Optional<DinerLoginResponse> findDinerByID(String userId, List<ReviewSupabase> dinerReviews);
+    Optional<DinerLoginResponse> findDinerByID(String userId, List<CustomList> dinerLists);
     /**
      * update diners by their user_id (in database)
      *

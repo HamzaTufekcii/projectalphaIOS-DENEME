@@ -11,6 +11,8 @@ import com.projectalpha.exception.auth.UserNotVerifiedException;
 import com.projectalpha.exception.auth.WrongRoleLoginMethod;
 import com.projectalpha.repository.auth.AuthRepository;
 import com.projectalpha.repository.user.UserRepository;
+import com.projectalpha.repository.user.diner.DinerRepository;
+import com.projectalpha.repository.user.diner.custom_lists.ListRepository;
 import com.projectalpha.repository.user.owner.OwnerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,14 @@ public class AuthService {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final OwnerRepository ownerRepository;
+    private final ListRepository listRepository;
 
     @Autowired
-    public AuthService(AuthRepository authRepository, UserRepository userRepository, OwnerRepository ownerRepository) {
+    public AuthService(AuthRepository authRepository, UserRepository userRepository, OwnerRepository ownerRepository, ListRepository listRepository) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.ownerRepository = ownerRepository;
+        this.listRepository = listRepository;
     }
 
     /**
@@ -87,8 +91,10 @@ public class AuthService {
         if (userId == null) {
             throw new UserNotFoundException("User not found with email: " + email);
         }
-
         userRepository.createUserProfile(userId, email, role);
+
+        listRepository.createFavoritesList(userId);
+
         userRepository.updateUserPasswordAndRole(userId, newPassword, role);
 
     }

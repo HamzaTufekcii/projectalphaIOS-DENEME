@@ -1,32 +1,35 @@
+// src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import '../styles/UserListsPage.css';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
 import ListBox from '../components/ListBox';
-import { getUserLists, getPublicLists } from '../services/listService';
+import {getUserLists, getPublicLists, deleteList, getUserListItems} from '../services/listService';
+import '../styles/UserListsPage.css';
+import {getUserIdFromStorage} from "../services/userService.js";
 
 export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+
   const [viewMode, setViewMode] = useState('discover');
   const [lists, setLists] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [confirmListId, setConfirmListId] = useState(null);
 
-  // URL parametresinden sekme durumunu al
+  // Sekme durumunu URL query’den al
   useEffect(() => {
     const mode = new URLSearchParams(location.search).get('mode');
     setViewMode(mode === 'mine' ? 'mine' : 'discover');
   }, [location.search]);
 
-  // Servisten listeleri çek
+  // Listeleri mock servisten çek
   const fetchLists = async () => {
     setIsLoading(true);
     try {
-      const data = viewMode === 'mine'
-          ? await getUserLists()
-          : await getPublicLists();
+      const data =
+          viewMode === 'mine' ? await getUserLists(getUserIdFromStorage()) : await getPublicLists();
       setLists(data);
     } catch (err) {
       console.error('Liste çekme hatası:', err);
@@ -34,37 +37,53 @@ export default function UserListsPage() {
       setIsLoading(false);
     }
   };
-
-  // viewMode her değiştiğinde veya component mount olduğunda çalış
   useEffect(() => {
     fetchLists();
   }, [viewMode]);
 
-  // sekme seçimi
-  const handleSelectView = (mode) => {
-    navigate(`/lists?mode=${mode}`);
+  // Liste kartına tıklayınca iç sayfaya git
+  const handleClick = async (listId) => {
+    navigate(`/lists/${listId}`);
   };
 
-  // liste kutusuna tıklayınca ilgili iç sayfaya yönlendir
-  const handleClick = (listId) => {
-    navigate(`/lists/${listId}`);
+  // Silme butonuna tıklanınca onay modal’ını aç
+  const onDeleteClick = (listId) => {
+    setConfirmListId(listId);
+  };
+
+  // Modal’da “Evet”e tıklayınca listeyi sil
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteList(confirmListId);
+      setLists((prev) => prev.filter((l) => l.id !== confirmListId));
+    } catch (err) {
+      console.error('Liste silme hatası:', err);
+    } finally {
+      setConfirmListId(null);
+    }
+  };
+
+  // Modal’da “Hayır”a tıklayınca iptal et
+  const handleCancelDelete = () => {
+    setConfirmListId(null);
   };
 
   return (
       <div className="user-lists-page">
+        {/* Header & Tabs */}
         <div className="user-lists-header">
           <h1>{viewMode === 'discover' ? 'Keşfet' : 'Listelerim'}</h1>
           <div className="tab-options">
             <div className={`tab-background ${viewMode}`} />
             <div
                 className={`tab-option ${viewMode === 'discover' ? 'active' : ''}`}
-                onClick={() => handleSelectView('discover')}
+                onClick={() => navigate('/lists?mode=discover')}
             >
               KEŞFET
             </div>
             <div
                 className={`tab-option ${viewMode === 'mine' ? 'active' : ''}`}
-                onClick={() => handleSelectView('mine')}
+                onClick={() => navigate('/lists?mode=mine')}
             >
               LİSTELERİM
             </div>
@@ -79,16 +98,31 @@ export default function UserListsPage() {
           )}
         </div>
 
+        {/* Liste kartları veya yükleniyor / boş */}
         {isLoading ? (
             <div className="loading-spinner">Yükleniyor...</div>
         ) : lists.length > 0 ? (
             <div className="lists-container">
               {lists.map((list) => (
-                  <ListBox
-                      key={list.id}
-                      list={list}
-                      onClick={handleClick}
-                  />
+                  <div className="list-card" key={list.id}>
+                    {/* ListBox tüm içeriği kaplasın */}
+                    <div
+                        className="list-card-content"
+                        onClick={() => handleClick(list.id)}
+                    >
+                      <ListBox list={list} />
+                    </div>
+                    {/* Çöp kutusu butonu */}
+                    {viewMode === 'mine' && (
+                        <button
+                            className="delete-list-btn"
+                            onClick={() => onDeleteClick(list.id)}
+                            title="Listeyi sil"
+                        >
+                          🗑️
+                        </button>
+                    )}
+                  </div>
               ))}
             </div>
         ) : (
@@ -99,12 +133,35 @@ export default function UserListsPage() {
             </div>
         )}
 
+        {/* Silme Onay Modal */}
+        {confirmListId && (
+            <div className="confirm-overlay">
+              <div className="confirm-modal">
+                <p>Silmek istediğinize emin misiniz?</p>
+                <div className="confirm-buttons">
+                  <button
+                      className="btn confirm"
+                      onClick={handleConfirmDelete}
+                  >
+                    Evet
+                  </button>
+                  <button
+                      className="btn cancel"
+                      onClick={handleCancelDelete}
+                  >
+                    Hayır
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
+
+        {/* Liste Oluştur Modal */}
         {showCreateModal && (
             <CreateList
-                onClose={() => setShowCreateModal(false)}
-                onCreated={async () => {
-                  await fetchLists();
+                onClose={() => {
                   setShowCreateModal(false);
+                  fetchLists();
                 }}
             />
         )}

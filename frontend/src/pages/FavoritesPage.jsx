@@ -3,7 +3,8 @@ import {useNavigate, useParams} from 'react-router-dom';
 import axios from 'axios';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
-import {getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
+
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -51,6 +52,7 @@ const FavoritesPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
 
+  const currentUserFavoriteID = getUserFavoritesIdFromStorage();
   const currentUserId = userId || getUserIdFromStorage();
   const currentUserRole = role || getUserRoleFromStorage();
 
@@ -77,7 +79,7 @@ const FavoritesPage = () => {
       
       try {
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists/${currentUserFavoriteID}`);
+        const response = await axios.get(`${API_BASE_URL}/users/${currentUserRole}/${currentUserId}/lists/${currentUserFavoriteID}/items`);
         // Find the favorites list
         const favList = response.data;
         
