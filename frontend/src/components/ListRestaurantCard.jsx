@@ -1,17 +1,29 @@
+// src/components/ListRestaurantCard.jsx
 import React from 'react'
 import RestaurantCard from '../components/HomePageComponents/RestaurantCard'
+import './ListRestaurantCard.css'   // (1)
 
-/**
- * ListRestaurantCard — sadece restaurant prop’unu
- * RestaurantCard’a iletir, favorites ve toggleFavorite
- * prop’larını boş değerlerle set eder.
- */
-export default function ListRestaurantCard({ restaurant }) {
+export default function ListRestaurantCard({
+                                               restaurant,
+                                               isEditing = false,              // (2)
+                                               onRemove = () => {}             // (3)
+                                           }) {
     return (
-        <RestaurantCard
-            restaurant={restaurant}
-            favorites={[]}                // artık undefined değil
-            toggleFavorite={() => {}}     // tıklanma no-op
-        />
+        <div className="list-restaurant-card">
+            {isEditing && (
+                <button
+                    className="remove-btn"
+                    onClick={e => { e.stopPropagation(); onRemove() }}
+                    aria-label="Restoranı kaldır"
+                >
+                    &minus;
+                </button>
+            )}
+            <RestaurantCard
+                restaurant={restaurant}
+                favorites={[]}
+                toggleFavorite={() => {}}
+            />
+        </div>
     )
 }

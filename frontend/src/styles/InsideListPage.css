@@ -34,3 +34,20 @@
 .empty-message {
     font-size: 1.1rem;
 }
+.header-row {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.edit-toggle-btn {
+    background: #ff5a5f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
