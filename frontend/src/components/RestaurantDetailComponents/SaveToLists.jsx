@@ -1,7 +1,7 @@
 // src/components/RestaurantDetailComponents/SaveToLists.jsx
 console.log("SaveToLists geldi")
 import React, { useState, useEffect } from 'react';
-import { toggleFavorite } from '../../services/restaurantService';
+import { toggleFavorite } from '../../services/listService';
 import {
     getUserLists,
     addToList,

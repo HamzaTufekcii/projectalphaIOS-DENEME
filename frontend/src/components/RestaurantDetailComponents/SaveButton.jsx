@@ -1,7 +1,7 @@
 // src/components/RestaurantDetailComponents/SaveButton.jsx
 import React from 'react';
 import { FaPlus, FaCheck } from 'react-icons/fa';   // ← İKONLAR BURADA
-import { toggleFavorite } from '../../services/restaurantService';
+import { toggleFavorite } from '../../services/listService';
 import './SaveButton.css';
 
 export default function SaveButton({ itemId, isSaved, onToggle, onCustomize }) {
