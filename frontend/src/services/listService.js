@@ -96,4 +96,3 @@ export function deleteList(listId) {
     mockUserLists = mockUserLists.filter(l => l.id !== listId);
     return Promise.resolve();
 }
-
