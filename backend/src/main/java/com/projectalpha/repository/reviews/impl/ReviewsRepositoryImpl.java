@@ -70,8 +70,6 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
                 throw new RuntimeException("Değerlendirmeler alınamadı: " + response.body());
             }
 
-            System.out.println(response.body());
-
             JsonNode root = mapper.readTree(response.body());
             List<ReviewSupabase> reviews = new ArrayList<>();
             if (root.isArray()) {

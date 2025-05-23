@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { updateList } from '../../services/listService';
 import './EditList.css';
+import {getUserIdFromStorage} from "../../services/userService.js";
 
 export default function EditList({ list, onClose, onUpdated }) {
     const [title, setTitle] = useState(list.name);
@@ -23,11 +24,7 @@ export default function EditList({ list, onClose, onUpdated }) {
         if (!title.trim()) return;
         setSaving(true);
         try {
-            const updated = await updateList({
-                id: list.id,
-                name: title.trim(),
-                isPrivate,
-            });
+            const updated = await updateList(getUserIdFromStorage(), title.trim(), !isPrivate, list.id, );
             onUpdated(updated);
         } catch (err) {
             console.error('Güncelleme hatası', err);
