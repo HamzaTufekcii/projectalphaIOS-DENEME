@@ -3,7 +3,40 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api/users';
-
+const getAuthAxios = () => {
+    const token = localStorage.getItem('token');
+    return axios.create({
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+};
+export async function addToList(itemId, listId) {
+    mockUserLists = mockUserLists.map(l => {
+        if (l.id === listId) {
+            return {
+                ...l,
+                containsItem: true,
+                businesses: [...l.businesses, { id: itemId }]
+            };
+        }
+        return l;
+    });
+    return Promise.resolve();
+}
+export async function removeFromList(itemId, listId) {
+    mockUserLists = mockUserLists.map(l => {
+        if (l.id === listId) {
+            return {
+                ...l,
+                containsItem: false,
+                businesses: l.businesses.filter(b => b.id !== itemId)
+            };
+        }
+        return l;
+    });
+    return Promise.resolve();
+}
 
 // Mock veri
 let mockUserLists = [
@@ -68,3 +101,21 @@ export function deleteList(listId) {
     mockUserLists = mockUserLists.filter(l => l.id !== listId);
     return Promise.resolve();
 }
+export const toggleFavorite = async (id, isFavorite) => {
+    try {
+        const authAxios = getAuthAxios();
+        const action = isFavorite ? 'add' : 'remove';
+
+        // This will be replaced with actual API call when backend is ready
+        console.log(`${action} restaurant ${id} ${isFavorite ? 'to' : 'from'} favorites`);
+        return { success: true };
+
+        /*
+        const response = await authAxios.post(`${API_URL}/favorites/${action}`, { restaurantId: id });
+        return response.data;
+        */
+    } catch (error) {
+        console.error('Error updating favorites:', error);
+        throw error.response?.data || error.message || 'Error updating favorites';
+    }
+};

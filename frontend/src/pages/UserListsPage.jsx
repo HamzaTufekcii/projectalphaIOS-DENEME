@@ -1,9 +1,9 @@
 // src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
 import ListBox from '../components/ListBox';
-import {getUserLists, getPublicLists, deleteList, getUserListItems} from '../services/listService';
+import {getUserLists, getPublicLists, deleteList} from '../services/listService';
 import '../styles/UserListsPage.css';
 import {getUserIdFromStorage} from "../services/userService.js";
 
