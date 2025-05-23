@@ -21,8 +21,9 @@
 }
 
 .list-card {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;            /* ListBox ile buton arası boşluk */
   background: #fff;
   border-radius: 8px;
@@ -38,11 +39,16 @@
   background: none;
   border: none;
   font-size: 1.4rem;
-  padding: 8px;
+  padding: 6px;
   cursor: pointer;
   color: #c00;
   transition: color 0.2s;
+  margin-top: 8px;   /* burası yeni satır */
 }
+.delete-list-btn:hover {
+  color: #900;
+}
+
 .delete-list-btn:hover {
   color: #900;
 }
@@ -65,12 +71,15 @@
   border-radius: 6px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   text-align: center;
+  width: 400px;
+  max-width: 90%;
+  min-width: 320px;
 }
 
 .confirm-buttons {
   margin-top: 16px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
 }
 
@@ -368,4 +377,29 @@
 
 .create-list-btn:active {
   background-color: #e74c3c;
+}
+.edit-input {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 12px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.edit-list-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  padding: 6px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s;
+}
+.edit-list-btn:hover {
+  color: #333;
+}
+.list-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 12px;
 }

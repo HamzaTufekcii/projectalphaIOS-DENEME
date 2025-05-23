@@ -1,35 +1,46 @@
-// src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
 import ListBox from '../components/ListBox';
-import {getUserLists, getPublicLists, deleteList} from '../services/listService';
+import {
+  getUserLists,
+  getPublicLists,
+  deleteList,
+} from '../services/listService';
+import { updateListName } from '../services/listService';
 import '../styles/UserListsPage.css';
-import {getUserIdFromStorage} from "../services/userService.js";
+import { getUserIdFromStorage } from '../services/userService';
 
 export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [viewMode, setViewMode]         = useState('discover');
+  const [lists, setLists]               = useState([]);
+  const [isLoading, setIsLoading]       = useState(false);
 
-  const [viewMode, setViewMode] = useState('discover');
-  const [lists, setLists] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [confirmListId, setConfirmListId] = useState(null);
+  const [showCreateModal, setShowCreateModal]   = useState(false);
+  const [confirmListId,   setConfirmListId]     = useState(null);
 
-  // Sekme durumunu URL query’den al
+  // Düzenleme modalı için
+  const [showEditModal,   setShowEditModal]     = useState(false);
+  const [editingListId,   setEditingListId]     = useState(null);
+  const [editingListName, setEditingListName]   = useState('');
+
+  // URL query’den sekmeyi al
   useEffect(() => {
     const mode = new URLSearchParams(location.search).get('mode');
     setViewMode(mode === 'mine' ? 'mine' : 'discover');
   }, [location.search]);
 
-  // Listeleri mock servisten çek
+  // Listeleri çek
   const fetchLists = async () => {
     setIsLoading(true);
     try {
       const data =
-          viewMode === 'mine' ? await getUserLists(getUserIdFromStorage()) : await getPublicLists();
+          viewMode === 'mine'
+              ? await getUserLists(getUserIdFromStorage())
+              : await getPublicLists();
       setLists(data);
     } catch (err) {
       console.error('Liste çekme hatası:', err);
@@ -37,25 +48,20 @@ export default function UserListsPage() {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    fetchLists();
-  }, [viewMode]);
+  useEffect(() => { fetchLists(); }, [viewMode]);
 
-  // Liste kartına tıklayınca iç sayfaya git
-  const handleClick = async (listId) => {
+  // Liste içi sayfaya yönlendir
+  const handleClick = (listId) => {
     navigate(`/lists/${listId}`);
   };
 
-  // Silme butonuna tıklanınca onay modal’ını aç
-  const onDeleteClick = (listId) => {
-    setConfirmListId(listId);
-  };
-
-  // Modal’da “Evet”e tıklayınca listeyi sil
+  // Silme onayı aç/kapat
+  const onDeleteClick     = (listId) => setConfirmListId(listId);
+  const handleCancelDelete = () => setConfirmListId(null);
   const handleConfirmDelete = async () => {
     try {
       await deleteList(confirmListId);
-      setLists((prev) => prev.filter((l) => l.id !== confirmListId));
+      setLists(prev => prev.filter(l => l.id !== confirmListId));
     } catch (err) {
       console.error('Liste silme hatası:', err);
     } finally {
@@ -63,14 +69,9 @@ export default function UserListsPage() {
     }
   };
 
-  // Modal’da “Hayır”a tıklayınca iptal et
-  const handleCancelDelete = () => {
-    setConfirmListId(null);
-  };
-
   return (
       <div className="user-lists-page">
-        {/* Header & Tabs */}
+        {/* Başlık & Sekmeler */}
         <div className="user-lists-header">
           <h1>{viewMode === 'discover' ? 'Keşfet' : 'Listelerim'}</h1>
           <div className="tab-options">
@@ -98,29 +99,41 @@ export default function UserListsPage() {
           )}
         </div>
 
-        {/* Liste kartları veya yükleniyor / boş */}
+        {/* Liste Kartları */}
         {isLoading ? (
             <div className="loading-spinner">Yükleniyor...</div>
         ) : lists.length > 0 ? (
             <div className="lists-container">
-              {lists.map((list) => (
+              {lists.map(list => (
                   <div className="list-card" key={list.id}>
-                    {/* ListBox tüm içeriği kaplasın */}
                     <div
                         className="list-card-content"
                         onClick={() => handleClick(list.id)}
                     >
                       <ListBox list={list} />
                     </div>
-                    {/* Çöp kutusu butonu */}
+
                     {viewMode === 'mine' && (
-                        <button
-                            className="delete-list-btn"
-                            onClick={() => onDeleteClick(list.id)}
-                            title="Listeyi sil"
-                        >
-                          🗑️
-                        </button>
+                        <div className="list-card-actions">
+                          <button
+                              className="edit-list-btn"
+                              onClick={() => {
+                                setEditingListId(list.id);
+                                setEditingListName(list.name);
+                                setShowEditModal(true);
+                              }}
+                              title="Liste adını düzenle"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                              className="delete-list-btn"
+                              onClick={() => onDeleteClick(list.id)}
+                              title="Listeyi sil"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                     )}
                   </div>
               ))}
@@ -139,16 +152,10 @@ export default function UserListsPage() {
               <div className="confirm-modal">
                 <p>Silmek istediğinize emin misiniz?</p>
                 <div className="confirm-buttons">
-                  <button
-                      className="btn confirm"
-                      onClick={handleConfirmDelete}
-                  >
+                  <button className="btn confirm" onClick={handleConfirmDelete}>
                     Evet
                   </button>
-                  <button
-                      className="btn cancel"
-                      onClick={handleCancelDelete}
-                  >
+                  <button className="btn cancel" onClick={handleCancelDelete}>
                     Hayır
                   </button>
                 </div>
@@ -156,7 +163,7 @@ export default function UserListsPage() {
             </div>
         )}
 
-        {/* Liste Oluştur Modal */}
+        {/* Oluştur Modal */}
         {showCreateModal && (
             <CreateList
                 onClose={() => {
@@ -164,6 +171,58 @@ export default function UserListsPage() {
                   fetchLists();
                 }}
             />
+        )}
+
+        {/* Düzenle Modal */}
+        {showEditModal && (
+            <div className="confirm-overlay">
+              <div className="confirm-modal">
+                <h3>Liste Adını Düzenle</h3>
+                <input
+                    className="edit-input"
+                    type="text"
+                    value={editingListName}
+                    onChange={e => setEditingListName(e.target.value)}
+                />
+                <div className="confirm-buttons">
+                  <button
+                      className="btn confirm"
+                      onClick={async () => {
+                        try {
+                          await updateListName(
+                              getUserIdFromStorage(),
+                              editingListId,
+                              editingListName
+                          );
+                          setLists(ls =>
+                              ls.map(l =>
+                                  l.id === editingListId
+                                      ? { ...l, name: editingListName }
+                                      : l
+                              )
+                          );
+                        } catch (err) {
+                          console.error('Güncelleme hatası', err);
+                        } finally {
+                          setShowEditModal(false);
+                          setEditingListId(null);
+                        }
+                      }}
+                  >
+                    Tamam
+                  </button>
+                  <button
+                      className="btn cancel"
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setEditingListId(null);
+                      }}
+                  >
+                    İptal
+                  </button>
+                </div>
+              </div>
+            </div>
         )}
       </div>
   );
