@@ -23,13 +23,17 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
       <Link to={`/restaurant/${id}`} className="restaurant-link">
         <div className="restaurant-image">
           <img src={image} alt={name} />
-          <button 
-            className="favorite-button" 
-            onClick={(e) => toggleFavorite(id, e)}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-            disabled={!isLogin}
+          <button
+              className="favorite-button"
+              onClick={(e) => toggleFavorite(id, e)}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              disabled={!isLogin}
+              style={{ display: isLogin ? 'inline-block' : 'none' }}
           >
-            {isFavorite ? <FaHeart className="heart filled" /> : <FaRegHeart className="heart" />}
+            {isFavorite
+                ? <FaHeart className="heart filled" />
+                : <FaRegHeart className="heart" />
+            }
           </button>
           
           {hasActivePromo && (

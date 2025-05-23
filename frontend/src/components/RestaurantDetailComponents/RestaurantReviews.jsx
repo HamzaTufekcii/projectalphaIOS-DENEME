@@ -21,7 +21,9 @@ const RestaurantReviews = ({ restaurantId }) => {
     const [hoveredRating, setHoveredRating] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [sortOrder, setSortOrder] = useState('desc'); // başta en yüksek puanlılar gelsin
+    const [sortOrder, setSortOrder] = useState('desc');
+    const token = localStorage.getItem('token');
+    const isLogin = token !== null;// başta en yüksek puanlılar gelsin
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('userData'));
@@ -163,24 +165,12 @@ const RestaurantReviews = ({ restaurantId }) => {
 
 
             {/* Yorum yapma formu*/}
-            <div className="review-form-container">
+            <div
+                className="review-form-container"
+                style={{ display: isLogin ? 'block' : 'none' }}
+            >
                 <h3>Değerlendirmenizi Paylaşın</h3>
                 <form onSubmit={handleSubmit} className="review-form">
-                    <div className="form-group">
-                        <label htmlFor="name">İsim</label>
-                        <CustomInput
-                            type="text"
-                            placeholder=""
-                            name="name"
-                            value={userReview.name}
-                            onChange={handleInputChange}
-                            className='custom-input form-control'
-                            required={true}
-                            id='name'
-                        />
-
-                    </div>
-
                     <div className="form-group">
                         <label>Puanınız</label>
                         <div className="rating-input">
