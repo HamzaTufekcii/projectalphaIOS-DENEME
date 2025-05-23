@@ -10,7 +10,12 @@ const API_URL = 'http://localhost:8080/api/users';
 export const saveUserData = (userData, role) => {
     if(role === 'diner_user'){
         localStorage.setItem('userData', JSON.stringify(userData.profile));
-        localStorage.setItem('userLists', JSON.stringify(userData?.dinerLists));
+        const favoriteList = userData?.dinerLists?.find(list => list.name === 'Favorilerim');
+        if (favoriteList) {
+            localStorage.setItem('userLists', JSON.stringify(favoriteList));
+        } else {
+            localStorage.removeItem('userLists');
+        }
     } else if(role === 'owner_user') {
         localStorage.setItem('userData', JSON.stringify(userData.profile));
         localStorage.setItem('ownerData', JSON.stringify(userData?.ownedBusiness));
@@ -53,14 +58,12 @@ export const getUserIdFromStorage = () => {
     }
 };
 export const getUserFavoritesIdFromStorage = () => {
-    const stored = localStorage.getItem("userLists"); // yerine doğru key'i koy
+    const stored = localStorage.getItem("userLists");
     if (stored) {
-        const list = JSON.parse(stored); // string -> array
-        const favorilerim = list.find(item => item.name === "Favorilerim");
-        const favoriId = favorilerim?.id;
-
-        return favoriId; // id'yi burada kullanabilirsin
+        const favorilerim = JSON.parse(stored); // doğrudan obje
+        return favorilerim?.id;
     }
+    return null;
 }
 export const getUserFavorites = async () =>{
     const favoriId = getUserFavoritesIdFromStorage();
