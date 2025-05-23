@@ -7,7 +7,7 @@ import {
   getPublicLists,
   deleteList,
 } from '../services/listService';
-import { updateListName } from '../services/listService';
+import {  } from '../services/listService';
 import '../styles/UserListsPage.css';
 import { getUserIdFromStorage } from '../services/userService';
 
