@@ -38,7 +38,7 @@ const RestaurantReviews = ({ restaurantId }) => {
 
             const mappedReviews = fetchedReviews.map((review) => ({
                 id: review.id,
-                name: "Anonim", // backend'de isim yoksa placeholder
+                name: "Ya'qub Qamar Ad-Din Dibiazah", // backend'de isim yoksa placeholder
                 rating: review.rating,
                 comment: review.comment,
                 date: new Date(review.created_at),

@@ -336,7 +336,6 @@ const HomePage = () => {
                 }
             );
 
-            setToken(response.data.token);
             setError('');
             openFourthPopup();
         } catch (err) {

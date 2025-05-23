@@ -1,5 +1,10 @@
 // src/services/listService.js
 
+import axios from 'axios';
+
+const API_URL = 'http://localhost:8080/api/users';
+
+
 // Mock veri
 let mockUserLists = [
     {
@@ -20,10 +25,17 @@ let mockUserLists = [
 
 
 /** Kullanıcının kendi listelerini döner */
-export function getUserLists() {
-    return new Promise(resolve =>
-        setTimeout(() => resolve([...mockUserLists]), 200)
-    );
+export const getUserLists = async (id) => {
+
+    const listResponse = await axios.get(`${API_URL}/diner_user/${id}/lists`);
+
+    return listResponse.data;
+
+}
+export const getUserListItems = async(id,listId) => {
+    const listItemResponse = await axios.get(`${API_URL}/diner_user/${id}/lists/${listId}/items`);
+
+    return listItemResponse.data;
 }
 
 /** Halka açık listeleri döner */

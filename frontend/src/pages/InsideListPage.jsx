@@ -1,38 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import RestaurantCard from '../components/HomePageComponents/RestaurantCard.jsx';
+import { useParams } from 'react-router-dom';
 import '../styles/InsideListPage.css';
-
+import { getUserListItems } from '../services/listService.js';
+import { getUserIdFromStorage } from '../services/userService.js';
 
 const InsideListPage = () => {
-    const [list, setList] = useState({ name: '', businesses: [] });
-    const [favorites, setFavorites] = useState([]);
+    const { listId } = useParams();
+    const userId = getUserIdFromStorage();
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // API çağrısıyla list ve favorites set
-    }, []);
+        const fetchItems = async () => {
+            try {
+                setLoading(true);
+                const data = await getUserListItems(userId, listId);
+                setItems(data);
+            } catch (err) {
+                console.error('Liste öğeleri alınırken hata oluştu:', err);
+                setError('Liste öğeleri yüklenemedi.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchItems();
+    }, [userId, listId]);
 
-    const toggleFavorite = (id) => {
-        // favori ekle/kaldır işlemi
-    };
+    if (loading) return <div className="loading-indicator">Yükleniyor...</div>;
+    if (error) return <div className="error-message">{error}</div>;
 
     return (
         <div className="inside-list-page">
-            <h2 className="page-title">{list.name}</h2>
-
-            {list.businesses.length > 0 ? (
-                <div className="grid-container">
-                    {list.businesses.map(rest => (
-                        <RestaurantCard
-                            key={rest.id}
-                            restaurant={rest}
-                            favorites={favorites}
-                            toggleFavorite={toggleFavorite}
-                        />
+            <h2 className="page-title">Liste Detayları</h2>
+            {items.length > 0 ? (
+                <div className="items-grid">
+                    {items.map(item => (
+                        <div key={item.id} className="item-card">
+                            <h3 className="item-name">{item.name}</h3>
+                            {item.description && <p className="item-desc">{item.description}</p>}
+                            {item.address && <p className="item-address"><strong>Adres:</strong> {item.address}</p>}
+                            <p className="item-created"><small>Oluşturma Tarihi: {new Date(item.created_at).toLocaleDateString()}</small></p>
+                        </div>
                     ))}
                 </div>
             ) : (
                 <div className="empty-container">
-                    <p className="empty-message">Henüz işletme eklenmemiş.</p>
+                    <p className="empty-message">Henüz öğe eklenmemiş.</p>
                 </div>
             )}
         </div>

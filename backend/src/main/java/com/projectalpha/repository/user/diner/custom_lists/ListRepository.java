@@ -10,6 +10,12 @@ import java.util.List;
 
 public interface ListRepository {
 
+    //---- Favorites List Creator ----\\
+    CustomList createFavoritesList(String userId);
+
+
+
+
     /**
      * Find diners' lists by their user_id (in database)
      * getDinerLists(@PathVariable String userId)

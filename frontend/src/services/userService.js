@@ -10,7 +10,7 @@ const API_URL = 'http://localhost:8080/api/users';
 export const saveUserData = (userData, role) => {
     if(role === 'diner_user'){
         localStorage.setItem('userData', JSON.stringify(userData.profile));
-        localStorage.setItem('userReviews', JSON.stringify(userData?.dinerReviews));
+        localStorage.setItem('userLists', JSON.stringify(userData?.dinerLists));
     } else if(role === 'owner_user') {
         localStorage.setItem('userData', JSON.stringify(userData.profile));
         localStorage.setItem('ownerData', JSON.stringify(userData?.ownedBusiness));
@@ -52,6 +52,27 @@ export const getUserIdFromStorage = () => {
         return null;
     }
 };
+export const getUserFavoritesIdFromStorage = () => {
+    const stored = localStorage.getItem("userLists"); // yerine doğru key'i koy
+    if (stored) {
+        const list = JSON.parse(stored); // string -> array
+        const favorilerim = list.find(item => item.name === "Favorilerim");
+        const favoriId = favorilerim?.id;
+
+        return favoriId; // id'yi burada kullanabilirsin
+    }
+}
+export const getUserFavorites = async () =>{
+    const favoriId = getUserFavoritesIdFromStorage();
+    if(favoriId){
+        try{
+            const response = await axios.get(`${API_URL}/${favoriId}/favorites`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message || 'Error getting favorites';
+        }
+    }
+}
 export const getUserRoleFromStorage = () => {
     const userJson = localStorage.getItem('user');
     if (!userJson) return null;
@@ -61,6 +82,14 @@ export const getUserRoleFromStorage = () => {
     }catch(e){
         console.error('There is no role in token.', e);
         return null;
+    }
+}
+export const getUserReviews = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/diner_user/${id}/reviews`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Error getting reviews';
     }
 }
 export const fetchUserData = async (role, id) => {

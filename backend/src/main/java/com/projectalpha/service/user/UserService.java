@@ -51,8 +51,13 @@ public class UserService implements DinerService, OwnerService {
     @Override
     public Optional<DinerLoginResponse> getDinerProfileByUserId(String userId) {
         String dinerId = dinerRepository.findDinerId(userId);
-        List<ReviewSupabase> dinerReviews = reviewsRepository.getReviewByUserId(dinerId);
-        return dinerRepository.findDinerByID(userId, dinerReviews);
+        List<CustomList> dinerLists = listRepository.getDinerLists(userId);
+        return dinerRepository.findDinerByID(userId, dinerLists);
+    }
+    @Override
+    public List<ReviewSupabase> getDinerReviews(String userId) {
+        String dinerId = dinerRepository.findDinerId(userId);
+        return reviewsRepository.getReviewByUserId(dinerId);
     }
 
     @Override

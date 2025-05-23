@@ -1,14 +1,16 @@
 // src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import CreateList from '../components/RestaurantDetailComponents/CreateList';
 import ListBox from '../components/ListBox';
-import { getUserLists, getPublicLists, deleteList } from '../services/listService';
+import {getUserLists, getPublicLists, deleteList, getUserListItems} from '../services/listService';
 import '../styles/UserListsPage.css';
+import {getUserIdFromStorage} from "../services/userService.js";
 
 export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+
 
   const [viewMode, setViewMode] = useState('discover');
   const [lists, setLists] = useState([]);
@@ -27,7 +29,7 @@ export default function UserListsPage() {
     setIsLoading(true);
     try {
       const data =
-          viewMode === 'mine' ? await getUserLists() : await getPublicLists();
+          viewMode === 'mine' ? await getUserLists(getUserIdFromStorage()) : await getPublicLists();
       setLists(data);
     } catch (err) {
       console.error('Liste çekme hatası:', err);
@@ -40,7 +42,7 @@ export default function UserListsPage() {
   }, [viewMode]);
 
   // Liste kartına tıklayınca iç sayfaya git
-  const handleClick = (listId) => {
+  const handleClick = async (listId) => {
     navigate(`/lists/${listId}`);
   };
 

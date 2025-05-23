@@ -38,7 +38,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     }
 
     @Override
-    public Optional<DinerLoginResponse> findDinerByID(String userId, List<ReviewSupabase> dinerReviews) {
+    public Optional<DinerLoginResponse> findDinerByID(String userId, List<CustomList> dinerLists) {
         try {
             String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
             HttpRequest request = HttpRequest.newBuilder()
@@ -56,7 +56,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
                     DinerUserProfile dinerProfileResponse = mapper.treeToValue(root.get(0), DinerUserProfile.class);
 
-                    DinerLoginResponse profile = new DinerLoginResponse(dinerProfileResponse, dinerReviews);
+                    DinerLoginResponse profile = new DinerLoginResponse(dinerProfileResponse, dinerLists);
 
                     return Optional.of(profile);
 
@@ -108,6 +108,49 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
         }
         return null;
     }
+    @Override
+    public CustomList createFavoritesList(String userId){
+        try {
+            String dinerId = findDinerId(userId);
+
+            Map<String, Object> createPayload = Map.of(
+                    "name", "Favorilerim",
+                    "user_id", dinerId,
+                    "user_profile_diner_id", dinerId,
+                    "is_public", false,
+                    "like_counter", 0
+            );
+
+            String requestBody = mapper.writeValueAsString(createPayload);
+
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste oluşturulamadı: " + response.body());
+            }
+
+            JsonNode root = mapper.readTree(response.body());
+            if (!root.isArray() || root.size() == 0) {
+                throw new RuntimeException("Boş Supabase cevabı");
+            }
+
+            return mapper.treeToValue(root.get(0), CustomList.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Liste oluşturulurken hata: " + e.getMessage());
+        }
+    }
 
     @Override
     public void updateDinerProfile(String userId, DinerUpdateRequest request) {
@@ -145,7 +188,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
     // List Implementation//
     @Override
-    public List<BusinessDTO> getDinerListItems(String userId,String listId){
+    public List<BusinessDTO> getDinerListItems(String userId, String listId){
 
         try {
             String listUrl = supabaseConfig.getSupabaseUrl() +
@@ -300,6 +343,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             throw new RuntimeException("Liste oluşturulurken hata: " + e.getMessage());
         }
     }
+
     @Override
     public CustomList updateDinerList(String userId, String listId, CustomListRequest updateRequest){
         try{
