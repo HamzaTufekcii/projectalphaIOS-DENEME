@@ -167,11 +167,12 @@ public class UserController implements DinerController, OwnerController, ListsCo
         }
 
     @Override
-    @DeleteMapping("/diner_user/{userId}/list-items/{listItemId}")
+    @DeleteMapping("/diner_user/{userId}/lists/{listId}/items/{listItemId}")
     public ResponseEntity<?> removeListItem(@PathVariable(name = "userId") String userId,
+                                            @PathVariable(name = "listId") String listId,
                                             @PathVariable(name = "listItemId") String listItemId) {
         try {
-            userService.removeListItem(userId, listItemId);
+            userService.removeListItem(userId, listId, listItemId);
             return ResponseEntity.ok("Liste'den item başarıyla silindi.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

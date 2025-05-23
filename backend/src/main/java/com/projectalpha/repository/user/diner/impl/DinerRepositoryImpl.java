@@ -436,11 +436,11 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
 
     @Override
-    public void removeListItem(String userId, String listItemId) {
+    public void removeListItem(String userId, String listId, String listItemId) {
         try {
             String dinerId = findDinerId(userId);
 
-            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?id=eq." + listItemId + "&diner_id=eq." + dinerId;
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_item?business_id=eq." + listItemId + "&diner_id=eq." + dinerId + "&list_id=eq." + listId;
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
