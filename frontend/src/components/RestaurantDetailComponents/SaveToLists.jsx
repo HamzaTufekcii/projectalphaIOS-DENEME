@@ -89,13 +89,13 @@ export default function SaveToLists({ itemId, onClose }) {
                 <ul className="list-options">
                     {lists.map(l => (
                         <li key={l.id}>
-                            <label>
+                            <label className="list-option">
                                 <input
                                     type="checkbox"
                                     checked={selected.has(l.id)}
                                     onChange={() => toggleList(l.id)}
                                 />
-                                {l.name}
+                                <span className="list-name">{l.name}</span>
                             </label>
                         </li>
                     ))}
