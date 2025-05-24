@@ -84,7 +84,7 @@ export default function ReviewsPage() {
             <header className="header">
                 <div className="container">
                     <div className="header-content">
-                        <h1>Customer Reviews</h1>
+                        <h1>Müşteri Yorumları</h1>
                         <button
                             onClick={() => window.history.back()}
                             className="back-button"
@@ -102,7 +102,7 @@ export default function ReviewsPage() {
                     <div className="filter-content">
                         <div className="filter-label">
                             <span className="filter-icon">⚙️</span>
-                            Filter by rating:
+                            Puana göre sırala
                         </div>
                         <div className="rating-filters">
                             {[1, 2, 3, 4, 5].map(rating => (
@@ -158,7 +158,7 @@ export default function ReviewsPage() {
                         <tbody>
                         {filteredAndSortedReviews.map((review) => (
                             <tr key={review.id}>
-                                <td><div className="customer-name">{review.reviewerName}</div></td>
+                                <td><div className="customer-name">{review.name}</div></td>
                                 <td><div className="star-rating">{renderStars(review.rating)}</div></td>
                                 <td>{new Date(review.date).toLocaleDateString()}</td>
                                 <td className="actions-cell">
@@ -180,7 +180,7 @@ export default function ReviewsPage() {
                     <div className="modal-overlay">
                         <div className="review-modal">
                             <h3 className="modal-title">
-                                Review from {viewingReview.reviewerName}
+                                Bir değerlendirme: {viewingReview.name} tarafından
                             </h3>
 
                             <div className="review-details">
