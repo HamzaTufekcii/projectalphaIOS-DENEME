@@ -1,4 +1,4 @@
-
+//Business Mapper
 
 export function mapBusiness(raw) {
 

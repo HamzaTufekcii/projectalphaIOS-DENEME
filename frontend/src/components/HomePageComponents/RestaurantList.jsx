@@ -5,6 +5,7 @@ import RestaurantCard from './RestaurantCard';
 import './RestaurantList.css';
 import { FaSort, FaFilter } from 'react-icons/fa';
 import { mapBusiness } from '../../utils/businessMapper.js';
+import AdresFiltrelePopup from "./AdresFiltrelePopup.jsx";
 import {
     getAllBusinesses, getActivePromotions, getByTag,
     getBusinessesByOwner, getTopRated, searchBusinesses
@@ -37,44 +38,40 @@ const RestaurantList = ({
     const [activeFilters, setActiveFilters] = useState(filters);
     const currentUserId = getUserIdFromStorage();
     const currentUserFavoriteID = getUserFavoritesIdFromStorage();
+
+            const [addressFilter, setAddressFilter] = useState({
+              city: '', district: '', neighborhood: '', street: ''
+        });
+        const [showAddrPopup, setShowAddrPopup] = useState(false);
     // Fetch restaurants and favorites on component mount
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                let data;
-                // filters kriterine göre uygun metodu seç
-                if (activeFilters.hasActivePromo) {
-                    data = await getActivePromotions();
-                } else if (activeFilters.tag) {
-                    data = await getByTag(activeFilters.tag);
-                } else if (activeFilters.ownerId) {
-                    data = await getBusinessesByOwner(activeFilters.ownerId);
-                } else if (activeFilters.top) {
-                    data = await getTopRated(activeFilters.top);
-                } else {
-                    data = await getAllBusinesses();
-                }
+                const all = await getAllBusinesses();            // ✔ veriyi getir
+                const mapped = all.map(mapBusiness);             // ✔ normalize et
 
-                data = data.map(mapBusiness);
+                // ✅ adres + diğer filtreleri birlikte uygula
+                const filtered = mapped.filter(r => {
+                    const a = r.address || {};
+                    if (addressFilter.city && a.city !== addressFilter.city) return false;
+                    if (addressFilter.district && a.district !== addressFilter.district) return false;
+                    if (addressFilter.neighborhood && a.neighborhood !== addressFilter.neighborhood) return false;
+                    if (addressFilter.street && a.street !== addressFilter.street) return false;
 
-                // client-side ek filtreler (ör. isim ara)
-                if (activeFilters.searchTerm) {
-                    data = data.filter(r => r.name.toLowerCase().includes(activeFilters.searchTerm.toLowerCase()));
-                }
+                    if (activeFilters.priceRange && r.priceRange !== activeFilters.priceRange) return false;
+                    if (activeFilters.hasActivePromo !== undefined && r.hasActivePromo !== activeFilters.hasActivePromo) return false;
 
-                const sorted = sortRestaurants(data, sortOption);
-                setRestaurants(sorted);
+                    return true;
+                });
+
+                setRestaurants(sortRestaurants(filtered, sortOption));
+
                 const favList = await getUserListItems(currentUserId, currentUserFavoriteID);
-
-                if (favList) {
-                    setFavorites(favList || []);
-                } else {
-                    setFavorites([]);
-                }
+                setFavorites(favList || []);
             } catch (err) {
-                console.error('Error fetching restaurants:', err);
+                console.error(err);
                 setError('Failed to load restaurants.');
             } finally {
                 setLoading(false);
@@ -82,7 +79,8 @@ const RestaurantList = ({
         };
 
         fetchData();
-    }, [activeFilters, sortOption, currentUserId, currentUserFavoriteID]);
+    }, [activeFilters, addressFilter, sortOption, currentUserId, currentUserFavoriteID]);
+
 
 
     // Handle toggling favorites
@@ -192,7 +190,15 @@ const RestaurantList = ({
               <h2 className="section-heading">{title}</h2>
               
               <div className="list-controls">
-                {showFilterOptions && (
+                  {/* ① Adres Filtrele Butonu */}
+                  <button
+                      className="control-btn"
+                      onClick={() => setShowAddrPopup(true)}
+                  >
+                      📍 Adres Filtrele
+                  </button>
+
+                  {showFilterOptions && (
                   <div className="filter-dropdown">
                     <button className="control-btn" onClick={toggleFilterMenu}>
                       <FaFilter /> Filtrele
@@ -293,6 +299,15 @@ const RestaurantList = ({
                 )}
               </div>
             </div>
+            {showAddrPopup && (
+                <AdresFiltrelePopup
+                    onClose={() => setShowAddrPopup(false)}
+                    onApply={({ city, district, neighborhood, street }) => {
+                        // ② Seçilen adresi state’e al
+                        setAddressFilter({ city, district, neighborhood, street });
+                    }}
+                />
+            )}
 
             <div className={`restaurant-container ${useGrid ? 'grid-view' : 'list-view'}`}>
                 {restaurants.map(restaurant => (
