@@ -15,6 +15,7 @@ import OwnerPromotionsPage from './pages/OwnerPromotionsPage';
 import MyReviewsPage from './pages/MyReviewspage';
 import './styles/HomePage.css';
 import './styles/App.css';
+import InsideDiscoverPage from "./pages/InsideDiscoverPage.jsx";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
               <Route path="/lists" element={<UserListsPage />} />
               <Route path="/my-reviews" element={<MyReviewsPage />} />
               <Route path="/lists/:listId" element={<InsideListPage />} />
+              <Route path="/lists/discover/:listId" element={<InsideDiscoverPage />} />
               {/* Giriş */}
               <Route path="/login" element={<div>Login Page</div>} />
               {/* İşletme kullanıcılarının paneli */}

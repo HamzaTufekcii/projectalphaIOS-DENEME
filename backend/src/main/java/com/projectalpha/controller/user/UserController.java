@@ -1,5 +1,7 @@
 package com.projectalpha.controller.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.controller.user.diner.DinerController;
 import com.projectalpha.controller.user.diner.list.ListsController;
 import com.projectalpha.controller.user.owner.OwnerController;
@@ -9,6 +11,7 @@ import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.PublicList;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
 import com.projectalpha.service.review.ReviewService;
@@ -80,6 +83,21 @@ public class UserController implements DinerController, OwnerController, ListsCo
     }
 
     // ---- DinerList Implementations ----
+
+    @GetMapping("/diner_user/public/lists")
+    public ResponseEntity<?> getPublicLists() {
+        try {
+            List<PublicList> lists = userService.getPublicLists();
+            return ResponseEntity.ok(lists);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Listeler alınamadı: " + e.getMessage());
+
+        }
+
+    }
+
+
 
     @Override
     @GetMapping("/diner_user/{userId}/lists")

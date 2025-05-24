@@ -1,5 +1,6 @@
 package com.projectalpha.repository.user.diner.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.review.ReviewSupabase;
@@ -8,6 +9,7 @@ import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.PublicList;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
@@ -93,21 +95,8 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             e.printStackTrace();
         }
         return null;
-    }public DinerUserProfile findDinerProfile(String userId) {
-        try {
-            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("apikey", supabaseConfig.getSupabaseApiKey())
-                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
+
     @Override
     public CustomList createFavoritesList(String userId){
         try {
@@ -342,6 +331,75 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             throw new RuntimeException("Liste oluşturulurken hata: " + e.getMessage());
         }
     }
+
+    @Override
+    public String findDinerNameSurname(String dinerId) {
+        try {
+            String url = supabaseConfig.getSupabaseUrl() +
+                    "/rest/v1/user_profile_diner?select=name,surname&id=eq." + dinerId;
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpClient httpClient = HttpClient.newHttpClient();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, String>> resultList = mapper.readValue(response.body(),
+                    new TypeReference<List<Map<String, String>>>() {
+                    });
+
+            return resultList.stream()
+                    .map(entry -> entry.get("name") + " " + entry.get("surname"))
+                    .collect(Collectors.joining(", "));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<PublicList> getPublicLists(){
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?is_public=eq.true";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Listeler alınamadı: " + response.body());
+            }
+            JsonNode root = mapper.readTree(response.body());
+            System.out.println(root);
+            List<PublicList> listOfBusinesses = new ArrayList<>();
+
+            if (root.isArray()) {
+                for (JsonNode node : root) {
+                    PublicList business = mapper.treeToValue(node, PublicList.class);
+                    listOfBusinesses.add(business);
+                }
+            }
+
+            return listOfBusinesses;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Listeler alınırken hata oluştu: " + e.getMessage());
+        }
+
+
+    }
+
 
     @Override
     public CustomList updateDinerList(String userId, String listId, CustomListRequest updateRequest){

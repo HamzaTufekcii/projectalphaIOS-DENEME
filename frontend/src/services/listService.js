@@ -67,10 +67,7 @@ export const getUserLists = async (id) => {
     const listResponse = await axios.get(`${API_URL}/diner_user/${id}/lists`);
     const lists = listResponse.data;
 
-// "favorilerim" isimli listeyi filtrele (isim küçük-büyük harfe duyarlı olabilir ona göre kontrol yap)
-    const filteredLists = lists.filter(list => list.name.toLowerCase() !== 'favorilerim');
-
-    return filteredLists;
+    return lists;
 
 }
 export const getUserListItems = async(id,listId) => {
@@ -80,13 +77,10 @@ export const getUserListItems = async(id,listId) => {
 }
 
 /** Halka açık listeleri döner */
-export function getPublicLists() {
-    return new Promise(resolve =>
-        setTimeout(
-            () => resolve(mockUserLists.filter(l => !l.isPrivate)),
-            200
-        )
-    );
+export const getPublicLists = async () => {
+    const listResponse = await axios.get(`${API_URL}/diner_user/public/lists`);
+    return listResponse.data;
+
 }
 
 /** Yeni bir liste oluşturur */

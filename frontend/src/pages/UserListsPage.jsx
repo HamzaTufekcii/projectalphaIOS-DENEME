@@ -38,7 +38,7 @@ export default function UserListsPage() {
     try {
       const data =
           viewMode === 'mine'
-              ? await getUserLists(getUserIdFromStorage())
+              ? await getCustomListsbyUser()
               : await getPublicLists();
       setLists(data);
     } catch (err) {
@@ -50,10 +50,19 @@ export default function UserListsPage() {
   useEffect(() => {
     fetchLists();
   }, [viewMode]);
+  const getCustomListsbyUser = async () =>{
+    const lists =  await getUserLists(getUserIdFromStorage());
+    return lists.filter(list => list.name.toLowerCase() !== 'favorilerim'); //favorilerimi gösterme bu sayfada
+  }
 
   // Liste içi sayfaya yönlendir
-  const handleClick = listId => {
-    navigate(`/lists/${listId}`);
+  const handleClick = (listId,listName) => {
+    if(viewMode === 'discover')
+      return navigate(`/lists/discover/${listId}`, {
+        state: { listName: listName }
+      });
+    if(viewMode === 'mine')
+      return navigate(`/lists/${listId}`);
   };
 
   // Silme onayı aç/kapat
@@ -109,7 +118,7 @@ export default function UserListsPage() {
                   <div className="list-card" key={list.id}>
                     <div
                         className="list-card-content"
-                        onClick={() => handleClick(list.id)}
+                        onClick={() => handleClick(list.id,list.name)}
                     >
                       <ListBox list={list} />
                     </div>

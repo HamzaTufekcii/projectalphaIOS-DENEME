@@ -11,6 +11,7 @@ import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.PublicList;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
@@ -81,6 +82,15 @@ public class UserService implements DinerService, OwnerService {
     @Override
     public List<BusinessDTO> getDinerListItems(String userId,String listId) {
         return listRepository.getDinerListItems(userId,listId);
+    }
+
+    public List<PublicList> getPublicLists(){
+        List<PublicList> lists = listRepository.getPublicLists();
+        for (PublicList list : lists) {
+            String dinerId = list.getUser_id();
+            list.setDiner_name(dinerRepository.findDinerNameSurname(dinerId));
+        }
+        return lists;
     }
 
 

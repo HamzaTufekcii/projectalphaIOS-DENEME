@@ -3,6 +3,7 @@ package com.projectalpha.repository.user.diner.custom_lists;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
+import com.projectalpha.dto.user.diner.custom_lists.PublicList;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItem;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 
@@ -72,4 +73,5 @@ public interface ListRepository {
      * @param businessId to get info from frontend
      */
     String createListItem(String userId,String businessId,String listId);
+    List<PublicList> getPublicLists();
 }

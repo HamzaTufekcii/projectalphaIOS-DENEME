@@ -7,6 +7,8 @@ import SaveButton from '../components/RestaurantDetailComponents/SaveButton';
 import SaveToLists from '../components/RestaurantDetailComponents/SaveToLists';
 import '../styles/RestaurantDetailPage.css';
 import RestaurantReviews from '../components/RestaurantDetailComponents/RestaurantReviews.jsx';
+import {getUserListItems} from "../services/listService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
 
 const RestaurantDetailPage = () => {
   const { id } = useParams();
@@ -15,6 +17,7 @@ const RestaurantDetailPage = () => {
   const [showListModal, setShowListModal] = useState(false);
   const [isSaved, setIsSaved] = useState();
   const [error, setError] = useState(null);
+  const [favorites, setFavorites] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -41,6 +44,12 @@ const RestaurantDetailPage = () => {
       try {
         setLoading(true);
         const data = await getBusinessById(id);
+        if(isLogin) {
+          const favorites = await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+          setFavorites(favorites);
+          const isFavorited = favorites.some(fav => fav.id === id);
+          setIsSaved(isFavorited);
+        }
         setRestaurant(data);
       } catch (err) {
         console.error('Error fetching restaurant details:', err);
@@ -51,6 +60,8 @@ const RestaurantDetailPage = () => {
     };
     fetchData();
   }, [id]);
+
+
 
 
 
