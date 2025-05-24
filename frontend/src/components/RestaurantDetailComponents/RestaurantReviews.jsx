@@ -5,6 +5,7 @@ import './RestaurantReviews.css';
 import CustomInput from "../CustomInput.jsx";
 import Button from "../Button.jsx";
 import {getBusinessReviews} from "../../services/businessService.js";
+import {getUserIdFromStorage, newReview} from "../../services/userService.js";
 
 const RestaurantReviews = ({ restaurantId }) => {
     const [reviews, setReviews] = useState([]);
@@ -89,7 +90,7 @@ const RestaurantReviews = ({ restaurantId }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-
+        newReview(getUserIdFromStorage(),restaurantId,userReview.rating,userReview.comment);
         // In a real app, this would send data to the server
         setTimeout(() => {
             //listeye manuel olarakk yeni yorum ekler. normalde serverdan gelmelidir
@@ -98,6 +99,7 @@ const RestaurantReviews = ({ restaurantId }) => {
                 ...userReview,
                 date: new Date()
             };
+
 
             setReviews([newReview, ...reviews]);
 

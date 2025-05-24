@@ -8,6 +8,7 @@ import com.projectalpha.controller.user.owner.OwnerController;
 import com.projectalpha.dto.GenericResponse;
 import com.projectalpha.dto.business.Business;
 import com.projectalpha.dto.business.BusinessDTO;
+import com.projectalpha.dto.review.newReviewRequest;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
@@ -52,6 +53,8 @@ public class UserController implements DinerController, OwnerController, ListsCo
 
 
 
+
+
     // -------- Diner Implementation --------
     @Override
     @GetMapping("/diner_user/{userId}/profile")
@@ -80,6 +83,13 @@ public class UserController implements DinerController, OwnerController, ListsCo
             return ResponseEntity.badRequest()
                     .body(new GenericResponse<>(false, "Invalid user ID"));
         }
+    }
+    @PostMapping("/diner_user/{userId}/reviews/{businessId}")
+    public ResponseEntity<?> addDinerReview(@PathVariable(name = "userId") String userId,
+                                            @PathVariable(name = "businessId") String businessId,
+                                            @RequestBody newReviewRequest reviewRequest) {
+        reviewService.saveReview(userId, businessId, reviewRequest);
+        return ResponseEntity.ok().build();
     }
 
     // ---- DinerList Implementations ----

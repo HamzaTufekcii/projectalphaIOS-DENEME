@@ -83,14 +83,14 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
         }
     }
 
-    public void saveReview(String userId, String businessId, newReviewRequest request){
+    public void saveReview(String dinerId, String businessId, newReviewRequest request) {
         try {
             Map<String, Object> reviewPayload = Map.of(
                     "comment", request.getComment(),
                     "rating", request.getRating(),
                     "created_at", OffsetDateTime.now().toString(),
                     "business_id", businessId,
-                    "user_id", userId
+                    "user_id", dinerId
             );
 
             String reviewsJson = mapper.writeValueAsString(reviewPayload);
@@ -101,11 +101,16 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
                     .header("apikey", supabaseConfig.getSupabaseApiKey())
                     .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
                     .header("Content-Type", "application/json")
-                    .header("Prefer", "return=representation") //  burada minimal yerine temsil (id dahil) istiyoruz
+                    .header("Prefer", "return=representation")
                     .build();
 
             HttpResponse<String> response = httpClient.send(reviewRequest, HttpResponse.BodyHandlers.ofString());
-            //burayı bir gözden geçireceğim. -izzet han
+
+            if (response.statusCode() != 201 && response.statusCode() != 200) {
+                throw new RuntimeException("Review kaydedilemedi: " + response.body());
+            }
+
+            System.out.println("Review başarıyla oluşturuldu: " + response.body());
 
         } catch (Exception e) {
             e.printStackTrace();

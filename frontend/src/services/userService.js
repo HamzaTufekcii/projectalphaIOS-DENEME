@@ -87,6 +87,19 @@ export const getUserRoleFromStorage = () => {
         return null;
     }
 }
+export const newReview = async (id,  businessId, rating, comment) => {
+    try {
+        const data = {
+            "comment": comment.trim(),
+            "rating": rating
+        }
+
+        const response = await axios.post(`${API_URL}/diner_user/${id}/reviews/${businessId}`, data);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Error posting review';
+    }
+}
 
 export const getUserReviews = async (id) => {
     try {

@@ -27,7 +27,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     public List<ReviewSupabase> getReviewsByUserId(String userId){ return repo.getReviewsByUserId(userId); }
 
-    public void saveReview(String userId, String businessId, newReviewRequest review){repo.saveReview(userId,businessId,review);}
+    public void saveReview(String userId, String businessId, newReviewRequest review){
+        String dinerId = dinerRepository.findDinerId(userId);
+        repo.saveReview(dinerId,businessId,review);
+    }
 
     public void deleteReview(String reviewId){repo.deleteReview(reviewId);}
 
