@@ -1,0 +1,81 @@
+/* src/components/HomePageComponents/AdresFiltrelePopup.css */
+
+/* Arkaplan karartma + ortalama */
+.adres-popup-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal kutusu */
+.adres-popup {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Başlık */
+.adres-popup h3 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    color: #333333;
+    text-align: center;
+}
+
+/* Tüm select’ler ortak stil */
+.adres-popup select {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background: #fafafa;
+    font-size: 14px;
+    color: #333333;
+}
+
+/* Butonlar kapsayıcısı */
+.adres-popup .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* Uygula butonu (birincil) */
+.adres-popup .btn-apply {
+    background-color: #fe4c4c;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* İptal butonu (ikincil) */
+.adres-popup .btn-cancel {
+    background-color: #f5f5f5;
+    color: #333333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Hover efektleri */
+.adres-popup .btn-apply:hover {
+    background-color: #e84343;
+}
+.adres-popup .btn-cancel:hover {
+    background-color: #e0e0e0;
+}
