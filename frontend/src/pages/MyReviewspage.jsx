@@ -125,6 +125,25 @@ export default function MyReviews() {
         <div className="reviews-container">
             <h1 className="page-title">Değerlendirmelerim</h1>
 
+            {/* ÖZET BÖLÜMÜ */}
+            <div className="summary-container">
+                <h3 className="summary-title">Özet</h3>
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <div className="stat-value">{reviews.length}</div>
+                        <div className="stat-label">Toplam Değerlendirme</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-value">{reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}</div>
+                        <div className="stat-label">Ortalama Puan</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-value">{new Set(reviews.map(r => r.business_id)).size}</div>
+                        <div className="stat-label">Ziyaret Edilen Restoranlar</div>
+                    </div>
+                </div>
+            </div>
+
             {/* FİLTRELER VE SIRALAMA */}
             <div className="filters-container">
                 <div className="filters-layout">
@@ -218,24 +237,7 @@ export default function MyReviews() {
                 )}
             </div>
 
-            {/* ÖZET BÖLÜMÜ */}
-            <div className="summary-container">
-                <h3 className="summary-title">Özet</h3>
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-value">{reviews.length}</div>
-                        <div className="stat-label">Toplam Değerlendirme</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}</div>
-                        <div className="stat-label">Ortalama Puan</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{new Set(reviews.map(r => r.business_id)).size}</div>
-                        <div className="stat-label">Ziyaret Edilen Restoranlar</div>
-                    </div>
-                </div>
-            </div>
+
         </div>
     );
 }
