@@ -95,17 +95,6 @@ export default function MyReviews() {
         setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const handleDeleteReview = id => {
-        if (window.confirm('Bu yorumu silmek istediğinize emin misiniz?')) {
-
-            setReviews(prev => prev.filter(r => r.id !== id));
-        }
-    };
-
-    const handleStartEdit = review => {
-        setEditingReview(review.id);
-        setEditedText(review.comment);
-    };
 
     const handleSaveEdit = id => {
         setReviews(prev => prev.map(r => r.id === id ? { ...r, comment: editedText } : r));
@@ -201,31 +190,6 @@ export default function MyReviews() {
                                         <span className="cuisine-tag">{review.cuisine}</span>
                                         <StarRating rating={review.rating} />
                                     </div>
-
-                                    {editingReview === review.id ? (
-                                        <div className="edit-review-form">
-                      <textarea
-                          value={editedText}
-                          onChange={e => setEditedText(e.target.value)}
-                          className="review-text-edit"
-                      />
-                                            <div className="edit-controls">
-                                                <button onClick={handleCancelEdit} className="cancel-button">İptal</button>
-                                                <button onClick={() => handleSaveEdit(review.id)} className="save-button">Kaydet</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className={!expandedReviews[review.id] && review.comment.length > 120 ? 'review-text truncated' : 'review-text'}>
-                                                {review.comment}
-                                            </p>
-                                            {review.comment.length > 120 && (
-                                                <button onClick={() => toggleExpanded(review.id)} className="read-more-button">
-                                                    {expandedReviews[review.id] ? 'Daha Az' : 'Daha Fazla'}
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
                                 </div>
                             </div>
                         </div>
