@@ -98,7 +98,7 @@
     display: flex;
     padding: 16px;
     gap: 16px;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .restaurant-image-container-reviews {
@@ -108,13 +108,17 @@
 @media (min-width: 640px) {
     .restaurant-image-container-reviews {
         display: block;
+        flex-shrink: 0;    /* Görselin küçülmesini engelle */
+        width: 162px;      /* İstediğin genişlik */
+        height: 162px;
+        aspect-ratio: 1 / 1
     }
 }
 
 .restaurant-image-reviews {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;  /* Kırpma / doldurma */
     border-radius: 4px;
 }
 
