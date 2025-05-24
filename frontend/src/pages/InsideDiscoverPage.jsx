@@ -1,59 +1,55 @@
 // src/pages/InsideDiscoverPage.jsx
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { useLocation } from 'react-router-dom';
-import ListRestaurantCard from '../components/ListRestaurantCard'
-import { getUserLists, getUserListItems, removeFromList } from '../services/listService'
-import { getUserIdFromStorage } from '../services/userService'
-import '../styles/InsideListPage.css'
+import React, { useState, useCallback } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ListRestaurantCard from '../components/ListRestaurantCard';
+import {
+    getUserListItems,
+    removeFromList
+} from '../services/listService';
+import { getUserIdFromStorage } from '../services/userService';
+import '../styles/InsideListPage.css';
 
-const InsideDiscoverPage = () => {
-    const { listId } = useParams()
-    const userId     = getUserIdFromStorage()
-    const location = useLocation()
+export default function InsideDiscoverPage() {
+    const { listId } = useParams();
+    const userId     = getUserIdFromStorage();
+    const { state }  = useLocation();
+    const queryClient = useQueryClient();
 
-    const [listName, setListName]   = useState('Liste Detayları')
-    const [items,    setItems]      = useState([])
-    const [loading,  setLoading]    = useState(true)
-    const [error,    setError]      = useState(null)
-    const [isEditing, setIsEditing] = useState(false)
+    // 1️⃣ Liste öğelerini çek
+    const {
+        data: items = [],
+        isLoading,
+        isError,
+        error
+    } = useQuery({
+        queryKey: ['listItems', userId, listId],
+        queryFn: () => getUserListItems(userId, listId),
+        enabled: !!userId && !!listId,
+        staleTime: 5 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        if (!userId || !listId) return
-        const fetchData = async () => {
-            try {
-                setLoading(true)
-                setListName(location.state?.listName)
-
-                const listItems = await getUserListItems(userId, listId)
-                setItems(listItems)
-            } catch (err) {
-                setError('Liste yüklenemedi.')
-            } finally {
-                setLoading(false)
-            }
+    // 2️⃣ Silme işlemi için mutation
+    const removeMutation = useMutation({
+        mutationFn: (restaurantId) => removeFromList(userId, listId, restaurantId),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['listItems', userId, listId]);
         }
-        fetchData()
-    }, [userId, listId])
+    });
 
-    // Restorantı listeden silme fonksiyonu
-    const handleRemove = async (restaurantId) => {
-        try {
-            await removeFromList(userId, listId, restaurantId)   // kendi API’nı yaz
-            setItems(items.filter(r => r.id !== restaurantId))
-        } catch (err) {
-            console.error('Silme hatası', err)
-        }
-    }
+    const handleRemove = useCallback((restaurantId) => {
+        removeMutation.mutate(restaurantId);
+    }, [removeMutation]);
 
-    if (loading) return <div className="loading-indicator">Yükleniyor...</div>
-    if (error)   return <div className="error-message">{error}</div>
+    const listName = state?.listName || 'Liste Detayları';
+
+    if (isLoading) return <div className="loading-indicator">Yükleniyor…</div>;
+    if (isError)   return <div className="error-message">{error.message}</div>;
 
     return (
         <div className="inside-list-page">
             <div className="header-row">
                 <h2 className="page-title">{listName}</h2>
-
             </div>
 
             {items.length > 0 ? (
@@ -62,7 +58,8 @@ const InsideDiscoverPage = () => {
                         <ListRestaurantCard
                             key={rest.id}
                             restaurant={rest}
-                            isEditing={isEditing}
+                            isEditing={false}
+                            onRemove={() => handleRemove(rest.id)}
                         />
                     ))}
                 </div>
@@ -72,7 +69,5 @@ const InsideDiscoverPage = () => {
                 </div>
             )}
         </div>
-    )
+    );
 }
-
-export default InsideDiscoverPage

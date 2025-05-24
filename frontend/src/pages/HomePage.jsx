@@ -24,14 +24,14 @@ import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup'
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
 
 // Business service methods
-import {mapBusiness} from "../utils/businessMapper.js";
-import {
-    getTopRated,
-    searchBusinesses
-} from '../services/businessService';
+import { useTopRated } from '../hooks/useTopRated';
+import { useQuery } from '@tanstack/react-query';
+import { searchBusinesses } from '../services/businessService';
+import { mapBusiness } from '../utils/businessMapper';
 import { login, saveAuthData } from '../services/authService';
 import axios from 'axios';
 import { getUserIdFromStorage, getUserRoleFromStorage, fetchUserData } from '../services/userService';
+
 
 const HomePage = () => {
     // Authentication & registration state
@@ -52,19 +52,16 @@ const HomePage = () => {
     const [errors, setErrors] = useState({});
 
     // Search & filter state
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
     const [selectedFilter, setSelectedFilter] = useState('all');
-    const [activeFilters, setActiveFilters] = useState({});
-    const [isSearching, setIsSearching] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeFilters, setActiveFilters] = useState({ hasActivePromo: false, tag: '' });
+
 
     // Location state
     const [userLocation, setUserLocation] = useState(null);
     const [locationStatus, setLocationStatus] = useState('idle');
 
     // Featured (top-rated) restaurants
-    const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
-    const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
     const navigate = useNavigate();
 
     // Make component accessible globally (e.g., for Navbar)
@@ -74,70 +71,59 @@ const HomePage = () => {
     }, []);
 
     // On mount: get location & load featured
+    // 1. Geolocation
     useEffect(() => {
-        getUserLocation();
-        loadFeaturedRestaurants();
-    }, []);
-
-    /** Load top-rated restaurants */
-    const loadFeaturedRestaurants = async () => {
-        try {
-            setIsLoadingFeatured(true);
-            const raw = await getTopRated(5);
-            const mapped = raw.map(mapBusiness);
-            setFeaturedRestaurants(mapped);
-        } catch (err) {
-            console.error('Error loading featured restaurants:', err);
-        } finally {
-            setIsLoadingFeatured(false);
-        }
-    };
-    
-    // Get user's geolocation
-    const getUserLocation = () => {
         if (navigator.geolocation) {
             setLocationStatus('loading');
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    });
+                (pos) => {
+                    setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                     setLocationStatus('success');
                 },
-                (error) => {
-                    console.error('Error getting user location:', error);
+                (err) => {
+                    console.error('Location error:', err);
                     setLocationStatus('error');
                 }
             );
         } else {
             setLocationStatus('error');
-            console.error('Geolocation is not supported by this browser.');
+            console.error('Geolocation not supported');
         }
-    };
+    }, []);
 
-    /** Handle search submission */
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        if (!searchTerm.trim()) return;
+    // 2. Use Top Rated (featured)
+    const { data: featuredRestaurants, isLoading: isLoadingFeatured } = useTopRated(5);
 
-        try {
-            setIsSearching(true);
-            let results = await searchBusinesses(searchTerm);
-            // Apply extra filters client-side
+    // 3. Search with filters via React Query
+    const {
+        data: searchResults,
+        isLoading: isSearching,
+        refetch: refetchSearch,
+    } = useQuery({
+        queryKey: ['searchBusinesses', searchTerm, activeFilters],
+        queryFn: () => searchBusinesses(searchTerm),
+        enabled: false,
+        select: (results) => {
+            let filtered = results;
             if (activeFilters.hasActivePromo) {
-                results = results.filter(r => r.hasActivePromo);
+                filtered = filtered.filter(r => r.hasActivePromo);
             }
             if (activeFilters.tag) {
-                results = results.filter(r => r.type.toLowerCase().includes(activeFilters.tag));
+                filtered = filtered.filter(r => r.type.toLowerCase().includes(activeFilters.tag));
             }
-            setSearchResults(results);
-        } catch (err) {
-            console.error('Error searching restaurants:', err);
-        } finally {
-            setIsSearching(false);
+            return filtered.map(mapBusiness);
         }
+    });
+
+    // 4. Search handler
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (!searchTerm.trim()) return;
+        refetchSearch();
     };
+
+    // 5. Render
+    const restaurantsToShow = searchTerm ? searchResults : featuredRestaurants;
 
     /** Clear search */
     const clearSearch = () => {
@@ -179,7 +165,7 @@ const HomePage = () => {
             default:
                 newFilters = {};
         }
-        
+
         setActiveFilters(newFilters);
     };
 
@@ -662,7 +648,7 @@ const HomePage = () => {
                     </div>
 
                     {/* Search Results (if any) */}
-                    {searchResults.length > 0 && (
+                    {(searchResults?.length ?? 0) > 0 && (
                         <section className="search-results-section">
                             <div className="search-header">
                                 <h2>
@@ -711,7 +697,7 @@ const HomePage = () => {
                     )}
 
                     {/* Featured Restaurants Section */}
-                    {featuredRestaurants.length > 0 && !isLoadingFeatured && (
+                    {(featuredRestaurants?.length ?? 0) > 0 && !isLoadingFeatured && (
                         <section className="featured-section">
                             <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
                             <div className="featured-cards">

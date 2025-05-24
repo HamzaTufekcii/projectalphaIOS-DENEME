@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, } from 'react';
 import '../styles/OwnerReviewsPage.css';
 import Button from "../components/Button.jsx";
+import {getBusinessReviews} from "../services/businessService.js";
+import {useParams} from "react-router-dom";
 
 export default function ReviewsPage() {
     // Yorumları tutan state
     const [reviews, setReviews] = useState([]);
 
-
+    const {id} = useParams();
     const [sortField, setSortField] = useState('date');
     const [sortDirection, setSortDirection] = useState('desc');
     const [filterRating, setFilterRating] = useState(0);
@@ -14,55 +16,22 @@ export default function ReviewsPage() {
 
     // yorumları çek
     useEffect(() => {
+        const fetchReviews = async () => {
+            const fetchedReviews = await getBusinessReviews(id);
 
-        // axios.get(`/api/reviews/restaurant/${restaurantId}`).then(response => setReviews(response.data));
+            const mappedReviews = fetchedReviews.map(({review, reviewerName}) => ({
+                id: review.id,
+                name: reviewerName, // backend'de isim yoksa placeholder
+                rating: review.rating,
+                comment: review.comment,
+                date: new Date(review.created_at),
+            }));
 
-        // Şimdilik mock veri
-        setReviews([
-            {
-                id: 1,
-                customerName: "John Smith",
-                rating: 5,
-                date: "2025-05-16",
-                content: "Amazing food and excellent service! The pasta was cooked to perfection and the wine selection is impressive."
-            },
-            {
-                id: 2,
-                customerName: "Emma Johnson",
-                rating: 4,
-                date: "2025-05-15",
-                content: "Great atmosphere and delicious food. Took a bit long to get our appetizers but the main course made up for it."
-            },
-            {
-                id: 3,
-                customerName: "Michael Brown",
-                rating: 3,
-                date: "2025-05-14",
-                content: "Food was good but service was a bit slow. Would give another chance though."
-            },
-            {
-                id: 4,
-                customerName: "Sarah Davis",
-                rating: 5,
-                date: "2025-05-13",
-                content: "Best Italian restaurant in town! The tiramisu is to die for."
-            },
-            {
-                id: 5,
-                customerName: "David Wilson",
-                rating: 2,
-                date: "2025-05-12",
-                content: "Disappointed with my experience. The food was cold when served and staff was not very attentive."
-            },
-            {
-                id: 6,
-                customerName: "Lisa Miller",
-                rating: 5,
-                date: "2025-05-11",
-                content: "Celebrated my anniversary here and had an unforgettable experience. The chef's special was outstanding!"
-            },
-        ]);
-    }, []);
+            setReviews(mappedReviews);
+        };
+
+        fetchReviews();
+    }, [id]);
 
     // Sıralama değişikliği
     const handleSort = (field) => {
@@ -189,7 +158,7 @@ export default function ReviewsPage() {
                         <tbody>
                         {filteredAndSortedReviews.map((review) => (
                             <tr key={review.id}>
-                                <td><div className="customer-name">{review.customerName}</div></td>
+                                <td><div className="customer-name">{review.reviewerName}</div></td>
                                 <td><div className="star-rating">{renderStars(review.rating)}</div></td>
                                 <td>{new Date(review.date).toLocaleDateString()}</td>
                                 <td className="actions-cell">
@@ -211,17 +180,17 @@ export default function ReviewsPage() {
                     <div className="modal-overlay">
                         <div className="review-modal">
                             <h3 className="modal-title">
-                                Review from {viewingReview.customerName}
+                                Review from {viewingReview.reviewerName}
                             </h3>
 
                             <div className="review-details">
                                 <div className="review-meta">
                                     <div className="star-rating">{renderStars(viewingReview.rating)}</div>
                                     <span className="review-date">
-                    {new Date(viewingReview.date).toLocaleDateString()}
-                  </span>
+                        {new Date(viewingReview.date).toLocaleDateString()}
+                    </span>
                                 </div>
-                                <p className="review-content">{viewingReview.content}</p>
+                                <p className="review-content">{viewingReview.comment}</p>
                             </div>
 
                             <div className="modal-actions">
