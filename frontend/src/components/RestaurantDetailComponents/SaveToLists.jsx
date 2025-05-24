@@ -1,14 +1,8 @@
 // src/components/RestaurantDetailComponents/SaveToLists.jsx
-console.log("SaveToLists geldi")
 import React, { useState, useEffect } from 'react';
-import { } from '../../services/listService';
-import {
-    getUserLists,
-    addToList,
-    removeFromList
-} from '../../services/listService';
+import { getUserListItems, toggleFavorite, getUserLists, addToList, removeFromList } from '../../services/listService';
 import './SaveToLists.css';
-import {getUserIdFromStorage} from "../../services/userService.js";
+import { getUserIdFromStorage } from "../../services/userService.js";
 
 export default function SaveToLists({ itemId, onClose }) {
     const [lists, setLists]       = useState([]);
@@ -18,29 +12,46 @@ export default function SaveToLists({ itemId, onClose }) {
 
     useEffect(() => {
         let mounted = true;
-        getUserLists(getUserIdFromStorage())
-            .then(fetched => {
+        const userId = getUserIdFromStorage();
+
+        getUserLists(userId)
+            .then(async (fetched) => {
                 if (!mounted) return;
-                // En başa Favoriler’i ekle
-                const favList = {
-                    id: 'favorites',
-                    name: 'Favorilerim',
-                    containsItem: true
-                };
-                const allLists = [favList, ...fetched];
-                setLists(allLists);
-                // Başlangıçta Favoriler + diğerleri
+
+                const sorted = [
+                    ...fetched.filter(l => l.name === 'Favorilerim'),
+                    ...fetched.filter(l => l.name !== 'Favorilerim')
+                ];
+
+                // containsItem bilgisini ekle
+                const listsWithContains = await Promise.all(sorted.map(async (list) => {
+                    const items = await getUserListItems(userId, list.id);
+                    return {
+                        ...list,
+                        containsItem: items.some(i => i.id === itemId)
+                    };
+                }));
+
+                setLists(listsWithContains);
+
+                // item'ın olduğu listeleri seçili yap
                 const pre = new Set(
-                    allLists
-                        .filter(l => l.id === 'favorites' || l.containsItem)
+                    listsWithContains
+                        .filter(l => l.containsItem)
                         .map(l => l.id)
                 );
+
                 setSelected(pre);
             })
-            .catch(console.error)
+            .catch(err => {
+                console.error('Error fetching lists or items:', err);
+            })
             .finally(() => mounted && setLoading(false));
-        return () => { mounted = false; };
-    }, []);
+
+        return () => {
+            mounted = false;
+        };
+    }, [itemId]);
 
     const toggleList = id => {
         const next = new Set(selected);
@@ -52,17 +63,16 @@ export default function SaveToLists({ itemId, onClose }) {
         setSaving(true);
         try {
             for (const l of lists) {
-                const wasIn = l.containsItem;
-                const nowIn = selected.has(l.id);
+                const listId = l.id;
+                const nowIn = selected.has(listId);
+                const initiallyIn = l.containsItem;
 
-                if (l.id === 'favorites') {
-                    // Favoriler için toggleFavorite çağrısı
-                    if (!wasIn && nowIn)      await toggleFavorite(itemId, true);
-                    else if (wasIn && !nowIn) await toggleFavorite(itemId, false);
+                if (l.name === 'Favorilerim') {
+                    if (!initiallyIn && nowIn) await toggleFavorite(itemId);
+                    else if (initiallyIn && !nowIn) await toggleFavorite(itemId);
                 } else {
-                    // Diğer custom listeler
-                    if (!wasIn && nowIn)      await addToList(itemId, l.id);
-                    else if (wasIn && !nowIn) await removeFromList(itemId, l.id);
+                    if (!initiallyIn && nowIn) await addToList(getUserIdFromStorage(), listId, itemId);
+                    else if (initiallyIn && !nowIn) await removeFromList(getUserIdFromStorage(), listId, itemId);
                 }
             }
             onClose(selected.size > 0);

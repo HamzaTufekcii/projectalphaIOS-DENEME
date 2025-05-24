@@ -16,4 +16,6 @@ public interface ReviewService {
 
     List<ReviewSupabase> getReviewsByBusinessId(String businessId);
 
+    List<ReviewInfoForBusiness> getReviewsForBusiness(String businessId);
+
 }

@@ -1,7 +1,7 @@
 // src/services/listService.js
 
 import axios from 'axios';
-import {getUserFavoritesIdFromStorage} from "./userService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "./userService.js";
 
 const API_URL = 'http://localhost:8080/api/users';
 
@@ -42,24 +42,6 @@ export const updateList = async (userId, name, isPublic, listId) => {
 }
 
 
-// Mock veri
-let mockUserLists = [
-    {
-        id: 'u1',
-        name: 'Hafta Sonu Favorilerim',
-        containsItem: false,
-        isPrivate: false,
-        businesses: []
-    },
-    {
-        id: 'u3',
-        name: 'Favori Kahvaltıcılar',
-        containsItem: false,
-        isPrivate: false,
-        businesses: []
-    }
-];
-
 
 /** Kullanıcının kendi listelerini döner */
 export const getUserLists = async (id) => {
@@ -67,10 +49,7 @@ export const getUserLists = async (id) => {
     const listResponse = await axios.get(`${API_URL}/diner_user/${id}/lists`);
     const lists = listResponse.data;
 
-// "favorilerim" isimli listeyi filtrele (isim küçük-büyük harfe duyarlı olabilir ona göre kontrol yap)
-    const filteredLists = lists.filter(list => list.name.toLowerCase() !== 'favorilerim');
-
-    return filteredLists;
+    return lists;
 
 }
 export const getUserListItems = async(id,listId) => {
@@ -80,13 +59,10 @@ export const getUserListItems = async(id,listId) => {
 }
 
 /** Halka açık listeleri döner */
-export function getPublicLists() {
-    return new Promise(resolve =>
-        setTimeout(
-            () => resolve(mockUserLists.filter(l => !l.isPrivate)),
-            200
-        )
-    );
+export const getPublicLists = async () => {
+    const listResponse = await axios.get(`${API_URL}/diner_user/public/lists`);
+    return listResponse.data;
+
 }
 
 /** Yeni bir liste oluşturur */
@@ -96,4 +72,19 @@ export function getPublicLists() {
 export function deleteList(listId) {
     mockUserLists = mockUserLists.filter(l => l.id !== listId);
     return Promise.resolve();
+}
+export const toggleFavorite = async (id) => {
+
+    const favorites = await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+    const isFavorited = favorites.some(fav => fav.id === id);
+
+
+    if (isFavorited) {
+        await removeFromList(getUserIdFromStorage(), getUserFavoritesIdFromStorage(), id);
+        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+
+    } else {
+        await addToFavorites(getUserIdFromStorage(), id);
+        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+    }
 }

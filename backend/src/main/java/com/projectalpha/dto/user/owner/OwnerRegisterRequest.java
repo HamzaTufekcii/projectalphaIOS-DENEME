@@ -47,5 +47,7 @@ public class OwnerRegisterRequest {
 
         private String neighborhood;
 
+        private String street;
+
     }
 }

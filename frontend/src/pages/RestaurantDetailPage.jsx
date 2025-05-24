@@ -7,6 +7,8 @@ import SaveButton from '../components/RestaurantDetailComponents/SaveButton';
 import SaveToLists from '../components/RestaurantDetailComponents/SaveToLists';
 import '../styles/RestaurantDetailPage.css';
 import RestaurantReviews from '../components/RestaurantDetailComponents/RestaurantReviews.jsx';
+import {getUserListItems, getUserLists} from "../services/listService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
 
 const RestaurantDetailPage = () => {
   const { id } = useParams();
@@ -36,6 +38,44 @@ const RestaurantDetailPage = () => {
   const isLogin = token !== null;
 
   useEffect(() => {
+    if(isLogin){
+      let mounted = true;
+      const userId = getUserIdFromStorage();
+
+      getUserLists(userId)
+          .then(async (fetched) => {
+            if (!mounted) return;
+
+            const sorted = [
+              ...fetched.filter(l => l.name === 'Favorilerim'),
+              ...fetched.filter(l => l.name !== 'Favorilerim')
+            ];
+
+            // containsItem bilgisini ekle
+            const listsWithContains = await Promise.all(sorted.map(async (list) => {
+              const items = await getUserListItems(userId, list.id);
+              return {
+                ...list,
+                containsItem: items.some(i => i.id === id)
+              };
+            }));
+
+            const lists = listsWithContains;
+            setIsSaved(lists.some(fav => fav.containsItem === true));
+          })
+          .catch(err => {
+            console.error('Error fetching lists or items:', err);
+          })
+          .finally(() => mounted && setLoading(false));
+
+      return () => {
+        mounted = false;
+      };
+    }
+
+  }, [id, isLogin]);
+
+  useEffect(() => {
 
     const fetchData = async () => {
       try {
@@ -51,6 +91,9 @@ const RestaurantDetailPage = () => {
     };
     fetchData();
   }, [id]);
+
+
+
 
 
 
@@ -286,7 +329,7 @@ const RestaurantDetailPage = () => {
               />
               {showListModal && (
                   <SaveToLists
-                      itemId={Number(id)}
+                      itemId={String(id)}
                       onClose={(hasAny) => {
                         setShowListModal(false);
                         // Eğer artık hiçbir liste seçili değilse: butonu + yap

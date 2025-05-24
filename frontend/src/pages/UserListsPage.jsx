@@ -17,7 +17,7 @@ export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [viewMode, setViewMode]     = useState('discover');
+  const [viewMode, setViewMode]     = useState('mine');
   const [lists, setLists]           = useState([]);
   const [isLoading, setIsLoading]   = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -26,11 +26,17 @@ export default function UserListsPage() {
   // Düzenleme için tek obje state’i
   const [editingList, setEditingList] = useState(null);
 
+
+
   // URL query’den sekmeyi al
   useEffect(() => {
     const mode = new URLSearchParams(location.search).get('mode');
+    if(mode !== 'mine' && mode !== 'discover'){
+      setViewMode('mine');
+    }
     setViewMode(mode === 'mine' ? 'mine' : 'discover');
   }, [location.search]);
+
 
   // Listeleri çek
   const fetchLists = async () => {
@@ -38,7 +44,7 @@ export default function UserListsPage() {
     try {
       const data =
           viewMode === 'mine'
-              ? await getUserLists(getUserIdFromStorage())
+              ? await getCustomListsbyUser()
               : await getPublicLists();
       setLists(data);
     } catch (err) {
@@ -50,10 +56,19 @@ export default function UserListsPage() {
   useEffect(() => {
     fetchLists();
   }, [viewMode]);
+  const getCustomListsbyUser = async () =>{
+    const lists =  await getUserLists(getUserIdFromStorage());
+    return lists.filter(list => list.name.toLowerCase() !== 'favorilerim'); //favorilerimi gösterme bu sayfada
+  }
 
   // Liste içi sayfaya yönlendir
-  const handleClick = listId => {
-    navigate(`/lists/${listId}`);
+  const handleClick = (listId,listName) => {
+    if(viewMode === 'discover')
+      return navigate(`/lists/discover/${listId}`, {
+        state: { listName: listName }
+      });
+    if(viewMode === 'mine')
+      return navigate(`/lists/${listId}`);
   };
 
   // Silme onayı aç/kapat
@@ -109,7 +124,7 @@ export default function UserListsPage() {
                   <div className="list-card" key={list.id}>
                     <div
                         className="list-card-content"
-                        onClick={() => handleClick(list.id)}
+                        onClick={() => handleClick(list.id,list.name)}
                     >
                       <ListBox list={list} />
                     </div>

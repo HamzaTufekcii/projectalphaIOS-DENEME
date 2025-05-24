@@ -29,4 +29,6 @@ public interface DinerRepository {
     void updateDinerProfile(String userId, DinerUpdateRequest request);
 
     String findDinerId(String userId);
+
+    String findDinerNameSurname(String dinerId);
 }

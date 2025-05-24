@@ -108,7 +108,7 @@ const Navbar = () => {
               </Link>
               
               <Link 
-                to="/lists" 
+                to="/lists?mode=mine"
                 className={`nav-link ${location.pathname === '/lists' ? 'active' : ''}`}
               >
                 <FaList className="nav-icon" /> Listeler
