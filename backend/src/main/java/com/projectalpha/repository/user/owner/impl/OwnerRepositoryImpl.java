@@ -214,6 +214,7 @@ public class OwnerRepositoryImpl implements OwnerRepository {
                 "city", request.getRequestAddress().getCity(),
                 "district", request.getRequestAddress().getDistrict(),
                 "neighborhood", request.getRequestAddress().getNeighborhood(),
+                "street", request.getRequestAddress().getStreet(),
                 "business_id", businessId
         );
         String addressJson = mapper.writeValueAsString(new Map[]{addressPayload});

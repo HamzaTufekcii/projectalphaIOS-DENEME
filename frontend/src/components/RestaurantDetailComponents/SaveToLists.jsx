@@ -20,15 +20,18 @@ export default function SaveToLists({ itemId, onClose }) {
         getUserLists(getUserIdFromStorage())
             .then(fetched => {
                 if (!mounted) return;
-                // En başa Favoriler’i ekle
-                getUserLists()
 
-                const allLists = [ ...fetched];
-                setLists(allLists);
-                // Başlangıçta Favoriler + diğerleri
+                // Favorilerim her zaman en başta olsun
+                const sorted = [
+                    ...fetched.filter(l => l.name === 'Favorilerim'),
+                    ...fetched.filter(l => l.name !== 'Favorilerim')
+                ];
+
+                setLists(sorted);
+
                 const pre = new Set(
-                    allLists
-                        .filter(l => l.id === 'favorites' || l.containsItem)
+                    sorted
+                        .filter(l => l.name === 'Favorilerim' || l.containsItem)
                         .map(l => l.id)
                 );
                 setSelected(pre);
