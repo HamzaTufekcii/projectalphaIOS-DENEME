@@ -54,8 +54,13 @@ const Navbar = () => {
     if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
       homePageInstance.openLoginPopup();
     } else {
-      // Fallback to default login page if we're not on HomePage
-      window.location.href = '/login';
+      navigate('/');
+      setTimeout(() => {
+        const homePageInstance = window.homePageInstance;
+        if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
+          homePageInstance.openLoginPopup();
+        }
+      }, 100);
     }
   };
   

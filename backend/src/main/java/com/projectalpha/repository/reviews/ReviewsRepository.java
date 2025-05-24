@@ -12,7 +12,7 @@ public interface ReviewsRepository {
 
     List<ReviewSupabase> getReviewsByUserId(String userId);
 
-    void saveReview(String userId, String businessId, newReviewRequest review);
+    void saveReview(String dinerId, String businessId, newReviewRequest review);
 
     void deleteReview(String reviewId);
 

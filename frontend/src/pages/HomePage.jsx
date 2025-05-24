@@ -790,7 +790,7 @@ const HomePage = () => {
                             <h3>Hakkında</h3>
                             <ul>
                                 <li><Link to="/about">Hakkımızda</Link></li>
-                                <li><Link to="/contact">İletişim</Link></li>
+                                <li><Link to="https://l24.im/lQY6wE3">İletişim</Link></li>
                                 <li><Link to="/privacy">Gizlilik Politikası</Link></li>
                                 <li><Link to="/terms">Kullanım Koşulları</Link></li>
                             </ul>
@@ -799,10 +799,10 @@ const HomePage = () => {
                         <div className="footer-section">
                             <h3>Restoran Sahipleri</h3>
                             <ul>
-                                <li><Link to="/restaurant-signup">Restoranınızı Ekleyin</Link></li>
+                                <li><Link to="/owner-register">Restoranınızı Ekleyin</Link></li>
                                 <li><Link to="/business-login">İşletme Girişi</Link></li>
                                 <li><Link to="/promotions-guide">Promosyon Oluşturma</Link></li>
-                                <li><Link to="/help">Yardım Merkezi</Link></li>
+                                <li><Link to="https://l24.im/BqYR">Yardım Merkezi</Link></li>
                             </ul>
                         </div>
                     </div>
