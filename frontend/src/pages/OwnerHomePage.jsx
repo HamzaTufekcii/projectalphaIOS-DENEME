@@ -6,6 +6,7 @@ import '../styles/OwnerHomePage.css';
 import axios from 'axios';
 import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
 import {FaExclamationCircle} from "react-icons/fa";
+import {getBusinessReviews} from "../services/businessService.js";
 
 export default function RestaurantOwnerDashboard() {
     const navigate = useNavigate();
@@ -14,7 +15,13 @@ export default function RestaurantOwnerDashboard() {
     const ownerData = JSON.parse(localStorage.getItem('ownerData'));
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isOwner, setIsOwner] = useState(false);
     const [error, setError] = useState(null);
+    const [reviews, setReviews] = useState([]);
+    const businessData = JSON.parse(localStorage.getItem('ownerData'));
+    const token = localStorage.getItem('token');
+    const role = getUserRoleFromStorage();
+
 
     const handleLoginClick = () => {
         navigate('/');
@@ -26,39 +33,52 @@ export default function RestaurantOwnerDashboard() {
             }
         }, 100);
     };
+    const handleReturnHomeClick = () => {
+        navigate('/');
+    }
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
         if (!token) {
             setIsAuthenticated(false);
             setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
             setIsLoading(false);
             return;
+        } else if (role !== 'owner_user' && token) {
+            setError('Bu sayfa sadece işletme sahipleri içindir.');
+            setIsLoading(false);
+            setIsOwner(false);
+            setIsAuthenticated(true);
+            return;
         }
         setIsAuthenticated(true);
+        setIsOwner(true);
         setIsLoading(false);
     }, []);
 
     useEffect(() => {
-    const fetchRestaurantName = async () => {
-        setRestaurantName(ownerData.name);
-        setRestaurantId(getUserIdFromStorage());
+    const fetchRestaurant = async () => {
+        setRestaurantName(businessData.name);
+        setRestaurantId(businessData.id);
         try {
             const name =
-                ownerData.name || 'İşletme Adı';
+                businessData.name || 'İşletme Adı';
 
             setRestaurantName(name);
+
+            const response = await getBusinessReviews(businessData.id);
+            setReviews(response);
+            console.log(response);
         } catch (err) {
             console.error('İşletme adı alınamadı:', err);
             setRestaurantName('İşletme Adı');
         }
     };
 
-    fetchRestaurantName();
-}, []);
+    fetchRestaurant();
+}, [businessData]);
 
     const stats = {
-        reviews: { count: 24, new: 5 },
+        reviews: reviews.length > 0 ? { count: reviews.length, new: 1 } : { count: 0, new: 0 },
         promotions: { count: 3, active: 2 },
         reservations: { count: 18, today: 6 },
         questions: { count: 8, unanswered: 3 }
@@ -71,6 +91,18 @@ export default function RestaurantOwnerDashboard() {
                     <h2>Giriş Gerekli</h2>
                     <p>{error || 'Bu sayfayı görüntülemek için giriş yapmalısınız.'}</p>
                     <button className="login-btn" onClick={handleLoginClick}>Giriş Yap</button>
+                </div>
+            </div>
+        );
+    }
+    if(isAuthenticated && !isOwner) {
+        return (
+            <div className="not-authenticated">
+                <div className="auth-error">
+                    <FaExclamationCircle className="error-icon" />
+                    <h2>FeastFine</h2>
+                    <p>{error || 'Bu sayfayı görüntülemek için işletmeci olmalısınız.'}</p>
+                    <button className="login-btn" onClick={handleReturnHomeClick}>Ana sayfaya dön</button>
                 </div>
             </div>
         );
