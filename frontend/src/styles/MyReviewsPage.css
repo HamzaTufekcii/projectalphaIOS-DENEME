@@ -108,8 +108,7 @@
 @media (min-width: 640px) {
     .restaurant-image-container-reviews {
         display: block;
-        flex-shrink: 0;    /* Görselin küçülmesini engelle */
-        width: 162px;      /* İstediğin genişlik */
+        flex-shrink: 0;    /* Görselin küçülmesini engeller */
         height: 162px;
         aspect-ratio: 1 / 1
     }
