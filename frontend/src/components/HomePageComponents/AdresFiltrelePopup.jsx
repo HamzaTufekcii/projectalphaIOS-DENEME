@@ -1,117 +1,132 @@
 // src/components/HomePageComponents/AdresFiltrelePopup.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getAllBusinesses } from '../../services/businessService';
 import { mapBusiness } from '../../utils/businessMapper';
 import './AdresFiltrelePopup.css';
 
 export default function AdresFiltrelePopup({ onClose, onApply }) {
-    const [allRestaurants, setAllRestaurants] = useState([]);
-    const [cities, setCities] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [neighborhoods, setNeighborhoods] = useState([]);
-    const [streets, setStreets] = useState([]);
-
     const [selectedCity, setSelectedCity] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
     const [selectedStreet, setSelectedStreet] = useState('');
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const raw = await getAllBusinesses();
-                const mapped = raw.map(mapBusiness);
-                setAllRestaurants(mapped);
-                const citySet = new Set(mapped.map(r => r.address?.city).filter(Boolean));
-                setCities([...citySet]);
-            } catch (err) {
-                console.error('Adres verisi yüklenemedi:', err);
-            }
-        }
-        fetchData();
-    }, []);
+    // 1️⃣ Tüm restoran verisini React Query ile çek ve mapBusiness uygula
+    const { data: businesses = [], isLoading, error } = useQuery({
+        queryKey: ['allBusinesses'],
+        queryFn: async () => {
+            const raw = await getAllBusinesses();
+            return raw.map(mapBusiness);
+        },
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 30 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        const ds = new Set(
-            allRestaurants
-                .filter(r => r.address?.city === selectedCity)
-                .map(r => r.address.district)
-                .filter(Boolean)
-        );
-        setDistricts([...ds]);
-        setSelectedDistrict('');
-        setNeighborhoods([]);
-        setSelectedNeighborhood('');
-        setStreets([]);
-        setSelectedStreet('');
-    }, [selectedCity, allRestaurants]);
+    // 2️⃣ useMemo ile yalnızca ihtiyaç duyduğunda hesapla
+    const cities = useMemo(
+        () => Array.from(new Set(businesses.map(r => r.address?.city).filter(Boolean))).sort(),
+        [businesses]
+    );
+    const districts = useMemo(
+        () =>
+            selectedCity
+                ? Array.from(
+                    new Set(
+                        businesses
+                            .filter(r => r.address?.city === selectedCity)
+                            .map(r => r.address.district)
+                            .filter(Boolean),
+                    ),
+                ).sort()
+                : [],
+        [businesses, selectedCity]
+    );
+    const neighborhoods = useMemo(
+        () =>
+            selectedDistrict
+                ? Array.from(
+                    new Set(
+                        businesses
+                            .filter(r => r.address?.city === selectedCity && r.address?.district === selectedDistrict)
+                            .map(r => r.address.neighborhood)
+                            .filter(Boolean),
+                    ),
+                ).sort()
+                : [],
+        [businesses, selectedCity, selectedDistrict]
+    );
+    const streets = useMemo(
+        () =>
+            selectedNeighborhood
+                ? Array.from(
+                    new Set(
+                        businesses
+                            .filter(
+                                r =>
+                                    r.address?.city === selectedCity &&
+                                    r.address?.district === selectedDistrict &&
+                                    r.address?.neighborhood === selectedNeighborhood,
+                            )
+                            .map(r => r.address.street)
+                            .filter(Boolean),
+                    ),
+                ).sort()
+                : [],
+        [businesses, selectedCity, selectedDistrict, selectedNeighborhood]
+    );
 
-    useEffect(() => {
-        const ns = new Set(
-            allRestaurants
-                .filter(r => r.address?.district === selectedDistrict)
-                .map(r => r.address.neighborhood)
-                .filter(Boolean)
-        );
-        setNeighborhoods([...ns]);
-        setSelectedNeighborhood('');
-        setStreets([]);
-        setSelectedStreet('');
-    }, [selectedDistrict, allRestaurants]);
-
-    useEffect(() => {
-        const ss = new Set(
-            allRestaurants
-                .filter(r => r.address?.neighborhood === selectedNeighborhood)
-                .map(r => r.address.street)
-                .filter(Boolean)
-        );
-        setStreets([...ss]);
-        setSelectedStreet('');
-    }, [selectedNeighborhood, allRestaurants]);
-
+    // 3️⃣ Uygula ve kapat
     const handleApply = () => {
         onApply({
             city: selectedCity,
             district: selectedDistrict,
             neighborhood: selectedNeighborhood,
-            street: selectedStreet
+            street: selectedStreet,
         });
         onClose();
     };
 
+    if (isLoading) return <div className="adres-popup">Yükleniyor…</div>;
+    if (error) return <div className="adres-popup">Adres verisi yüklenemedi.</div>;
+
     return (
         <div className="adres-popup-overlay" onClick={onClose}>
-            <div
-                className="adres-popup"
-                onClick={e => e.stopPropagation()}
-            >
+            <div className="adres-popup" onClick={e => e.stopPropagation()}>
                 <h3>Adres Filtrele</h3>
 
-                <select
-                    value={selectedCity}
-                    onChange={e => setSelectedCity(e.target.value)}
-                >
+                <select value={selectedCity} onChange={e => { setSelectedCity(e.target.value); setSelectedDistrict(''); setSelectedNeighborhood(''); setSelectedStreet(''); }}>
                     <option value="">Şehir Seçin</option>
-                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                    {cities.map(city => (
+                        <option key={city} value={city}>
+                            {city}
+                        </option>
+                    ))}
                 </select>
 
                 <select
                     value={selectedDistrict}
-                    onChange={e => setSelectedDistrict(e.target.value)}
+                    onChange={e => { setSelectedDistrict(e.target.value); setSelectedNeighborhood(''); setSelectedStreet(''); }}
                     disabled={!districts.length}
                 >
                     <option value="">İlçe Seçin</option>
-                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                    {districts.map(district => (
+                        <option key={district} value={district}>
+                            {district}
+                        </option>
+                    ))}
                 </select>
 
                 <select
                     value={selectedNeighborhood}
-                    onChange={e => setSelectedNeighborhood(e.target.value)}
+                    onChange={e => { setSelectedNeighborhood(e.target.value); setSelectedStreet(''); }}
                     disabled={!neighborhoods.length}
                 >
                     <option value="">Mahalle Seçin</option>
-                    {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
+                    {neighborhoods.map(nbhd => (
+                        <option key={nbhd} value={nbhd}>
+                            {nbhd}
+                        </option>
+                    ))}
                 </select>
 
                 <select
@@ -120,12 +135,20 @@ export default function AdresFiltrelePopup({ onClose, onApply }) {
                     disabled={!streets.length}
                 >
                     <option value="">Sokak Seçin</option>
-                    {streets.map(s => <option key={s} value={s}>{s}</option>)}
+                    {streets.map(street => (
+                        <option key={street} value={street}>
+                            {street}
+                        </option>
+                    ))}
                 </select>
 
                 <div className="actions">
-                    <button className="btn-apply" onClick={handleApply}>Uygula</button>
-                    <button className="btn-cancel" onClick={onClose}>İptal</button>
+                    <button className="btn-apply" onClick={handleApply}>
+                        Uygula
+                    </button>
+                    <button className="btn-cancel" onClick={onClose}>
+                        İptal
+                    </button>
                 </div>
             </div>
         </div>
