@@ -561,15 +561,16 @@ const HomePage = () => {
                 onSubmit={checkEqual}
             />
 
-            <main className="main-content">
-                {/* Hero Section */}
+            <main>
+                {/* Hero Section (tam genişlik) */}
                 <section className="hero-section">
                     <div className="hero-content">
                         <h1 className="hero-title">Mükemmel Yemek Deneyimini Keşfedin</h1>
                         <p className="hero-subtitle">
-                            Gerçek zamanlı promosyonlarla restoranları ve kafeleri bulun, rezervasyon yapın ve yeni favoriler keşfedin.
+                            Gerçek zamanlı promosyonlarla restoranları ve kafeleri bulun, rezervasyon
+                            yapın ve yeni favoriler keşfedin.
                         </p>
-                        
+
                         <form className="hero-search-form" onSubmit={handleSearch}>
                             <div className="search-wrapper">
                                 <FaSearch className="search-icon" />
@@ -582,17 +583,17 @@ const HomePage = () => {
                                 />
                             </div>
                             <button type="submit" className="search-btn">Ara</button>
-                            
+
                             {locationStatus === 'success' && (
                                 <div className="location-badge">
                                     <FaLocationArrow />
                                     <span>Konumunuz kullanılıyor</span>
                                 </div>
                             )}
-                            
+
                             {locationStatus === 'error' && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="location-btn"
                                     onClick={getUserLocation}
                                 >
@@ -604,184 +605,183 @@ const HomePage = () => {
                     <div className="hero-overlay"></div>
                 </section>
 
-                {/* Category Filter Pills */}
-                <div className="category-filter-container">
-                    <div className="category-filters">
-                        <button 
-                            className={`category-pill ${selectedFilter === 'all' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('all')}
-                        >
-                            <FaUtensils className="category-icon" />
-                            <span>Tümü</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'promo' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('promo')}
-                        >
-                            <span className="promo-badge-small">%</span>
-                            <span>Promosyonlar</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'cafe' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('cafe')}
-                        >
-                            <FaCoffee className="category-icon" />
-                            <span>Kafeler</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'pizza' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('pizza')}
-                        >
-                            <FaPizzaSlice className="category-icon" />
-                            <span>Pizza</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'burger' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('burger')}
-                        >
-                            <FaHamburger className="category-icon" />
-                            <span>Burgerler</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'wine' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('wine')}
-                        >
-                            <FaWineGlassAlt className="category-icon" />
-                            <span>Şarap & Akşam Yemeği</span>
-                        </button>
-                    </div>
-                </div>
+                {/* — HERO BİTİŞİ — */}
 
-                {/* Search Results (if any) */}
-                {searchResults.length > 0 && (
-                    <section className="search-results-section">
-                        <div className="search-header">
-                            <h2>
-                                Arama Sonuçları
-                                <span className="result-count">{searchResults.length} sonuç</span>
-                            </h2>
-                            <button className="clear-search-btn" onClick={clearSearch}>
-                                Aramayı Temizle
+                <div className="main-content">
+                    {/* Category Filter Pills */}
+                    <div className="category-filter-container">
+                        <div className="category-filters">
+                            <button
+                                className={`category-pill ${selectedFilter === 'all' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('all')}
+                            >
+                                <FaUtensils className="category-icon" />
+                                <span>Tümü</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'promo' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('promo')}
+                            >
+                                <span className="promo-badge-small">%</span>
+                                <span>Promosyonlar</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'cafe' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('cafe')}
+                            >
+                                <FaCoffee className="category-icon" />
+                                <span>Kafeler</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'pizza' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('pizza')}
+                            >
+                                <FaPizzaSlice className="category-icon" />
+                                <span>Pizza</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'burger' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('burger')}
+                            >
+                                <FaHamburger className="category-icon" />
+                                <span>Burgerler</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'wine' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('wine')}
+                            >
+                                <FaWineGlassAlt className="category-icon" />
+                                <span>Şarap & Akşam Yemeği</span>
                             </button>
                         </div>
-                        
-                        <div className="restaurant-grid">
-                            {searchResults.map(restaurant => (
-                                <Link 
-                                    to={`/restaurant/${restaurant.id}`} 
-                                    className="restaurant-card" 
-                                    key={restaurant.id}
-                                >
-                                    <div className="card-header">
-                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                                        {restaurant.hasActivePromo && (
-                                            <div className="promo-tag">
-                                                <FaStar className="promo-icon" />
-                                                <span>Promotion</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="card-body">
-                                        <h3 className="restaurant-title">{restaurant.name}</h3>
-                                        <div className="restaurant-details">
-                                            <span className="restaurant-type">{restaurant.type}</span>
-                                            <div className="distance">
-                                                <FaMapMarkerAlt className="location-icon" />
-                                                <span>{restaurant.distance}</span>
-                                            </div>
-                                        </div>
-                                        <div className="rating-container">
-                                            <FaStar className="star-icon" />
-                                            <span className="rating-value">{restaurant.rating}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                    </div>
 
-                {/* Featured Restaurants Section */}
-                {featuredRestaurants.length > 0 && !isLoadingFeatured && (
-                    <section className="featured-section">
-                        <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
-                        <div className="featured-cards">
-                            {featuredRestaurants.map(restaurant => (
-                                <Link
-                                    to={`/restaurant/${restaurant.id}`}
-                                    className="restaurant-card featured"
-                                    key={restaurant.id}
-                                >
-                                    <div className="card-header">
-                                        <img
-                                            src={restaurant.image}
-                                            alt={restaurant.name}
-                                            className="restaurant-img"
-                                        />
-                                        {restaurant.hasActivePromo && (
-                                            <div className="promo-tag">
-                                                <FaStar className="promo-icon" />
-                                                <span>{restaurant.promoDetails}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="card-body">
-                                        <div className="card-top">
+                    {/* Search Results (if any) */}
+                    {searchResults.length > 0 && (
+                        <section className="search-results-section">
+                            <div className="search-header">
+                                <h2>
+                                    Arama Sonuçları
+                                    <span className="result-count">{searchResults.length} sonuç</span>
+                                </h2>
+                                <button className="clear-search-btn" onClick={clearSearch}>
+                                    Aramayı Temizle
+                                </button>
+                            </div>
+
+                            <div className="restaurant-grid">
+                                {searchResults.map(restaurant => (
+                                    <Link
+                                        to={`/restaurant/${restaurant.id}`}
+                                        className="restaurant-card"
+                                        key={restaurant.id}
+                                    >
+                                        <div className="card-header">
+                                            <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                            {restaurant.hasActivePromo && (
+                                                <div className="promo-tag">
+                                                    <FaStar className="promo-icon" />
+                                                    <span>Promotion</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="card-body">
                                             <h3 className="restaurant-title">{restaurant.name}</h3>
-                                            <span className="price-range">{restaurant.priceRange}</span>
-                                        </div>
-                                        <div className="restaurant-details">
-                                            {/* Mutfak Türü */}
-                                            <span className="restaurant-type">{restaurant.type}</span>
-
-                                            {/* Adres Bilgisi */}
-                                            {restaurant.address && (
-                                                <div className="location">
+                                            <div className="restaurant-details">
+                                                <span className="restaurant-type">{restaurant.type}</span>
+                                                <div className="distance">
                                                     <FaMapMarkerAlt className="location-icon" />
-                                                    <span>
-                                                {restaurant.address.city}, {restaurant.address.district}
-                                              </span>
+                                                    <span>{restaurant.distance}</span>
                                                 </div>
-                                            )}
+                                            </div>
+                                            <div className="rating-container">
+                                                <FaStar className="star-icon" />
+                                                <span className="rating-value">{restaurant.rating}</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
-                                            {/* Tag Listesi */}
-                                            {restaurant.tags && restaurant.tags.length > 0 && (
-                                                <div className="tag-list">
-                                                    {restaurant.tags.map(tag => (
-                                                        <span key={tag.id} className="tag">
-                                                        {tag.name.trim()}
-                                                        </span>
-                                                    ))}
+                    {/* Featured Restaurants Section */}
+                    {featuredRestaurants.length > 0 && !isLoadingFeatured && (
+                        <section className="featured-section">
+                            <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
+                            <div className="featured-cards">
+                                {featuredRestaurants.map(restaurant => (
+                                    <Link
+                                        to={`/restaurant/${restaurant.id}`}
+                                        className="restaurant-card featured"
+                                        key={restaurant.id}
+                                    >
+                                        <div className="card-header">
+                                            <img
+                                                src={restaurant.image}
+                                                alt={restaurant.name}
+                                                className="restaurant-img"
+                                            />
+                                            {restaurant.hasActivePromo && (
+                                                <div className="promo-tag">
+                                                    <FaStar className="promo-icon" />
+                                                    <span>{restaurant.promoDetails}</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="rating-container">
-                                            <FaStar className="star-icon" />
-                                            <span className="rating-value">{restaurant.rating}</span>
+                                        <div className="card-body">
+                                            <div className="card-top">
+                                                <h3 className="restaurant-title">{restaurant.name}</h3>
+                                                <span className="price-range">{restaurant.priceRange}</span>
+                                            </div>
+                                            <div className="restaurant-details">
+                                                <span className="restaurant-type">{restaurant.type}</span>
+                                                {restaurant.address && (
+                                                    <div className="location">
+                                                        <FaMapMarkerAlt className="location-icon" />
+                                                        <span>
+                        {restaurant.address.city}, {restaurant.address.district}
+                      </span>
+                                                    </div>
+                                                )}
+                                                {restaurant.tags && restaurant.tags.length > 0 && (
+                                                    <div className="tag-list">
+                                                        {restaurant.tags.map(tag => (
+                                                            <span key={tag.id} className="tag">
+                          {tag.name.trim()}
+                        </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="rating-container">
+                                                <FaStar className="star-icon" />
+                                                <span className="rating-value">{restaurant.rating}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* All Restaurants Section */}
+                    <section className="all-restaurants-section">
+                        <RestaurantList
+                            title="Restoranları Keşfedin"
+                            filters={activeFilters}
+                            useGrid={true}
+                        />
                     </section>
-                )}
-
-
-                {/* All Restaurants Section */}
-                <section className="all-restaurants-section">
-                    <RestaurantList 
-                        title="Restoranları Keşfedin" 
-                        filters={activeFilters} 
-                        useGrid={true} 
-                    />
-                </section>
+                </div>
             </main>
-            
+
+
             <footer className="app-footer">
                 <div className="footer-content">
                     <div className="footer-logo">
