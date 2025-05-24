@@ -38,9 +38,9 @@ const RestaurantReviews = ({ restaurantId }) => {
         const fetchReviews = async () => {
             const fetchedReviews = await getBusinessReviews(restaurantId);
 
-            const mappedReviews = fetchedReviews.map((review) => ({
+            const mappedReviews = fetchedReviews.map(({review,reviewerName}) => ({
                 id: review.id,
-                name: "Ya'qub Qamar Ad-Din Dibiazah", // backend'de isim yoksa placeholder
+                name: reviewerName, // backend'de isim yoksa placeholder
                 rating: review.rating,
                 comment: review.comment,
                 date: new Date(review.created_at),

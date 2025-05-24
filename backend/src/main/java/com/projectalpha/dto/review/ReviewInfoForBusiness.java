@@ -6,11 +6,10 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class ReviewInfoForBusiness {
-    private final ReviewSupabase review;
-    private final DinerUserProfile reviewer;
+    com.projectalpha.dto.review.ReviewSupabase review;
+    private String reviewerName;
 
-    public ReviewInfoForBusiness(ReviewSupabase review, DinerUserProfile reviewer) {
-        this.review = review;
-        this.reviewer = reviewer;
+    public ReviewInfoForBusiness(com.projectalpha.dto.review.ReviewSupabase reviewSupabase) {
+        this.review = reviewSupabase;
     }
 }

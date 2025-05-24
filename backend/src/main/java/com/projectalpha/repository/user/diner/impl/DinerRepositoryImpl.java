@@ -380,7 +380,6 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
                 throw new RuntimeException("Listeler alınamadı: " + response.body());
             }
             JsonNode root = mapper.readTree(response.body());
-            System.out.println(root);
             List<PublicList> listOfBusinesses = new ArrayList<>();
 
             if (root.isArray()) {

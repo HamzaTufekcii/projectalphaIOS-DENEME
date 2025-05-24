@@ -1,7 +1,7 @@
 // src/services/listService.js
 
 import axios from 'axios';
-import {getUserFavoritesIdFromStorage} from "./userService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "./userService.js";
 
 const API_URL = 'http://localhost:8080/api/users';
 
@@ -42,24 +42,6 @@ export const updateList = async (userId, name, isPublic, listId) => {
 }
 
 
-// Mock veri
-let mockUserLists = [
-    {
-        id: 'u1',
-        name: 'Hafta Sonu Favorilerim',
-        containsItem: false,
-        isPrivate: false,
-        businesses: []
-    },
-    {
-        id: 'u3',
-        name: 'Favori Kahvaltıcılar',
-        containsItem: false,
-        isPrivate: false,
-        businesses: []
-    }
-];
-
 
 /** Kullanıcının kendi listelerini döner */
 export const getUserLists = async (id) => {
@@ -90,4 +72,19 @@ export const getPublicLists = async () => {
 export function deleteList(listId) {
     mockUserLists = mockUserLists.filter(l => l.id !== listId);
     return Promise.resolve();
+}
+export const toggleFavorite = async (id) => {
+
+    const favorites = await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+    const isFavorited = favorites.some(fav => fav.id === id);
+
+
+    if (isFavorited) {
+        await removeFromList(getUserIdFromStorage(), getUserFavoritesIdFromStorage(), id);
+        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+
+    } else {
+        await addToFavorites(getUserIdFromStorage(), id);
+        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+    }
 }

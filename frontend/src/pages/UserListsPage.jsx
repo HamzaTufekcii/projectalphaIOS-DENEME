@@ -17,7 +17,7 @@ export default function UserListsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [viewMode, setViewMode]     = useState('discover');
+  const [viewMode, setViewMode]     = useState('mine');
   const [lists, setLists]           = useState([]);
   const [isLoading, setIsLoading]   = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -26,11 +26,17 @@ export default function UserListsPage() {
   // Düzenleme için tek obje state’i
   const [editingList, setEditingList] = useState(null);
 
+
+
   // URL query’den sekmeyi al
   useEffect(() => {
     const mode = new URLSearchParams(location.search).get('mode');
+    if(mode !== 'mine' && mode !== 'discover'){
+      setViewMode('mine');
+    }
     setViewMode(mode === 'mine' ? 'mine' : 'discover');
   }, [location.search]);
+
 
   // Listeleri çek
   const fetchLists = async () => {

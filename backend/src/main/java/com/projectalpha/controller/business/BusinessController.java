@@ -2,6 +2,7 @@ package com.projectalpha.controller.business;
 
 import com.projectalpha.dto.GenericResponse;
 import com.projectalpha.dto.business.BusinessDetailDTO;
+import com.projectalpha.dto.review.ReviewInfoForBusiness;
 import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.service.business.BusinessService;
 import com.projectalpha.service.review.ReviewService;
@@ -87,10 +88,10 @@ public class BusinessController {
     }
 
     @GetMapping("/reviews/{businessId}")
-    public ResponseEntity<GenericResponse<List<ReviewSupabase>>> reviews(@PathVariable String businessId) {
+    public ResponseEntity<GenericResponse<List<ReviewInfoForBusiness>>> reviews(@PathVariable String businessId) {
         try {
             return ResponseEntity.ok(
-                    new GenericResponse<>(true, "Reviews", reviewSvc.getReviewsByBusinessId(businessId))
+                    new GenericResponse<>(true, "Reviews", reviewSvc.getReviewsForBusiness(businessId))
             );
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
