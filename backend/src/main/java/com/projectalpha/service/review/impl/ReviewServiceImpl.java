@@ -34,15 +34,15 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewSupabase> getReviewsByBusinessId(String businessId){return repo.getReviewsByBusinessId(businessId);}
 
     public List<ReviewInfoForBusiness> getReviewsForBusiness(String businessId){
-        ReviewSupabase reviewSupabase = new ReviewSupabase();
-        ReviewInfoForBusiness reviewInfos = new ReviewInfoForBusiness(reviewSupabase);
         List<ReviewSupabase> reviews = repo.getReviewsByBusinessId(businessId);
         List<ReviewInfoForBusiness> responseInfo = new ArrayList<>();
 
         for (ReviewSupabase review : reviews) {
             String dinerId = review.getUserId();
-            reviewInfos.setReview(review);
+
+            ReviewInfoForBusiness reviewInfos = new ReviewInfoForBusiness(review); // burada yeni nesne yarat
             reviewInfos.setReviewerName(dinerRepository.findDinerNameSurname(dinerId));
+
             responseInfo.add(reviewInfos);
         }
         return responseInfo;
