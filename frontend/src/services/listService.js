@@ -17,14 +17,15 @@ export const removeFromList = async (userId, listId,itemId) => {
     await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`);
 }
 export const createList = async (userId, name, isPublic) => {
+
     const response = await axios.post(
-        `${API_URL}/diner_user/${userId}/lists`,
-        {
-        name: name,
-        isPublic: isPublic,
-    });
+        `${API_URL}/diner_user/${userId}/lists`, {
+            name: name,
+            "is_public": isPublic
+        });
     return response.data;
-}//"/diner_user/{userId}/lists"
+
+}
 export const removeList = async (userId, listId) => {
 
     await axios.delete(`${API_URL}/diner_user/${userId}/lists/${listId}`);
@@ -35,7 +36,7 @@ export const updateList = async (userId, name, isPublic, listId) => {
         `${API_URL}/diner_user/${userId}/lists/${listId}`,
         {
             name: name,
-            isPublic: isPublic,
+            "is_public": isPublic,
         });
     return response.data;
 }

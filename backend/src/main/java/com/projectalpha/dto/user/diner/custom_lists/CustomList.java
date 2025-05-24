@@ -17,7 +17,7 @@ public class CustomList {
     @JsonProperty("is_public")
     private boolean isPublic;
     private DinerUserProfile diner;
- //?
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Data
     public static class DinerUserProfile {

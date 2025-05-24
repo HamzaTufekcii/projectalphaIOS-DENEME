@@ -24,13 +24,14 @@ export default function CreateList({ onClose, onCreated }) {
         if (!title.trim()) return;
         setSaving(true);
         try {
+            console.log(isPrivate);
             const newList = await createList(getUserIdFromStorage(),title.trim(),!isPrivate);
             onCreated(newList);
         } catch (err) {
             console.error(err);
         } finally {
             setSaving(false);
-            window.location.reload();
+            //window.location.reload();
 
         }
     };

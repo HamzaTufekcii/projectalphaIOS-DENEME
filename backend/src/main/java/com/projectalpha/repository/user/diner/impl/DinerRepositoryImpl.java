@@ -335,7 +335,6 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             if (!root.isArray() || root.size() == 0) {
                 throw new RuntimeException("Boş Supabase cevabı");
             }
-
             return mapper.treeToValue(root.get(0), CustomList.class);
 
         } catch (Exception e) {
