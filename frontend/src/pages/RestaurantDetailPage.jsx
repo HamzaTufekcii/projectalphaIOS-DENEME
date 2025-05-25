@@ -28,12 +28,6 @@ const RestaurantDetailPage = () => {
   const reviewsRef = useRef(null);
   const imageRef = useRef(null);
 
-  // Sample images for carousel (this would come from the API in a real implementation)
-  const demoImages = [
-    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80',
-    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
-    'https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
-  ];
   const token = localStorage.getItem('token');
   const isLogin = token !== null;
 
@@ -93,36 +87,10 @@ const RestaurantDetailPage = () => {
   }, [id]);
 
 
-
-
-
-
-
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-        prevIndex === demoImages.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-        prevIndex === 0 ? demoImages.length - 1 : prevIndex - 1
-    );
-  };
-
-  const nextModalImage = () => {
-    resetZoom();
-    setModalImageIndex((prevIndex) =>
-        prevIndex === demoImages.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const prevModalImage = () => {
-    resetZoom();
-    setModalImageIndex((prevIndex) =>
-        prevIndex === 0 ? demoImages.length - 1 : prevIndex - 1
-    );
-  };
+  const nextImage = () => setCurrentImageIndex(prev => prev === photoUrls.length - 1 ? 0 : prev + 1);
+  const prevImage = () => setCurrentImageIndex(prev => prev === 0 ? photoUrls.length - 1 : prev - 1);
+  const nextModalImage = () => { resetZoom(); setModalImageIndex(prev => prev === photoUrls.length - 1 ? 0 : prev + 1); };
+  const prevModalImage = () => { resetZoom(); setModalImageIndex(prev => prev === 0 ? photoUrls.length - 1 : prev - 1); };
 
   const openPhotoModal = (index) => {
     setModalImageIndex(index);
@@ -266,12 +234,16 @@ const RestaurantDetailPage = () => {
     return (
         <div className="error-container">
           <div className="error-message">{error || 'Restoran bulunamadı'}</div>
-          <Link to="/" className="back-link">
-            <FaArrowLeft /> Ana Sayfaya Dön
-          </Link>
+          <Link to="/" className="back-link"><FaArrowLeft /> Ana Sayfaya Dön</Link>
         </div>
     );
   }
+  // Fotoğraf URL dizisini hazırla ve yoksa hata göster
+    const photoUrls = restaurant.photos?.map(p => p.url) || [];
+    if (photoUrls.length === 0) {
+      return <div className="error-container">Fotoğraf bulunamadı</div>;
+    }
+    const coverPhoto = restaurant.photos.find(p => p.cover)?.url || photoUrls[0];
 
 
   return (
@@ -290,14 +262,14 @@ const RestaurantDetailPage = () => {
 
             <div className="carousel-container">
               <img
-                  src={demoImages[currentImageIndex] || restaurant.image}
+                  src={photoUrls[currentImageIndex] || coverPhoto}
                   alt={`${restaurant.name} - fotoğraf ${currentImageIndex + 1}`}
                   className="carousel-image"
                   onClick={handleMainImageClick}
                   style={{ cursor: 'pointer' }}
               />
               <div className="carousel-indicators">
-                {demoImages.map((_, index) => (
+                {photoUrls.map((_, index) => (
                     <button
                         key={index}
                         className={`carousel-dot ${currentImageIndex === index ? 'active' : ''}`}
@@ -345,25 +317,22 @@ const RestaurantDetailPage = () => {
               {[1, 2, 3, 4, 5].map((star) => (
                   <FaStar
                       key={star}
-                      className={star <= Math.floor(restaurant.rating) ? "star filled" : "star"}
+                      className={star <= Math.floor(restaurant.avgRating) ? "star filled" : "star"}
                   />
               ))}
             </div>
             <button className="rating-button" onClick={handleRatingClick}>
-              <span className="rating-value">{restaurant.rating}</span>
-              <span className="review-count">(restaurant.)</span>
+              <span className="rating-value">{restaurant.avgRating}</span>
             </button>
           </div>
 
           <div className="restaurant-meta">
             <div className="restaurant-type">
-              Fine Dining • {restaurant.priceRange}
+              {restaurant.type || 'Tür bilinmiyor'} • {restaurant.priceRange}
             </div>
             <div className="restaurant-address">
-              <FaMapMarkerAlt /> 123 Ana Cadde, Şehir, Bölge
-            </div>
-            <div className="opening-hours">
-              Saat 22:00'a kadar açık
+              <FaMapMarkerAlt />
+              {restaurant.address.street}, {restaurant.address.neighborhood}, {restaurant.address.district} / {restaurant.address.city}
             </div>
           </div>
 
@@ -476,13 +445,13 @@ const RestaurantDetailPage = () => {
             {activeTab === 'photos' && (
                 <div className="photos-tab">
                   <div className="photos-grid">
-                    {demoImages.map((image, index) => (
+                    {photoUrls.map((url, index) => (
                         <div
                             key={index}
                             className="photo-item"
                             onClick={() => openPhotoModal(index)}
                         >
-                          <img src={image} alt={`${restaurant.name} - galeri ${index + 1}`} />
+                          <img src={url} alt={`${restaurant.name} - galeri ${index + 1}`} />
                           <div className="photo-overlay">
                             <span>Görüntüle</span>
                           </div>
@@ -529,7 +498,7 @@ const RestaurantDetailPage = () => {
                   >
                     <img
                         ref={imageRef}
-                        src={demoImages[modalImageIndex]}
+                        src={photoUrls[modalImageIndex] || coverPhoto}
                         alt={`${restaurant.name} - fotoğraf ${modalImageIndex + 1}`}
                         className="modal-image"
                         style={{
@@ -553,20 +522,17 @@ const RestaurantDetailPage = () => {
                 </div>
 
                 <div className="modal-indicators">
-                  {demoImages.map((_, index) => (
+                  {photoUrls.map((_, index) => (
                       <button
                           key={index}
                           className={`modal-dot ${modalImageIndex === index ? 'active' : ''}`}
-                          onClick={() => {
-                            resetZoom();
-                            setModalImageIndex(index);
-                          }}
+                          onClick={() => { resetZoom(); setModalImageIndex(index); }}
                       />
                   ))}
                 </div>
 
                 <div className="modal-counter">
-                  {modalImageIndex + 1} / {demoImages.length}
+                  {modalImageIndex + 1} / {photoUrls.length}
                 </div>
               </div>
             </div>
