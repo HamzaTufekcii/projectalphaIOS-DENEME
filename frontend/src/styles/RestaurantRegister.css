@@ -14,6 +14,7 @@
   /* Container layout */
   .registration-container {
     display: flex;
+    align-items: flex-start;
     flex-direction: column;
     min-height: 100vh;
     background-color: #f9fafb;
@@ -80,6 +81,7 @@
   
   .input-container {
     position: relative;
+    margin-top: 4px;
   }
   
   .input-icon {
@@ -89,6 +91,18 @@
     transform: translateY(-50%);
     color: #9ca3af;
   }
+  .component-input{
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  .component-input.input-style {
+  padding-left: 40px; /* override edilir */
+  }
+
   
   .form-input {
     width: 100%;
@@ -113,8 +127,48 @@
   .select-container {
     position: relative;
   }
-  
-  .form-select {
+
+.address-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Her input + ikon bloğu */
+.address-container .input-container {
+  position: relative;
+  flex: 1;
+  min-width: 150px;
+}
+
+/* İkon stil ve konumu */
+.address-container .input-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Input kutusu içi boşluk bırakmalı */
+.address-container .component-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px; /* Sol boşluk 📍 için */
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* İsteğe bağlı: input-style class'ı varsa üzerine ek yap */
+.address-container .input-style {
+  background-color: white;
+}
+
+
+.form-select {
     appearance: none;
     padding-right: 40px;
   }
@@ -130,7 +184,7 @@
   }
   
   .register-button {
-    margin-top: 8px;
+    /*margin-top: 1px;*/
     width: 100%;
     background-color: var(--primary-color);
     color: white;
@@ -179,4 +233,10 @@
   .success-text {
     color: #047857;
   }
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
   

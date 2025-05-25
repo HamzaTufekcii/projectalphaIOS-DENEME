@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import axios from 'axios';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
+import {getUserListItems, removeFromList} from "../services/listService.js";
+
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -48,6 +51,9 @@ const FavoritesPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
 
+  const currentUserFavoriteID = getUserFavoritesIdFromStorage();
+  const currentUserId =  getUserIdFromStorage();
+
   useEffect(() => {
     // Check if user is logged in
     const checkAuth = () => {
@@ -62,47 +68,21 @@ const FavoritesPage = () => {
       return true;
     };
 
-    const getUserId = () => {
-      const userJson = localStorage.getItem('user');
-      if (!userJson) return null;
-      
-      try {
-        const userData = JSON.parse(userJson);
-        return userData.id || userData.userId || null;
-      } catch (e) {
-        console.error('Error parsing user data', e);
-        return null;
-      }
-    };
     
     const fetchFavorites = async () => {
       setIsLoading(true);
       
       if (!checkAuth()) return;
-      
-      const userId = getUserId();
-      if (!userId) {
-        setError('Kullanıcı bilgileri bulunamadı. Lütfen tekrar giriş yapın.');
-        setIsLoading(false);
-        return;
-      }
+
       
       try {
-        // Configure request with auth header
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        };
-        
         // Get all user lists
-        const response = await axios.get(`${API_BASE_URL}/users/${userId}/lists`, config);
-        
+        const response = await getUserListItems(currentUserId, currentUserFavoriteID);
         // Find the favorites list
-        const favList = response.data.find(list => list.isFavorites);
+        const favList = response;
         
         if (favList) {
-          setFavorites(favList.businesses || []);
+          setFavorites(favList || []);
         } else {
           setFavorites([]);
         }
@@ -157,20 +137,8 @@ const FavoritesPage = () => {
     }
     
     try {
-      // Configure request with auth header
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      };
-      
-      // Find favorites list ID
-      const listsResponse = await axios.get(`${API_BASE_URL}/users/${userId}/lists`, config);
-      const favList = listsResponse.data.find(list => list.isFavorites);
-      
-      if (favList) {
-        await axios.delete(`${API_BASE_URL}/users/${userId}/lists/${favList.id}/businesses/${businessId}`, config);
-        
+      if (favorites) {
+        await removeFromList(currentUserId, currentUserFavoriteID,businessId);
         // Update state to remove the business
         setFavorites(prevFavorites => 
           prevFavorites.filter(business => business.id !== businessId)

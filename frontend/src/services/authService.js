@@ -1,6 +1,6 @@
 /**
  * Authentication Service
- * Handles all API calls related to authentication
+ * Handles all API calls related to auth
  */
 import axios from 'axios';
 
@@ -62,22 +62,43 @@ export const updateUser = async (email, password, role = 'user') => {
  * Login with email and password
  * @param {string} email - User's email address
  * @param {string} password - User's password
+ * @param {string} role - User's role
  * @returns {Promise} Response from the API with tokens and user info
  */
-export const login = async (email, password) => {
+export const login = async (email, password, role) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, { 
-      email: email.trim(), 
-      password: password 
-    });
+    const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: email.trim(),
+          password: password.trim(),
+          role: role
+        }
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message || 'Error logging in';
   }
 };
+export const checkPassword = async (email, password, role) => {
+  try {
+    const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: email.trim(),
+          password: password.trim(),
+          role
+        }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message || 'Password is not matched';
+  }
+};
+
 
 /**
- * Save authentication data to local storage
+ * Save auth data to local storage
  * @param {Object} authData - Auth data with tokens and user info
  */
 export const saveAuthData = (authData) => {
@@ -87,7 +108,7 @@ export const saveAuthData = (authData) => {
 };
 
 /**
- * Get authentication data from local storage
+ * Get auth data from local storage
  * @returns {Object} Auth data with token and user info
  */
 export const getAuthData = () => {
@@ -99,7 +120,7 @@ export const getAuthData = () => {
 };
 
 /**
- * Clear authentication data from local storage (logout)
+ * Clear auth data from local storage (logout)
  */
 export const logout = () => {
   localStorage.removeItem('token');

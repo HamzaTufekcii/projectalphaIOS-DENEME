@@ -21,13 +21,82 @@
 }
 
 .list-card {
-  background-color: white;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;            /* ListBox ile buton arası boşluk */
+  background: #fff;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 16px;
+}
+.list-card-content {
+  flex: 1;              /* Butona kadar uzanır */
+  cursor: pointer;
+}
+/* Silme butonu */
+.delete-list-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  padding: 6px;
+  cursor: pointer;
+  color: #c00;
+  transition: color 0.2s;
+  margin-top: 8px;   /* burası yeni satır */
+}
+.delete-list-btn:hover {
+  color: #ff5a5f;    /* hover’da pembe ikon rengi */
+  background-color: transparent; /* hover’da arka plan YOK */
 }
 
+
+
+/* ===== Silme Onay Modal ===== */
+.confirm-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.confirm-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  text-align: center;
+  width: 400px;
+  max-width: 90%;
+  min-width: 320px;
+}
+
+.confirm-buttons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-buttons .btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirm-buttons .btn.confirm {
+  background-color: #ff4d4f;
+  color: #fff;
+}
+
+.confirm-buttons .btn.cancel {
+  background-color: #ddd;
+}
 .list-header {
   margin-bottom: 20px;
   position: relative;
@@ -222,23 +291,137 @@
 .error-message {
   color: #e74c3c;
 }
+/* Toggle Sekmesi (KEŞFET / LİSTELERİM) */
+.tab-options {
+  position: relative;
+  display: flex;
+  width: 320px;
+  height: 40px;
+  background: #ffeaea;
+  border-radius: 25px;
+  overflow: hidden;
+  margin: 16px auto;
+}
+
+.tab-option {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-weight: bold;
+  color: #ff7f7f;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.tab-option.active {
+  color: white;
+}
+
+.tab-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: #ff7f7f;
+  border-radius: 25px;
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+
+.tab-background.mine {
+  left: 50%;
+}
+
+.tab-background.discover {
+  left: 0%;
+}
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .user-lists-page {
     padding: 20px 15px;
   }
-  
+
   .user-lists-header h1 {
     font-size: 24px;
   }
-  
+
   .list-items {
     grid-template-columns: 1fr;
   }
-  
+
   .list-creator {
     flex-direction: column;
     gap: 5px;
   }
-} 
+}
+/* “Liste Oluştur” butonunu tab’larla uyumlu hale getiren stil */
+.create-list-btn {
+  margin-left: 16px;
+  background-color: #ff7f7f;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.create-list-btn:hover {
+  background-color: #ff5252;
+}
+
+.create-list-btn:active {
+  background-color: #e74c3c;
+}
+.edit-input {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 12px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.edit-list-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  padding: 6px;
+  cursor: pointer;
+  color:  #ff5a5f;;
+  transition: color 0.2s;
+}
+.edit-list-btn:hover {
+  background-color: rgba(255, 90, 95, 0.1);
+}
+.list-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 12px;
+}
+.edit-list-btn svg {
+  color: #ff5a5f;
+  transition: color 0.2s;
+}
+.edit-list-btn:hover svg {
+  color: #e04a4f;
+}
+
+.delete-list-btn svg {
+  color: #888;
+  transition: color 0.2s;
+}
+.delete-list-btn:hover svg {
+  color: #c00;
+}
+
+.list-card-actions button {
+  background-color: transparent; /* butonların normalde arkaplanı yok */
+  border: none;
+  padding: 6px;
+  border-radius: 4px; /* hover’da hafif yuvarlak köşe */
+  transition: background-color 0.2s, color 0.2s;
+}

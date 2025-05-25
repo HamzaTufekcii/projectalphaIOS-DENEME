@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import '../styles/ProfilePage.css';
-import { FaHeart, FaList, FaUser, FaEdit, FaCog, FaStar, FaExclamationCircle } from 'react-icons/fa';
 
-// Mock data - in production, this would come from the backend
+import {
+  getUserIdFromStorage,
+  getUserRoleFromStorage,
+  fetchUserData,
+  updateUserData,
+  changePassword
+} from '../services/userService';
+import {checkPassword, updateUser} from "../services/authService.js";
+
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// Mock user profile data for development
 const MOCK_USER_PROFILE = {
   id: 'user123',
   name: 'Ahmet',
@@ -18,480 +23,320 @@ const MOCK_USER_PROFILE = {
   role: 'user'
 };
 
-// Mock lists for development
-const MOCK_USER_LISTS = [
-  {
-    id: 'list1',
-    name: 'Favorilerim',
-    userId: 'user123',
-    createdAt: new Date().toISOString(),
-    businesses: [
-      {
-        id: 'bus1',
-        name: 'Italian Restaurant',
-        address: '123 Main St',
-        imageUrl: 'https://via.placeholder.com/100',
-        rating: 4.5,
-        category: 'Italian',
-        priceRange: '$$',
-        businessType: 'restaurant'
-      }
-    ],
-    isFavorites: true
-  },
-  {
-    id: 'list2',
-    name: 'Deneyimlemek İstediklerim',
-    userId: 'user123',
-    createdAt: new Date().toISOString(),
-    businesses: [
-      {
-        id: 'bus2',
-        name: 'City Cafe',
-        address: '456 Oak St',
-        imageUrl: 'https://via.placeholder.com/100',
-        rating: 4.2,
-        category: 'Cafe',
-        priceRange: '$',
-        businessType: 'cafe'
-      }
-    ],
-    isFavorites: false
-  }
-];
-
-// Mock reviews for development
-const MOCK_USER_REVIEWS = [
-  {
-    id: 'rev1',
-    userId: 'user123',
-    businessId: 'bus1',
-    businessName: 'Italian Restaurant',
-    businessImageUrl: 'https://via.placeholder.com/100',
-    rating: 4.5,
-    comment: 'Harika yemekler ve müşteri hizmeti!',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'rev2',
-    userId: 'user123',
-    businessId: 'bus2',
-    businessName: 'City Cafe',
-    businessImageUrl: 'https://via.placeholder.com/100',
-    rating: 4.0,
-    comment: 'Güzel bir ortam, kahveleri mükemmel.',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
-
 const ProfilePage = () => {
   const { userId } = useParams();
+  const {role} = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('profile');
   const [userProfile, setUserProfile] = useState(null);
-  const [userLists, setUserLists] = useState([]);
-  const [userReviews, setUserReviews] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [useMockData, setUseMockData] = useState(false);
-  
-  // Get user ID from localStorage if not provided in URL
-  const getUserIdFromStorage = () => {
-    const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-    
-    try {
-      const userData = JSON.parse(userJson);
-      return userData.id || userData.userId || null;
-    } catch (e) {
-      console.error('Error parsing user data', e);
-      return null;
-    }
-  };
-  
-  const currentUserId = userId || getUserIdFromStorage();
-  
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isCurrentFalse,setIsCurrentFalse] = useState(false);
+  const [isSucceed, setIsSucceed] = useState(false);
+  const [isLessThanSix, setIsLessThanSix] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const profileData = JSON.parse(localStorage.getItem('userData'));
+const [passwordData, setPasswordData] = useState({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+});
+
+
+  const currentUserId = userId || getUserIdFromStorage().trim();
+  const currentUserRole = role || getUserRoleFromStorage().trim();
+
+
   useEffect(() => {
-    // Verify authentication
     const token = localStorage.getItem('token');
-    if (!token || !currentUserId) {
+    const userJson = localStorage.getItem('user');
+
+    if (!token || !userJson) {
       navigate('/');
-      // Trigger login popup if on home page
-      setTimeout(() => {
-        const homePageInstance = window.homePageInstance;
-        if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
-          homePageInstance.openLoginPopup();
-        }
-      }, 100);
       return;
     }
-    
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      try {
-        // Configure request with auth header
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        };
-        
-        // Fetch user profile
-        const profileResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/profile`, config);
-        setUserProfile(profileResponse.data);
-        setEditFormData(profileResponse.data);
-        
-        // Fetch user lists
-        const listsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/lists`, config);
-        setUserLists(listsResponse.data);
-        
-        // Fetch user reviews
-        const reviewsResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId}/reviews`, config);
-        setUserReviews(reviewsResponse.data);
-        
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching user data:', err);
-        
-        if (err.response && err.response.status === 401) {
-          // Handle unauthorized error - token might be expired
-          localStorage.removeItem('token');
-          navigate('/');
-          return;
-        }
-        
-        // For development, use mock data
-        console.log('Using mock data for profile page development');
-        setUserProfile(MOCK_USER_PROFILE);
-        setEditFormData(MOCK_USER_PROFILE);
-        setUserLists(MOCK_USER_LISTS);
-        setUserReviews(MOCK_USER_REVIEWS);
-        setUseMockData(true);
-        setError(null);
-        setIsLoading(false);
-      }
-    };
-    
-    fetchUserData();
-  }, [currentUserId, navigate]);
-  
-  const handleProfileEdit = (e) => {
-    e.preventDefault();
-    
-    // Save profile changes
-    axios.put(`${API_BASE_URL}/users/${currentUserId}/profile`, editFormData)
-      .then(response => {
-        setUserProfile(editFormData);
-        setIsEditing(false);
-      })
-      .catch(err => {
-        console.error('Error updating profile:', err);
-        // In development, we'll just update the UI anyway
-        setUserProfile(editFormData);
-        setIsEditing(false);
-      });
+
+    const userData = JSON.parse(userJson);
+    const userId = userData.id || userData.userId;
+const getUserData = async () => {
+  try{
+    setUserProfile(profileData);
+    setEditFormData(profileData);
+    setIsLoading(false);
+  } catch (err) {
+    console.error('Profil verisi alınamadı, mock veri kullanılacak:', err);
+    setUserProfile(MOCK_USER_PROFILE);
+    setEditFormData(MOCK_USER_PROFILE);
+    setUseMockData(true);
+    setIsLoading(false);
+    }
   };
-  
+    getUserData();
+  }, [currentUserId, navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData({
-      ...editFormData,
-      [name]: value
-    });
+    setEditFormData({ ...editFormData, [name]: value });
   };
-  
-  const handleCreateList = () => {
-    const listName = prompt('Yeni listeniz için bir isim girin:');
-    if (listName) {
-      axios.post(`${API_BASE_URL}/users/${currentUserId}/lists`, { name: listName })
-        .then(response => {
-          setUserLists([...userLists, response.data]);
-        })
-        .catch(err => {
-          console.error('Error creating list:', err);
-          // Mock response for development
-          const newList = {
-            id: `list${new Date().getTime()}`,
-            name: listName,
-            userId: currentUserId,
-            createdAt: new Date().toISOString(),
-            businesses: [],
-            isFavorites: false
-          };
-          setUserLists([...userLists, newList]);
-        });
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    const updatedPasswordData = { ...passwordData, [name]: value };
+    setPasswordData(updatedPasswordData);
+
+    // check after state is updated
+    if (
+        updatedPasswordData.newPassword.length >= 6 &&
+        updatedPasswordData.confirmPassword.length >= 6
+    ) {
+      setIsLessThanSix(false);
+    } else {
+      setIsLessThanSix(true);
     }
   };
-  
-  // Render Profile Tab Content
-  const renderProfileTab = () => (
-    <div className="profile-tab-content">
-      {isEditing ? (
-        <form onSubmit={handleProfileEdit} className="profile-edit-form">
-          <div className="form-group">
-            <label>Ad</label>
-            <input 
-              type="text" 
-              name="name" 
-              value={editFormData.name || ''} 
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Soyad</label>
-            <input 
-              type="text" 
-              name="surname" 
-              value={editFormData.surname || ''} 
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>E-posta</label>
-            <input 
-              type="email" 
-              name="email" 
-              value={editFormData.email || ''} 
-              onChange={handleInputChange}
-              required
-              disabled
-            />
-          </div>
-          <div className="form-group">
-            <label>Telefon</label>
-            <input 
-              type="text" 
-              name="phone" 
-              value={editFormData.phone || ''} 
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="save-button">Değişiklikleri Kaydet</button>
-            <button 
-              type="button" 
-              className="cancel-button"
-              onClick={() => {
-                setIsEditing(false);
-                setEditFormData(userProfile);
+
+  const handleProfileEdit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateUserData(editFormData, currentUserId, currentUserRole);
+      setUserProfile(editFormData);
+      localStorage.setItem("shouldRunAfterReload", "true");
+      await getUser();
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Güncelleme hatası:', err);
+      setUserProfile(editFormData);
+      setIsEditing(false);
+    }
+  };
+  const checkLength = () => {
+    if (
+        passwordData.newPassword.length < 6 ||
+        passwordData.confirmPassword.length < 6
+    ) {
+      setIsLessThanSix(true);
+    } else {
+      setIsLessThanSix(false);
+    }
+  };
+  const handlePasswordEdit = async (e) => {
+    setIsCurrentFalse(false);
+    try {
+      const response = await checkPassword(userProfile.email, passwordData.currentPassword, currentUserRole);
+      console.log(response.status);
+      setIsCurrentFalse(false);
+    } catch (err) {
+      const message = err?.response?.data?.message || err?.message || '';
+      if (message.includes("Invalid login credentials")) {
+        setIsCurrentFalse(true);
+        return null;
+      }
+    }setIsCurrentFalse(false);
+
+    try{
+      const responseChange = await changePassword(currentUserId, passwordData.confirmPassword);
+      console.log(responseChange.status);
+      setIsSucceed(true);
+      setIsCurrentFalse(false);
+    } catch(err) {
+      setIsSucceed(false);
+      return null;
+    }
+  }
+  const getUser = async () => {
+    if (localStorage.getItem("shouldRunAfterReload") === "true") {
+        localStorage.removeItem("shouldRunAfterReload");
+        setIsLoading(false);
+        window.location.reload();
+    }
+  }
+
+  if (isLoading) return <div className="loading-spinner">Yükleniyor...</div>;
+
+  return (
+    <div className="profile-page full">
+        <div className="profile-info">
+
+          <section className="profile-section">
+            <h2 className="section-title">Hesabım</h2>
+
+            <div className="form-group">
+              <label>Ad</label>
+              <input
+                type="text"
+                name="name"
+                value={editFormData.name || ''}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Soyad</label>
+              <input
+                type="text"
+                name="surname"
+                value={editFormData.surname || ''}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Cep telefonu</label>
+              <input
+                type="text"
+                name="phone_numb"
+                value={editFormData.phone_numb || ''}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+              />
+            </div>
+
+
+
+            <button
+              className="save-button"
+              onClick={(e) => {
+                e.preventDefault();
+                if (isEditing) {
+                  handleProfileEdit(e); // sonra pasif moda döner
+                } else {
+                  setIsEditing(true);   // düzenleme moduna geçer
+                }
               }}
             >
-              İptal
+              {isEditing ? 'Kaydet' : 'Düzenle'}
             </button>
-          </div>
-        </form>
-      ) : (
-        <div className="profile-info">
-          <div className="profile-header">
-            <div className="profile-picture">
-              <img src={userProfile?.profilePicture || 'https://via.placeholder.com/150'} alt="Profile" />
-            </div>
-            <div className="profile-details">
-              <h1>{userProfile?.name} {userProfile?.surname}</h1>
-              <p>{userProfile?.email}</p>
-              <p>{userProfile?.phone}</p>
-              <button 
-                className="edit-profile-button"
-                onClick={() => setIsEditing(true)}
-              >
-                <FaEdit /> Profili Düzenle
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-  
-  // Render Lists Tab Content
-  const renderListsTab = () => (
-    <div className="lists-tab-content">
-      <div className="lists-header">
-        <h2>Listelerim</h2>
-        <button className="create-list-button" onClick={handleCreateList}>
-          Yeni Liste Oluştur
-        </button>
-      </div>
-      
-      <div className="lists-container">
-        {userLists.map(list => (
-          <div key={list.id} className="list-card">
-            <div className="list-header">
-              <h3>
-                {list.isFavorites ? <FaHeart className="favorites-icon" /> : <FaList />}
-                {list.name}
-              </h3>
-              <span className="business-count">{list.businesses ? list.businesses.length : 0} işletme</span>
-            </div>
-            <div className="list-businesses">
-              {list.businesses && list.businesses.length > 0 ? (
-                list.businesses.map(business => (
-                  <div key={business.id} className="business-item" onClick={() => navigate(`/business/${business.id}`)}>
-                    <img src={business.imageUrl} alt={business.name} />
-                    <div className="business-info">
-                      <h4>{business.name}</h4>
-                      <p>{business.category} • {business.priceRange}</p>
-                      <div className="business-rating">
-                        <FaStar /> {business.rating}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="empty-list-message">Bu liste boş. İşletmeleri görmek için ekleyin.</p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-  
-  // Render Reviews Tab Content
-  const renderReviewsTab = () => (
-    <div className="reviews-tab-content">
-      <h2>Değerlendirmelerim</h2>
-      
-      {userReviews.length > 0 ? (
-        <div className="reviews-container">
-          {userReviews.map(review => (
-            <div key={review.id} className="review-card">
-              <div className="review-business">
-                <img src={review.businessImageUrl} alt={review.businessName} />
-                <h3 onClick={() => navigate(`/business/${review.businessId}`)}>
-                  {review.businessName}
-                </h3>
-              </div>
-              <div className="review-content">
-                <div className="review-rating">
-                  {[...Array(5)].map((_, index) => (
-                    <FaStar 
-                      key={index}
-                      className={index < review.rating ? 'star-filled' : 'star-empty'}
-                    />
-                  ))}
-                  <span>{review.rating}</span>
-                </div>
-                <p className="review-comment">{review.comment}</p>
-                <p className="review-date">
-                  {new Date(review.createdAt).toLocaleDateString('tr-TR')}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="empty-reviews-message">Henüz değerlendirme yazmadınız.</p>
-      )}
-    </div>
-  );
-  
-  // Render Settings Tab Content
-  const renderSettingsTab = () => (
-    <div className="settings-tab-content">
-      <h2>Hesap Ayarları</h2>
-      
-      <div className="settings-section">
-        <h3>Gizlilik</h3>
-        <div className="setting-item">
-          <label>
-            <input type="checkbox" defaultChecked={true} />
-            Değerlendirmelerimi herkese açık göster
-          </label>
-        </div>
-        <div className="setting-item">
-          <label>
-            <input type="checkbox" defaultChecked={true} />
-            E-posta bildirimlerine izin ver
-          </label>
-        </div>
-      </div>
-      
-      <div className="settings-section">
-        <h3>Hesap</h3>
-        <button className="change-password-button">
-          Şifremi Değiştir
-        </button>
-        <button className="logout-button" onClick={() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          navigate('/');
-        }}>
-          Çıkış Yap
-        </button>
-      </div>
-    </div>
-  );
-  
-  // Render based on active tab
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'profile':
-        return renderProfileTab();
-      case 'lists':
-        return renderListsTab();
-      case 'reviews':
-        return renderReviewsTab();
-      case 'settings':
-        return renderSettingsTab();
-      default:
-        return renderProfileTab();
-    }
-  };
-  
-  if (isLoading) {
-    return <div className="loading-spinner">Loading...</div>;
-  }
-  
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
-  
-  return (
-    <div className="profile-page">
-      {useMockData && (
-        <div className="dev-notice">
-          <p>Not: API bağlantısı kurulamadığı için geliştirme amaçlı test verileri görüntüleniyor.</p>
-        </div>
-      )}
-      
-      <div className="profile-sidebar">
-        <div 
-          className={`sidebar-item ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          <FaUser /> Profil
-        </div>
-        <div 
-          className={`sidebar-item ${activeTab === 'lists' ? 'active' : ''}`}
-          onClick={() => setActiveTab('lists')}
-        >
-          <FaList /> Listelerim
-        </div>
-        <div 
-          className={`sidebar-item ${activeTab === 'reviews' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reviews')}
-        >
-          <FaStar /> Değerlendirmelerim
-        </div>
-        <div 
-          className={`sidebar-item ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          <FaCog /> Ayarlar
+          </section>
+
+
+
+
+          {/* ✅ E-POSTA */}
+         <section className="profile-section">
+           <h2 className="section-title">E-posta</h2>
+
+           <div className="form-group">
+             <label>E-posta</label>
+             <input
+               type="email"
+               value={userProfile?.email || ''}
+               disabled
+             />
+             <div className="verified-badge">✔ Onaylanmış</div>
+           </div>
+         </section>
+
+
+
+          {/*  ŞİFRE */}
+         <section className="profile-section">
+           <h2 className="section-title">Şifre</h2>
+
+           <div className="form-group">
+             <label>Mevcut Şifre</label>
+             <input
+               type="password"
+               name="currentPassword"
+               value={passwordData.currentPassword}
+               onChange={handlePasswordChange}
+               disabled={!isEditingPassword}
+               placeholder="Mevcut şifrenizi girin"
+             />
+           </div>
+
+           <div className="form-group">
+             <label>Yeni Şifre</label>
+             <input
+               type="password"
+               name="newPassword"
+               value={passwordData.newPassword}
+               onChange={handlePasswordChange}
+               disabled={!isEditingPassword}
+               placeholder="Yeni şifreniz"
+             />
+           </div>
+
+           <div className="form-group">
+             <label>Yeni Şifre (Tekrar)</label>
+             <input
+               type="password"
+               name="confirmPassword"
+               value={passwordData.confirmPassword}
+               onChange={handlePasswordChange}
+               disabled={!isEditingPassword}
+               placeholder="Yeni şifreyi tekrar girin"
+             />
+           </div>
+
+           {/* Uyarı: Şifreler uyuşmazsa */}
+           {isEditingPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+             <p style={{ color: 'red', marginBottom: '10px' }}>
+               Yeni şifreler birbiriyle uyuşmuyor.
+             </p>
+           )}
+           {isCurrentFalse === true && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+                 Mevcut şifreni yanlış girdin.
+               </p>
+           )}
+           {isCurrentFalse === false && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+               </p>
+           )}
+           {isSucceed && passwordData.newPassword === passwordData.confirmPassword && (
+               <div className="verified-badge">
+                  ✔ Şifren değiştirildi.
+               </div>
+           )}
+           {isLessThanSix && isEditingPassword && (
+               <p style={{ color: 'red', marginBottom: '10px' }}>
+                 Şifren 6 haneden az olmamalıdır.
+               </p>
+           )}
+
+           <button
+             className="save-button"
+             onClick={(e) => {
+               e.preventDefault();
+               setIsCurrentFalse(false);
+               setIsSucceed(false);
+               if (isEditingPassword) {
+                 if (passwordData.newPassword === passwordData.confirmPassword) {
+                   handlePasswordEdit();
+                   console.log('Şifre güncellendi:', passwordData);
+                   setIsEditingPassword(false);
+                   setPasswordData({
+                     currentPassword: '',
+                     newPassword: '',
+                     confirmPassword: ''
+                   });
+                 }
+               } else {
+                 setIsEditingPassword(true);
+               }
+             }}
+             disabled={
+                isEditingPassword && (
+                    passwordData.newPassword !== passwordData.confirmPassword ||
+                    !passwordData.newPassword ||
+                     !passwordData.currentPassword ||
+                     isLessThanSix
+               )
+
+             }
+           >
+             {isEditingPassword ? 'Kaydet' : 'Düzenle'}
+           </button>
+         </section>
+
+
+
         </div>
       </div>
-      
-      <div className="profile-content">
-        {renderTabContent()}
-      </div>
-    </div>
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

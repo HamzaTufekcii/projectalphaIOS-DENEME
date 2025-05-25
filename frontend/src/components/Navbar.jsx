@@ -1,25 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {Link, useLocation, useNavigate, useParams} from 'react-router-dom';
 import '../styles/Navbar.css';
-import { FaUser, FaHeart, FaSignOutAlt, FaList } from 'react-icons/fa';
+import SettingsPopup from "./HomePageComponents/SettingsPopup.jsx";
+import { FaUser, FaHeart, FaSignOutAlt, FaList, FaCog, FaStar } from 'react-icons/fa';
+import {getUserRoleFromStorage} from '../services/userService';
+import axios from 'axios';
+import {preload} from "react-dom";
 
 const Navbar = () => {
+  const {profileName, setProfileName} =  useState('');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  
+  const currentUserRole = getUserRoleFromStorage();
   // Check if user is logged in - this runs on component mount and on location changes
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
-      
+      const profileData = JSON.parse(localStorage.getItem('userData'));
       if (token) {
         setIsLoggedIn(true);
         if (userData) {
           try {
             setUser(JSON.parse(userData));
+            handleChangeProfileToName(profileData);
           } catch (e) {
             console.error('Error parsing user data', e);
           }
@@ -31,24 +38,39 @@ const Navbar = () => {
     };
     
     checkAuthStatus();
-  }, [location.pathname]); // Re-check auth status when route changes
-  
+  }, [location]); // Re-check auth status when route changes
+
+  const handleChangeProfileToName = (profileData) => {
+    try{
+      setUser(profileData);
+    } catch (e) {
+      console.log("Test");
+    }
+  }
+
   const handleLoginClick = () => {
     // If we're on HomePage, we want to find the openPopup function from HomePage
     const homePageInstance = window.homePageInstance;
     if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
       homePageInstance.openLoginPopup();
     } else {
-      // Fallback to default login page if we're not on HomePage
-      window.location.href = '/login';
+      navigate('/');
+      setTimeout(() => {
+        const homePageInstance = window.homePageInstance;
+        if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
+          homePageInstance.openLoginPopup();
+        }
+      }, 100);
     }
   };
   
   const handleLogout = () => {
-    // Clear authentication data
+    // Clear auth data
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('ownerData');
     setIsLoggedIn(false);
     setUser(null);
     
@@ -63,18 +85,25 @@ const Navbar = () => {
     <nav className="main-navbar">
       <div className="navbar-container">
         <div className="navbar-brand">
-          <Link to="/" className="brand-link">FeastFine</Link>
+
+          <Link
+              to={currentUserRole === 'owner_user' ? "/owner-dashboard" : "/"}
+              className={`brand-link ${location.pathname === '/' ? 'active' : ''}`}
+          >
+            FeastFine
+          </Link>
         </div>
         
         <div className="navbar-links">
-          <Link 
-            to="/" 
+
+          <Link
+              to={currentUserRole === 'owner_user' ? "/owner-dashboard" : "/"}
             className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
           >
             Ana Sayfa
           </Link>
           
-          {isLoggedIn && (
+          {isLoggedIn && currentUserRole !== 'owner_user' && (
             <>
               <Link 
                 to="/favorites" 
@@ -84,11 +113,15 @@ const Navbar = () => {
               </Link>
               
               <Link 
-                to="/lists" 
+                to="/lists?mode=mine"
                 className={`nav-link ${location.pathname === '/lists' ? 'active' : ''}`}
               >
                 <FaList className="nav-icon" /> Listeler
               </Link>
+              <Link to="/my-reviews" className={`nav-link ${location.pathname === '/my-reviews' ? 'active' : ''}`}>
+                <FaStar /> Değerlendirmelerim
+              </Link>
+
             </>
           )}
         </div>
@@ -96,12 +129,19 @@ const Navbar = () => {
         <div className="navbar-auth">
           {isLoggedIn ? (
             <div className="user-menu">
+              <span
+                className={`nav-link ${isSettingsOpen ? 'active' : ''}`}
+                onClick={() => setIsSettingsOpen(true)}
+              >
+                <FaCog className="nav-icon" /> Ayarlar
+              </span>
+
               <Link 
                 to="/profile" 
-                className={`profile-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
+                className={`profile-link ${location.pathname.startsWith('/user') ? 'active' : ''}`}
               >
                 <FaUser className="nav-icon" /> 
-                {user?.name || 'Profilim'}
+                {user?.name || 'Profilim' || profileName}
               </Link>
               <button className="logout-button" onClick={handleLogout}>
                 <FaSignOutAlt className="nav-icon" /> Çıkış
@@ -114,6 +154,12 @@ const Navbar = () => {
           )}
         </div>
       </div>
+      <SettingsPopup
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onLogout={handleLogout}
+          onChangePassword={() => navigate('/change-password')}
+      />
     </nav>
   );
 };

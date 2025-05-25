@@ -1,0 +1,53 @@
+.inside-list-page {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    color: #333;
+    text-align: center;
+    width: 100%;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.loading-indicator,
+.error-message,
+.empty-container {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    width: 100%;
+}
+
+.empty-message {
+    font-size: 1.1rem;
+}
+.header-row {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.edit-toggle-btn {
+    background: #ff5a5f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}

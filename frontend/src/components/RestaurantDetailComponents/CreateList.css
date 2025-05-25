@@ -1,0 +1,123 @@
+/* src/components/RestaurantDetailComponents/CreateList.css */
+
+/* 1. Tam ekran yarı saydam backdrop ve ortalama */
+.create-list-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* 2. Modal kutusu: artık relative konumlu, konteyner ortalıyor */
+.create-list-modal {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    padding: 32px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+}
+
+/* Başlık */
+.create-list-modal h3 {
+    margin: 0 0 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Input kutusu */
+.create-list-modal input[type="text"] {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px 18px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.create-list-modal input[type="text"]:focus {
+    border-color: #ff7f7f;
+}
+
+/* 3. Gizli / Herkes segment kontrol */
+.create-list-modal .privacy-toggle {
+    display: inline-flex;
+    width: 100%;
+    border: 1px solid #ff5a5f;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+.create-list-modal .privacy-option {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    background: #fff;
+    border: none;
+    font-size: 0.9rem;
+    color: #ff5a5f;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.create-list-modal .privacy-option.active {
+    background: #ff5a5f;
+    color: #fff;
+}
+.create-list-modal .privacy-option:not(.active):hover {
+    background: rgba(255, 90, 95, 0.1);
+}
+
+/* 4. Buton grubu: sağa dayalı */
+.create-list-modal .actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* İptal butonu */
+.create-list-modal .actions button:first-child {
+    background: #f5f5f5;
+    color: #555;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.create-list-modal .actions button:first-child:hover {
+    background: #e0e0e0;
+}
+
+/* Oluştur butonu */
+.create-list-modal .actions button:last-child {
+    background: #ff7f7f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.create-list-modal .actions button:last-child:hover {
+    background: #ff5252;
+}
+
+/* Disabled durumları */
+.create-list-modal .actions button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}

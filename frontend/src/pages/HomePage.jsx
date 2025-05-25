@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { 
   FaStar, 
   FaSearch, 
@@ -16,26 +16,31 @@ import {
   FaLocationArrow
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
-import Button from '../components/Button';
-import CustomInput from '../components/CustomInput';
+
 import LoginPopup from '../components/HomePageComponents/LoginPopup';
 import ConfirmationPopup from '../components/HomePageComponents/ConfirmationPopup';
 import RegisterEmailPopup from '../components/HomePageComponents/RegisterEmailPopup';
 import SetPasswordPopup from '../components/HomePageComponents/SetPasswordPopup';
 import RestaurantList from '../components/HomePageComponents/RestaurantList';
-import { getFeaturedRestaurants, getRestaurants } from '../services/restaurantService';
+
+// Business service methods
+import { useTopRated } from '../hooks/useTopRated';
+import { useQuery } from '@tanstack/react-query';
+import { searchBusinesses } from '../services/businessService';
+import { mapBusiness } from '../utils/businessMapper';
 import { login, saveAuthData } from '../services/authService';
-import axios from "axios";
+import axios from 'axios';
+import { getUserIdFromStorage, getUserRoleFromStorage, fetchUserData } from '../services/userService';
+
 
 const HomePage = () => {
-    // Auth and registration state
+    // Authentication & registration state
     const [showPopup, setShowPopup] = useState(false);
     const [showSecondPopup, setShowSecondPopup] = useState(false);
     const [showThirdPopup, setShowThirdPopup] = useState(false);
     const [showFourthPopup, setShowFourthPopup] = useState(false);
     const [selectedTab, setSelectedTab] = useState('user');
     const [registerEmail, setRegisterEmail] = useState('');
-    const [registerName, setRegisterName] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerPasswordControl, setRegisterPasswordControl] = useState('');
     const [confirmationCode, setConfirmationCode] = useState('');
@@ -44,118 +49,97 @@ const HomePage = () => {
     const [userLoginPassword, setUserLoginPassword] = useState('');
     const [ownerLoginEmail, setOwnerLoginEmail] = useState('');
     const [ownerLoginPassword, setOwnerLoginPassword] = useState('');
-    const [token, setToken] = useState('');
-    const [errors, setErrors] = useState({
-        email: '',
-        password: '',
-        ownerEmail: '',
-        ownerPassword: ''
-    });
-    
-    // Search and filter state
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
+    const [errors, setErrors] = useState({});
+
+    // Search & filter state
     const [selectedFilter, setSelectedFilter] = useState('all');
-    const [activeFilters, setActiveFilters] = useState({});
-    const [isSearching, setIsSearching] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeFilters, setActiveFilters] = useState({ hasActivePromo: false, tag: '' });
+
 
     // Location state
     const [userLocation, setUserLocation] = useState(null);
-    const [locationStatus, setLocationStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
-    
-    // Featured restaurants
-    const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
-    const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
-    
-    // Expose this component instance to be accessed by Navbar
+    const [locationStatus, setLocationStatus] = useState('idle');
+
+    // Featured (top-rated) restaurants
+    const navigate = useNavigate();
+
+    // Make component accessible globally (e.g., for Navbar)
     useEffect(() => {
-        // Bileşeni global olarak erişilebilir yap
-        window.homePageInstance = {
-            openLoginPopup: openPopup
-        };
-        
-        // Cleanup: Component unmount olduğunda referansı temizle
-        return () => {
-            window.homePageInstance = null;
-        };
+        window.homePageInstance = { openLoginPopup: openPopup };
+        return () => { window.homePageInstance = null; };
     }, []);
-    
-    // Get user location when component mounts
+
+    // On mount: get location & load featured
+    // 1. Geolocation
     useEffect(() => {
-        getUserLocation();
-        loadFeaturedRestaurants();
-    }, []);
-    
-    // Load featured restaurants
-    const loadFeaturedRestaurants = async () => {
-        try {
-            setIsLoadingFeatured(true);
-            const data = await getFeaturedRestaurants();
-            setFeaturedRestaurants(data);
-        } catch (err) {
-            console.error('Error loading featured restaurants:', err);
-        } finally {
-            setIsLoadingFeatured(false);
-        }
-    };
-    
-    // Get user's geolocation
-    const getUserLocation = () => {
         if (navigator.geolocation) {
             setLocationStatus('loading');
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    });
+                (pos) => {
+                    setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                     setLocationStatus('success');
                 },
-                (error) => {
-                    console.error('Error getting user location:', error);
+                (err) => {
+                    console.error('Location error:', err);
                     setLocationStatus('error');
                 }
             );
         } else {
             setLocationStatus('error');
-            console.error('Geolocation is not supported by this browser.');
+            console.error('Geolocation not supported');
         }
-    };
-    
-    // Handle search submission
-    const handleSearch = async (e) => {
+    }, []);
+
+    // 2. Use Top Rated (featured)
+    const { data: featuredRestaurants, isLoading: isLoadingFeatured } = useTopRated(5);
+
+    // 3. Search with filters via React Query
+    const {
+        data: searchResults,
+        isLoading: isSearching,
+        refetch: refetchSearch,
+    } = useQuery({
+        queryKey: ['searchBusinesses', searchTerm, activeFilters],
+        queryFn: () => searchBusinesses(searchTerm),
+        enabled: false,
+        select: (results) => {
+            let filtered = results;
+            if (activeFilters.hasActivePromo) {
+                filtered = filtered.filter(r => r.hasActivePromo);
+            }
+            if (activeFilters.tag) {
+                filtered = filtered.filter(r => r.type.toLowerCase().includes(activeFilters.tag));
+            }
+            return filtered.map(mapBusiness);
+        }
+    });
+
+    // 4. Search handler
+    const handleSearch = (e) => {
         e.preventDefault();
-        
         if (!searchTerm.trim()) return;
-        
-        try {
-            setIsSearching(true);
-            const results = await getRestaurants({ 
-                searchTerm: searchTerm,
-                ...activeFilters
-            });
-            setSearchResults(results);
-        } catch (err) {
-            console.error('Error searching restaurants:', err);
-        } finally {
-            setIsSearching(false);
-        }
+        refetchSearch();
     };
-    
-    // Clear search results
+
+    // 5. Render
+    const restaurantsToShow = searchTerm ? searchResults : featuredRestaurants;
+
+    /** Clear search */
     const clearSearch = () => {
         setSearchTerm('');
         setSearchResults([]);
         setActiveFilters({});
+        setSelectedFilter('all');
     };
 
     // Handle filter click
     const handleFilterClick = (filter) => {
         setSelectedFilter(filter);
-        
+
         // Apply the filter based on the selected category
         let newFilters = {};
-        
+
         switch(filter) {
             case 'all':
                 newFilters = {};
@@ -181,12 +165,13 @@ const HomePage = () => {
             default:
                 newFilters = {};
         }
-        
+
         setActiveFilters(newFilters);
     };
 
     // Login and registration functions
     const handleGoBack = () => {
+        resetForm();
         setShowThirdPopup(false);
         setShowPopup(true);
     };
@@ -239,7 +224,7 @@ const HomePage = () => {
         setUserLoginPassword('');
         setOwnerLoginEmail('');
         setOwnerLoginPassword('');
-        setRegisterName('');
+        //setRegisterName('');
         setRegisterEmail('');
         setRegisterPassword('');
         setRegisterPasswordControl('');
@@ -261,6 +246,7 @@ const HomePage = () => {
 
     // Registration flow
     const handleRegister = async () => {
+
         if (!validateEmail(registerEmail)) {
             alert("Lütfen geçerli bir e-posta adresi girin.");
             return;
@@ -282,6 +268,8 @@ const HomePage = () => {
                 if (err.response.data.message.includes("User is not verified")) {
                     setError('E-Postanı henüz doğrulamamışsın. Yeni kod e-postana yollandı.');
                     openSecondPopup();
+                }if(err.response.data.message.includes("Email is already registered")) {
+                    alert('Bu e-posta ile oluşturulmuş bir hesap mevcut.');
                 } else {
                     alert('E-posta gönderilemedi: ' + err.response.data.message);
                 }
@@ -336,12 +324,15 @@ const HomePage = () => {
                 }
             );
 
-            setToken(response.data.token);
             setError('');
             openFourthPopup();
         } catch (err) {
             const msg = err.response?.data?.message || err.message;
-            setError('Doğrulama başarısız: ' + msg);
+            if (err.response.data.message.includes("Verification code is incorrect")) {
+                setError('Onay kodu yanlış girildi. Lütfen tekrar deneyin.');
+            } else {
+                setError('Doğrulama başarısız: ' + msg);
+            }
             console.error(err);
         }
     };
@@ -364,22 +355,49 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(userLoginEmail, userLoginPassword);
+
+            const role = "diner_user";
+            const authData = await login(userLoginEmail, userLoginPassword, role);
             console.log('Kullanıcı girişi başarılı');
-            
+
             // Store tokens using authService
             saveAuthData(authData);
-            
             closePopup();
-            
-            // Force refresh to update UI
-            window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
-            console.error(err);
+
+            localStorage.setItem("shouldRunAfterReload", "true");
+
+            await getUser(role);
+
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ password: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ password: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerLoginPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
+            }
         }
     };
+
+        const getUser = async (role) => {
+            if (localStorage.getItem("shouldRunAfterReload") === "true") {
+                localStorage.removeItem("shouldRunAfterReload");
+
+                await fetchUserData(getUserRoleFromStorage(), getUserIdFromStorage());
+                if(role === 'diner_user'){
+                    window.location.reload();
+                } else if (role === 'owner_user') {
+                    navigate('/owner-dashboard');
+                }
+
+            }
+        }
 
     // Owner login
     const handleOwnerLogin = async () => {
@@ -399,20 +417,34 @@ const HomePage = () => {
         }
         
         try {
-            const authData = await login(ownerLoginEmail, ownerLoginPassword);
-            
+            const role = "owner_user";
+            const authData = await login(ownerLoginEmail, ownerLoginPassword, role);
+
             // Store tokens using authService
             saveAuthData(authData);
-            
+            closePopup();
+
             console.log('İşletme girişi başarılı');
             closePopup();
-            
-            // Force refresh to update UI
-            window.location.reload();
-        } catch(err) {
-            const msg = err.response?.data?.message || err.message;
-            setError('Giriş başarısız: ' + msg);
-            console.error(err);
+
+            localStorage.setItem("shouldRunAfterReload", "true");
+
+            await getUser(role);
+
+        } catch (err) {
+            console.error("Giriş hatası:", err);
+
+            const message = err?.response?.data?.message || err?.message || '';
+
+            if (message.includes("Invalid login credentials")) {
+                setErrors({ ownerPassword: 'Şifrenizi hatalı girdiniz.' });
+            } else if (message.includes("User not found")) {
+                setErrors({ ownerPassword: 'Böyle bir kullanıcı bulunmamaktadır.' });
+            } else if (message.includes("Wrong role")) {
+                setErrors({ ownerPassword: 'Bu kullanıcı girişi içindir. Lütfen işletme girişiyle giriniz.' });
+            } else {
+                alert('Giriş başarısız: ' + message);
+            }
         }
     };
 
@@ -499,6 +531,8 @@ const HomePage = () => {
                 registerEmail={registerEmail}
                 setRegisterEmail={setRegisterEmail}
                 onSendCode={handleRegister}
+                error={error}
+                errors={error}
                 onBack={handleGoBack}
             />
 
@@ -513,15 +547,16 @@ const HomePage = () => {
                 onSubmit={checkEqual}
             />
 
-            <main className="main-content">
-                {/* Hero Section */}
+            <main>
+                {/* Hero Section (tam genişlik) */}
                 <section className="hero-section">
                     <div className="hero-content">
                         <h1 className="hero-title">Mükemmel Yemek Deneyimini Keşfedin</h1>
                         <p className="hero-subtitle">
-                            Gerçek zamanlı promosyonlarla restoranları ve kafeleri bulun, rezervasyon yapın ve yeni favoriler keşfedin.
+                            Gerçek zamanlı promosyonlarla restoranları ve kafeleri bulun, rezervasyon
+                            yapın ve yeni favoriler keşfedin.
                         </p>
-                        
+
                         <form className="hero-search-form" onSubmit={handleSearch}>
                             <div className="search-wrapper">
                                 <FaSearch className="search-icon" />
@@ -534,17 +569,17 @@ const HomePage = () => {
                                 />
                             </div>
                             <button type="submit" className="search-btn">Ara</button>
-                            
+
                             {locationStatus === 'success' && (
                                 <div className="location-badge">
                                     <FaLocationArrow />
                                     <span>Konumunuz kullanılıyor</span>
                                 </div>
                             )}
-                            
+
                             {locationStatus === 'error' && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="location-btn"
                                     onClick={getUserLocation}
                                 >
@@ -556,161 +591,183 @@ const HomePage = () => {
                     <div className="hero-overlay"></div>
                 </section>
 
-                {/* Category Filter Pills */}
-                <div className="category-filter-container">
-                    <div className="category-filters">
-                        <button 
-                            className={`category-pill ${selectedFilter === 'all' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('all')}
-                        >
-                            <FaUtensils className="category-icon" />
-                            <span>Tümü</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'promo' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('promo')}
-                        >
-                            <span className="promo-badge-small">%</span>
-                            <span>Promosyonlar</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'cafe' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('cafe')}
-                        >
-                            <FaCoffee className="category-icon" />
-                            <span>Kafeler</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'pizza' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('pizza')}
-                        >
-                            <FaPizzaSlice className="category-icon" />
-                            <span>Pizza</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'burger' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('burger')}
-                        >
-                            <FaHamburger className="category-icon" />
-                            <span>Burgerler</span>
-                        </button>
-                        
-                        <button 
-                            className={`category-pill ${selectedFilter === 'wine' ? 'active' : ''}`}
-                            onClick={() => handleFilterClick('wine')}
-                        >
-                            <FaWineGlassAlt className="category-icon" />
-                            <span>Şarap & Akşam Yemeği</span>
-                        </button>
-                    </div>
-                </div>
+                {/* — HERO BİTİŞİ — */}
 
-                {/* Search Results (if any) */}
-                {searchResults.length > 0 && (
-                    <section className="search-results-section">
-                        <div className="search-header">
-                            <h2>
-                                Arama Sonuçları
-                                <span className="result-count">{searchResults.length} sonuç</span>
-                            </h2>
-                            <button className="clear-search-btn" onClick={clearSearch}>
-                                Aramayı Temizle
+                <div className="main-content">
+                    {/* Category Filter Pills */}
+                    <div className="category-filter-container">
+                        <div className="category-filters">
+                            <button
+                                className={`category-pill ${selectedFilter === 'all' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('all')}
+                            >
+                                <FaUtensils className="category-icon" />
+                                <span>Tümü</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'promo' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('promo')}
+                            >
+                                <span className="promo-badge-small">%</span>
+                                <span>Promosyonlar</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'cafe' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('cafe')}
+                            >
+                                <FaCoffee className="category-icon" />
+                                <span>Kafeler</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'pizza' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('pizza')}
+                            >
+                                <FaPizzaSlice className="category-icon" />
+                                <span>Pizza</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'burger' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('burger')}
+                            >
+                                <FaHamburger className="category-icon" />
+                                <span>Burgerler</span>
+                            </button>
+
+                            <button
+                                className={`category-pill ${selectedFilter === 'wine' ? 'active' : ''}`}
+                                onClick={() => handleFilterClick('wine')}
+                            >
+                                <FaWineGlassAlt className="category-icon" />
+                                <span>Şarap & Akşam Yemeği</span>
                             </button>
                         </div>
-                        
-                        <div className="restaurant-grid">
-                            {searchResults.map(restaurant => (
-                                <Link 
-                                    to={`/restaurant/${restaurant.id}`} 
-                                    className="restaurant-card" 
-                                    key={restaurant.id}
-                                >
-                                    <div className="card-header">
-                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                                        {restaurant.hasActivePromo && (
-                                            <div className="promo-tag">
-                                                <FaStar className="promo-icon" />
-                                                <span>Promotion</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="card-body">
-                                        <h3 className="restaurant-title">{restaurant.name}</h3>
-                                        <div className="restaurant-details">
-                                            <span className="restaurant-type">{restaurant.type}</span>
-                                            <div className="distance">
-                                                <FaMapMarkerAlt className="location-icon" />
-                                                <span>{restaurant.distance}</span>
-                                            </div>
-                                        </div>
-                                        <div className="rating-container">
-                                            <FaStar className="star-icon" />
-                                            <span className="rating-value">{restaurant.rating}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                    </div>
 
-                {/* Featured Restaurants Section */}
-                {featuredRestaurants.length > 0 && !isLoadingFeatured && (
-                    <section className="featured-section">
-                        <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
-                        <div className="featured-cards">
-                            {featuredRestaurants.map(restaurant => (
-                                <Link 
-                                    to={`/restaurant/${restaurant.id}`} 
-                                    className="restaurant-card featured" 
-                                    key={restaurant.id}
-                                >
-                                    <div className="card-header">
-                                        <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
-                                        {restaurant.hasActivePromo && (
-                                            <div className="promo-tag">
-                                                <FaStar className="promo-icon" />
-                                                <span>{restaurant.promoDetails}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="card-body">
-                                        <div className="card-top">
+                    {/* Search Results (if any) */}
+                    {(searchResults?.length ?? 0) > 0 && (
+                        <section className="search-results-section">
+                            <div className="search-header">
+                                <h2>
+                                    Arama Sonuçları
+                                    <span className="result-count">{searchResults.length} sonuç</span>
+                                </h2>
+                                <button className="clear-search-btn" onClick={clearSearch}>
+                                    Aramayı Temizle
+                                </button>
+                            </div>
+
+                            <div className="restaurant-grid">
+                                {searchResults.map(restaurant => (
+                                    <Link
+                                        to={`/restaurant/${restaurant.id}`}
+                                        className="restaurant-card"
+                                        key={restaurant.id}
+                                    >
+                                        <div className="card-header">
+                                            <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                            {restaurant.hasActivePromo && (
+                                                <div className="promo-tag">
+                                                    <FaStar className="promo-icon" />
+                                                    <span>Promotion</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="card-body">
                                             <h3 className="restaurant-title">{restaurant.name}</h3>
-                                            <span className="price-range">{restaurant.priceRange}</span>
-                                        </div>
-                                        <div className="restaurant-details">
-                                            <span className="restaurant-type">{restaurant.type}</span>
-                                            <div className="distance">
-                                                <FaMapMarkerAlt className="location-icon" />
-                                                <span>{restaurant.distance}</span>
+                                            <div className="restaurant-details">
+                                                <span className="restaurant-type">{restaurant.type}</span>
+                                                <div className="distance">
+                                                    <FaMapMarkerAlt className="location-icon" />
+                                                    <span>{restaurant.distance}</span>
+                                                </div>
+                                            </div>
+                                            <div className="rating-container">
+                                                <FaStar className="star-icon" />
+                                                <span className="rating-value">{restaurant.rating}</span>
                                             </div>
                                         </div>
-                                        <div className="rating-container">
-                                            <FaStar className="star-icon" />
-                                            <span className="rating-value">{restaurant.rating}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
-                {/* All Restaurants Section */}
-                <section className="all-restaurants-section">
-                    <RestaurantList 
-                        title="Restoranları Keşfedin" 
-                        filters={activeFilters} 
-                        useGrid={true} 
-                    />
-                </section>
+                    {/* Featured Restaurants Section */}
+                    {(featuredRestaurants?.length ?? 0) > 0 && !isLoadingFeatured && (
+                        <section className="featured-section">
+                            <h2 className="section-heading">Öne Çıkan Restoranlar</h2>
+                            <div className="featured-cards">
+                                {featuredRestaurants.map(restaurant => (
+                                    <Link
+                                        to={`/restaurant/${restaurant.id}`}
+                                        className="restaurant-card featured"
+                                        key={restaurant.id}
+                                    >
+                                        <div className="card-header">
+                                            <img
+                                                src={restaurant.image}
+                                                alt={restaurant.name}
+                                                className="restaurant-img"
+                                            />
+                                            {restaurant.hasActivePromo && (
+                                                <div className="promo-tag">
+                                                    <FaStar className="promo-icon" />
+                                                    <span>{restaurant.promoDetails}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="card-body">
+                                            <div className="card-top">
+                                                <h3 className="restaurant-title">{restaurant.name}</h3>
+                                                <span className="price-range">{restaurant.priceRange}</span>
+                                            </div>
+                                            <div className="restaurant-details">
+                                                <span className="restaurant-type">{restaurant.type}</span>
+                                                {restaurant.address && (
+                                                    <div className="location">
+                                                        <FaMapMarkerAlt className="location-icon" />
+                                                        <span>
+                        {restaurant.address.city}, {restaurant.address.district}
+                      </span>
+                                                    </div>
+                                                )}
+                                                {restaurant.tags && restaurant.tags.length > 0 && (
+                                                    <div className="tag-list">
+                                                        {restaurant.tags.map(tag => (
+                                                            <span key={tag.id} className="tag">
+                          {tag.name.trim()}
+                        </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="rating-container">
+                                                <FaStar className="star-icon" />
+                                                <span className="rating-value">{restaurant.rating}</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* All Restaurants Section */}
+                    <section className="all-restaurants-section">
+                        <RestaurantList
+                            title="Restoranları Keşfedin"
+                            filters={activeFilters}
+                            useGrid={true}
+                        />
+                    </section>
+                </div>
             </main>
-            
+
+
             <footer className="app-footer">
                 <div className="footer-content">
                     <div className="footer-logo">
@@ -733,7 +790,7 @@ const HomePage = () => {
                             <h3>Hakkında</h3>
                             <ul>
                                 <li><Link to="/about">Hakkımızda</Link></li>
-                                <li><Link to="/contact">İletişim</Link></li>
+                                <li><Link to="https://l24.im/lQY6wE3">İletişim</Link></li>
                                 <li><Link to="/privacy">Gizlilik Politikası</Link></li>
                                 <li><Link to="/terms">Kullanım Koşulları</Link></li>
                             </ul>
@@ -742,10 +799,10 @@ const HomePage = () => {
                         <div className="footer-section">
                             <h3>Restoran Sahipleri</h3>
                             <ul>
-                                <li><Link to="/restaurant-signup">Restoranınızı Ekleyin</Link></li>
+                                <li><Link to="/owner-register">Restoranınızı Ekleyin</Link></li>
                                 <li><Link to="/business-login">İşletme Girişi</Link></li>
                                 <li><Link to="/promotions-guide">Promosyon Oluşturma</Link></li>
-                                <li><Link to="/help">Yardım Merkezi</Link></li>
+                                <li><Link to="https://l24.im/BqYR">Yardım Merkezi</Link></li>
                             </ul>
                         </div>
                     </div>

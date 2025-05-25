@@ -1,0 +1,32 @@
+.list-restaurant-card {
+    position: relative; /* remove-btn pozisyonu için */
+}
+
+/* >> Favori (kalp) butonunu gizlemek için eklendi: */
+.list-restaurant-card .favorite-button {
+    display: none !important;
+}
+
+.remove-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    background: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 1;
+}
+
+.remove-btn:hover {
+    background: #e04a4f;
+}

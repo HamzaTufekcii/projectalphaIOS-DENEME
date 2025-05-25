@@ -1,260 +1,203 @@
+// src/pages/UserListsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import CreateList from '../components/RestaurantDetailComponents/CreateList';
+import EditList from '../components/RestaurantDetailComponents/EditList';
+import ListBox from '../components/ListBox';
+import { Star, Edit, Trash2 } from 'lucide-react';
+import {
+  getUserLists,
+  getPublicLists,
+  deleteList, removeList, updateList,
+} from '../services/listService';
 import '../styles/UserListsPage.css';
-import { FaList, FaStar, FaExclamationCircle, FaShare, FaEllipsisH } from 'react-icons/fa';
+import { getUserIdFromStorage } from '../services/userService';
 
-const API_BASE_URL = 'http://localhost:8080/api';
-
-// Mock data for development - Remove in production
-const MOCK_DATA = [
-  {
-    id: 'list1',
-    name: 'İstanbul\'un En İyi Kahvecileri',
-    userId: 'user1',
-    userName: 'Ahmet Yılmaz',
-    createdAt: new Date().toISOString(),
-    isPublic: true,
-    businesses: [
-      {
-        id: 'bus1',
-        name: 'Kronotrop Coffee Bar',
-        address: 'Cihangir, İstanbul',
-        imageUrl: 'https://via.placeholder.com/300x200',
-        rating: 4.8,
-        category: 'Kahve',
-        priceRange: '$$',
-        businessType: 'cafe'
-      },
-      {
-        id: 'bus2',
-        name: 'Coffee Department',
-        address: 'Nişantaşı, İstanbul',
-        imageUrl: 'https://via.placeholder.com/300x200',
-        rating: 4.6,
-        category: 'Kahve',
-        priceRange: '$$',
-        businessType: 'cafe'
-      }
-    ]
-  },
-  {
-    id: 'list2',
-    name: 'Ankara\'da Keşfedilecek Yerler',
-    userId: 'user2',
-    userName: 'Zeynep Kaya',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    isPublic: true,
-    businesses: [
-      {
-        id: 'bus3',
-        name: 'Hamamönü Restoran',
-        address: 'Hamamönü, Ankara',
-        imageUrl: 'https://via.placeholder.com/300x200',
-        rating: 4.3,
-        category: 'Türk Mutfağı',
-        priceRange: '$$',
-        businessType: 'restaurant'
-      },
-      {
-        id: 'bus4',
-        name: 'Seğmenler Park Kafe',
-        address: 'Çankaya, Ankara',
-        imageUrl: 'https://via.placeholder.com/300x200',
-        rating: 4.0,
-        category: 'Kafe',
-        priceRange: '$',
-        businessType: 'cafe'
-      }
-    ]
-  }
-];
-
-const UserListsPage = () => {
+export default function UserListsPage() {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [userLists, setUserLists] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [useMockData, setUseMockData] = useState(false);
 
+  const [viewMode, setViewMode]     = useState('mine');
+  const [lists, setLists]           = useState([]);
+  const [isLoading, setIsLoading]   = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [confirmListId, setConfirmListId]     = useState(null);
+
+  // Düzenleme için tek obje state’i
+  const [editingList, setEditingList] = useState(null);
+
+
+
+  // URL query’den sekmeyi al
   useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setIsAuthenticated(false);
-        setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
-        setIsLoading(false);
-        return false;
-      }
-      setIsAuthenticated(true);
-      return true;
-    };
+    const mode = new URLSearchParams(location.search).get('mode');
+    if(mode !== 'mine' && mode !== 'discover'){
+      setViewMode('mine');
+    }
+    setViewMode(mode === 'mine' ? 'mine' : 'discover');
+  }, [location.search]);
 
-    const getUserId = () => {
-      const userJson = localStorage.getItem('user');
-      if (!userJson) return null;
-      
-      try {
-        const userData = JSON.parse(userJson);
-        return userData.id || userData.userId || null;
-      } catch (e) {
-        console.error('Error parsing user data', e);
-        return null;
-      }
-    };
-    
-    const fetchUserLists = async () => {
-      setIsLoading(true);
-      
-      if (!checkAuth()) return;
-      
-      const userId = getUserId();
-      if (!userId) {
-        setError('Kullanıcı bilgileri bulunamadı. Lütfen tekrar giriş yapın.');
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        // Configure request with auth header
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        };
-        
-        // Get public lists
-        const response = await axios.get(`${API_BASE_URL}/lists/public`, config);
-        setUserLists(response.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching public lists:', err);
-        
-        if (err.response && err.response.status === 401) {
-          // Handle unauthorized error - token might be expired
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
-          setError('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
-        } else {
-          // For development, use mock data
-          console.log('Using mock data for development');
-          setUserLists(MOCK_DATA);
-          setUseMockData(true);
-          setError(null);
-        }
-        
-        setIsLoading(false);
-      }
-    };
-    
-    fetchUserLists();
-  }, [navigate]);
-  
-  const handleLoginClick = () => {
-    navigate('/');
-    // If we're on HomePage, trigger the login popup
-    setTimeout(() => {
-      const homePageInstance = window.homePageInstance;
-      if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
-        homePageInstance.openLoginPopup();
-      }
-    }, 100);
+
+  // Listeleri çek
+  const fetchLists = async () => {
+    setIsLoading(true);
+    try {
+      const data =
+          viewMode === 'mine'
+              ? await getCustomListsbyUser()
+              : await getPublicLists();
+      setLists(data);
+    } catch (err) {
+      console.error('Liste çekme hatası:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
-  if (isLoading) {
-    return <div className="loading-spinner">Yükleniyor...</div>;
+  useEffect(() => {
+    fetchLists();
+  }, [viewMode]);
+  const getCustomListsbyUser = async () =>{
+    const lists =  await getUserLists(getUserIdFromStorage());
+    return lists.filter(list => list.name.toLowerCase() !== 'favorilerim'); //favorilerimi gösterme bu sayfada
   }
-  
-  if (!isAuthenticated) {
-    return (
-      <div className="not-authenticated">
-        <div className="auth-error">
-          <FaExclamationCircle className="error-icon" />
-          <h2>Giriş Gerekli</h2>
-          <p>{error || 'Bu sayfayı görüntülemek için giriş yapmalısınız.'}</p>
-          <button className="login-btn" onClick={handleLoginClick}>Giriş Yap</button>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error && isAuthenticated) {
-    return <div className="error-message">{error}</div>;
-  }
-  
+
+  // Liste içi sayfaya yönlendir
+  const handleClick = (listId,listName) => {
+    if(viewMode === 'discover')
+      return navigate(`/lists/discover/${listId}`, {
+        state: { listName: listName }
+      });
+    if(viewMode === 'mine')
+      return navigate(`/lists/${listId}`);
+  };
+
+  // Silme onayı aç/kapat
+  const onDeleteClick = listId => setConfirmListId(listId);
+  const handleCancelDelete = () => setConfirmListId(null);
+  const handleConfirmDelete = async () => {
+    try {
+      await removeList(getUserIdFromStorage(),confirmListId);
+      setLists(prev => prev.filter(l => l.id !== confirmListId));
+    } catch (err) {
+      console.error('Liste silme hatası:', err);
+    } finally {
+      setConfirmListId(null);
+    }
+  };
+
   return (
-    <div className="user-lists-page">
-      <div className="user-lists-header">
-        <h1>Keşfedilecek Listeler</h1>
-        {useMockData && (
-          <div className="dev-notice">
-            <p>Not: API bağlantısı kurulamadığı için geliştirme amaçlı test verileri görüntüleniyor.</p>
+      <div className="user-lists-page">
+        {/* Başlık & Sekmeler */}
+        <div className="user-lists-header">
+          <h1>{viewMode === 'discover' ? 'Keşfet' : 'Listelerim'}</h1>
+          <div className="tab-options">
+            <div className={`tab-background ${viewMode}`} />
+            <div
+                className={`tab-option ${viewMode === 'discover' ? 'active' : ''}`}
+                onClick={() => navigate('/lists?mode=discover')}
+            >
+              KEŞFET
+            </div>
+            <div
+                className={`tab-option ${viewMode === 'mine' ? 'active' : ''}`}
+                onClick={() => navigate('/lists?mode=mine')}
+            >
+              LİSTELERİM
+            </div>
           </div>
-        )}
-      </div>
-      
-      {userLists.length > 0 ? (
-        <div className="lists-container">
-          {userLists.map(list => (
-            <div key={list.id} className="list-card">
-              <div className="list-header">
-                <h2>{list.name}</h2>
-                <div className="list-creator">
-                  <span>{list.userName} tarafından oluşturuldu</span>
-                  <span className="list-date">{new Date(list.createdAt).toLocaleDateString('tr-TR')}</span>
-                </div>
-                <div className="list-actions">
-                  <button className="share-button">
-                    <FaShare /> Paylaş
-                  </button>
-                  <button className="more-button">
-                    <FaEllipsisH />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="list-items">
-                {list.businesses.map(business => (
-                  <div 
-                    key={business.id} 
-                    className="business-item"
-                    onClick={() => navigate(`/business/${business.id}`)}
-                  >
-                    <div className="business-image">
-                      <img src={business.imageUrl} alt={business.name} />
+          {viewMode === 'mine' && (
+              <button
+                  className="create-list-btn"
+                  onClick={() => setShowCreateModal(true)}
+              >
+                Liste Oluştur
+              </button>
+          )}
+        </div>
+
+        {/* Liste Kartları */}
+        {isLoading ? (
+            <div className="loading-spinner">Yükleniyor...</div>
+        ) : lists.length > 0 ? (
+            <div className="lists-container">
+              {lists.map(list => (
+                  <div className="list-card" key={list.id}>
+                    <div
+                        className="list-card-content"
+                        onClick={() => handleClick(list.id,list.name)}
+                    >
+                      <ListBox list={list} />
                     </div>
-                    <div className="business-details">
-                      <h3>{business.name}</h3>
-                      <p className="business-category">{business.category}</p>
-                      <p className="business-address">{business.address}</p>
-                      <div className="business-footer">
-                        <span className="business-rating">
-                          <FaStar /> {business.rating}
-                        </span>
-                        <span className="business-price">{business.priceRange}</span>
-                      </div>
-                    </div>
+
+                    {viewMode === 'mine' && (
+                        <div className="list-card-actions">
+                          <button
+                              className="edit-list-btn"
+                              onClick={() => setEditingList(list)}
+                              title="Listeyi düzenle"
+                          >
+                            <Edit size={20} />
+                          </button>
+                          <button
+                              className="delete-list-btn"
+                              onClick={() => onDeleteClick(list.id)}
+                              title="Listeyi sil"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                    )}
                   </div>
-                ))}
+              ))}
+            </div>
+        ) : (
+            <div className="empty-lists">
+              {viewMode === 'discover'
+                  ? 'Keşfet bölümü henüz hazır değil.'
+                  : 'Henüz gösterilecek liste yok.'}
+            </div>
+        )}
+
+        {/* Silme Onay Modal */}
+        {confirmListId && (
+            <div className="confirm-overlay">
+              <div className="confirm-modal">
+                <p>Silmek istediğinize emin misiniz?</p>
+                <div className="confirm-buttons">
+                  <button className="btn confirm" onClick={handleConfirmDelete}>
+                    Evet
+                  </button>
+                  <button className="btn cancel" onClick={handleCancelDelete}>
+                    Hayır
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="empty-lists">
-          <p>Henüz paylaşılan liste bulunmuyor.</p>
-          <button 
-            className="browse-button"
-            onClick={() => navigate('/profile')}
-          >
-            Kendi Listeni Oluştur
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
 
-export default UserListsPage; 
+        {/* Oluştur Modal */}
+        {showCreateModal && (
+            <CreateList
+                onClose={() => {
+                  setShowCreateModal(false);
+                  fetchLists();
+                }}
+            />
+        )}
+
+        {/* Düzenle Modal yerine EditList bileşeni */}
+        {editingList && (
+            <EditList
+                list={editingList}
+                onClose={() => setEditingList(null)}
+                onUpdated={updatedList => {
+                  setLists(prev =>
+                      prev.map(l => (l.id === updatedList.id ? updatedList : l))
+                  );
+                }}
+            />
+
+        )}
+      </div>
+  );
+}
