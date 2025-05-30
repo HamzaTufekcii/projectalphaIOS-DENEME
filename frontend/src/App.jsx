@@ -50,7 +50,7 @@ function App() {
                 {/* İşletme kullanıcılarının paneli */}
                 <Route path="/owner-dashboard" element={<OwnerHomePage />} />
                 <Route path="/restaurant/:id/reviews" element={<OwnerReviewsPage />} />
-                <Route path="/restaurant/:id/promotions" element={<OwnerPromotionsPage />} />
+                <Route path="/restaurant/:businessId/promotions" element={<OwnerPromotionsPage />} />
                 <Route path="/restaurant/:id/reservations" element={<div>Rezervasyonlar</div>} />
                 <Route path="/restaurant/:id/questions" element={<div>Müşteri Soruları</div>} />
 

@@ -8,7 +8,7 @@ import { Star, Edit, Trash2 } from 'lucide-react';
 import {
   getUserLists,
   getPublicLists,
-  deleteList, removeList, updateList,
+  removeList,
 } from '../services/listService';
 import '../styles/UserListsPage.css';
 import { getUserIdFromStorage } from '../services/userService';

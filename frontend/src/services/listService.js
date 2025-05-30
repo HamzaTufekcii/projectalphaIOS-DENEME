@@ -65,14 +65,6 @@ export const getPublicLists = async () => {
 
 }
 
-/** Yeni bir liste oluşturur */
-
-
-/** Var olan bir listeyi siler (mockUserLists’ten kaldırır) */
-export function deleteList(listId) {
-    mockUserLists = mockUserLists.filter(l => l.id !== listId);
-    return Promise.resolve();
-}
 export const toggleFavorite = async (id) => {
 
     const favorites = await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());

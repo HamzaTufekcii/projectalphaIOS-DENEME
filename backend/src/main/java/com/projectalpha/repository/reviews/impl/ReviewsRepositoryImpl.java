@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
 import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.dto.review.newReviewRequest;
-import com.projectalpha.dto.user.diner.DinerUserProfile;
-import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.repository.reviews.ReviewsRepository;
-import com.projectalpha.repository.user.diner.DinerRepository;
-import com.projectalpha.repository.user.diner.impl.DinerRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -18,11 +14,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Repository
 public class ReviewsRepositoryImpl implements ReviewsRepository {
@@ -30,13 +24,9 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
     private final SupabaseConfig supabaseConfig;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final DinerRepository dinerRepository;
 
     @Autowired
-    public ReviewsRepositoryImpl(SupabaseConfig supabaseConfig, DinerRepository dinerRepository) {
-        this.supabaseConfig = supabaseConfig;
-        this.dinerRepository = dinerRepository;
-    }
+    public ReviewsRepositoryImpl(SupabaseConfig supabaseConfig) {this.supabaseConfig = supabaseConfig;}
 
     @Override
     public List<ReviewSupabase> getReviewsByUserId(String userId) {
@@ -166,5 +156,6 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
             throw new RuntimeException("Değerlendirmeler alınırken hata oluştu: " + e.getMessage());
         }
     }
+
 
 }

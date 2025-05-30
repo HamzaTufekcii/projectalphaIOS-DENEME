@@ -1,47 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
-import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 import '../styles/FavoritesPage.css';
 import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
-import {getUserFavoritesIdFromStorage, getUserIdFromStorage, getUserRoleFromStorage} from "../services/userService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
 import {getUserListItems, removeFromList} from "../services/listService.js";
 
-
-const API_BASE_URL = 'http://localhost:8080/api';
-
-// Mock data for development - Remove in production
-const MOCK_DATA = [
-  {
-    id: 'bus1',
-    name: 'Italian Restaurant',
-    address: '123 Main St, City',
-    imageUrl: 'https://via.placeholder.com/300x200',
-    rating: 4.5,
-    category: 'Italian',
-    priceRange: '$$',
-    businessType: 'restaurant'
-  },
-  {
-    id: 'bus2',
-    name: 'City Cafe',
-    address: '456 Oak St, City',
-    imageUrl: 'https://via.placeholder.com/300x200',
-    rating: 4.2,
-    category: 'Cafe',
-    priceRange: '$',
-    businessType: 'cafe'
-  },
-  {
-    id: 'bus3',
-    name: 'Burger Joint',
-    address: '789 Elm St, City',
-    imageUrl: 'https://via.placeholder.com/300x200',
-    rating: 4.0,
-    category: 'Burgers',
-    priceRange: '$$',
-    businessType: 'restaurant'
-  }
-];
 
 const FavoritesPage = () => {
   const navigate = useNavigate();
