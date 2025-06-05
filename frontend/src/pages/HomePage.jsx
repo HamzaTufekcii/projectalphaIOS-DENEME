@@ -1,19 +1,19 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
-import { 
-  FaStar, 
-  FaSearch, 
-  FaFilter, 
-  FaMapMarkerAlt, 
-  FaHeart, 
-  FaRegHeart, 
-  FaPizzaSlice, 
-  FaCoffee, 
-  FaHamburger, 
-  FaWineGlassAlt,
-  FaUtensils,
-  FaLocationArrow
+import {
+    FaStar,
+    FaSearch,
+    FaFilter,
+    FaMapMarkerAlt,
+    FaHeart,
+    FaRegHeart,
+    FaPizzaSlice,
+    FaCoffee,
+    FaHamburger,
+    FaWineGlassAlt,
+    FaUtensils,
+    FaLocationArrow, FaTag, FaRegStar, FaStarHalfAlt
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
@@ -54,7 +54,7 @@ const HomePage = () => {
     // Search & filter state
     const [selectedFilter, setSelectedFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeFilters, setActiveFilters] = useState({ hasActivePromo: false, tag: '' });
+    const [activeFilters, setActiveFilters] = useState({ });
 
 
     // Location state
@@ -114,7 +114,27 @@ const HomePage = () => {
             return filtered.map(mapBusiness);
         }
     });
+    const renderStars = (rating) => {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating - fullStars >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
+        const stars = [];
+
+        for (let i = 0; i < fullStars; i++) {
+            stars.push(<FaStar key={`full-${i}`} className="stars" />);
+        }
+
+        if (hasHalfStar) {
+            stars.push(<FaStarHalfAlt key="half" className="stars" />);
+        }
+
+        for (let i = 0; i < emptyStars; i++) {
+            stars.push(<FaRegStar key={`empty-${i}`} className="stars" />);
+        }
+
+        return stars;
+    };
     // 4. Search handler
     const handleSearch = (e) => {
         e.preventDefault();
@@ -224,7 +244,6 @@ const HomePage = () => {
         setUserLoginPassword('');
         setOwnerLoginEmail('');
         setOwnerLoginPassword('');
-        //setRegisterName('');
         setRegisterEmail('');
         setRegisterPassword('');
         setRegisterPasswordControl('');
@@ -253,7 +272,7 @@ const HomePage = () => {
         }
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 "http://localhost:8080/api/auth/send-verification-code",
                 { email: registerEmail.trim() }
             );
@@ -316,7 +335,7 @@ const HomePage = () => {
         }
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 "http://localhost:8080/api/auth/verify-verification-code",
                 {
                     email: registerEmail.trim(),
@@ -453,7 +472,7 @@ const HomePage = () => {
         try {
             const email = registerEmail.trim();
             const password = registerPassword.trim();
-            const response = await axios.post(
+            await axios.post(
                 "http://localhost:8080/api/auth/update-user",
                 {
                     email: email,
@@ -649,7 +668,7 @@ const HomePage = () => {
 
                     {/* Search Results (if any) */}
                     {(searchResults?.length ?? 0) > 0 && (
-                        <section className="search-results-section">
+                        <section className="featured-section">
                             <div className="search-header">
                                 <h2>
                                     Arama Sonuçları
@@ -668,27 +687,49 @@ const HomePage = () => {
                                         key={restaurant.id}
                                     >
                                         <div className="card-header">
-                                            <img src={restaurant.image} alt={restaurant.name} className="restaurant-img" />
+                                            <img
+                                                src={restaurant.image}
+                                                alt={restaurant.name}
+                                                className="restaurant-img"
+                                            />
                                             {restaurant.hasActivePromo && (
                                                 <div className="promo-tag">
-                                                    <FaStar className="promo-icon" />
-                                                    <span>Promotion</span>
+                                                    <FaTag />{restaurant.promoTitle}
                                                 </div>
                                             )}
                                         </div>
                                         <div className="card-body">
-                                            <h3 className="restaurant-title">{restaurant.name}</h3>
+                                            <div className="card-top">
+                                                <h3 className="restaurant-title">{restaurant.name}</h3>
+                                                <span className="price-range">{restaurant.priceRange}</span>
+                                            </div>
                                             <div className="restaurant-details">
                                                 <span className="restaurant-type">{restaurant.type}</span>
-                                                <div className="distance">
-                                                    <FaMapMarkerAlt className="location-icon" />
-                                                    <span>{restaurant.distance}</span>
-                                                </div>
+                                                {restaurant.address && (
+                                                    <div className="location">
+                                                        <FaMapMarkerAlt className="location-icon" />
+                                                        <span>
+                                                    {restaurant.address.city}, {restaurant.address.district}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {restaurant.tags && restaurant.tags.length > 0 && (
+                                                    <div className="tag-list">
+                                                        {restaurant.tags.map(tag => (
+                                                            <span key={tag.id} className="tag">
+                                                            {tag.name.trim()}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
+                                            if(restaurant.rating != 0) {
                                             <div className="rating-container">
-                                                <FaStar className="star-icon" />
+                                                {renderStars(restaurant.rating)}
                                                 <span className="rating-value">{restaurant.rating}</span>
                                             </div>
+                                            }
+
                                         </div>
                                     </Link>
                                 ))}
@@ -715,8 +756,7 @@ const HomePage = () => {
                                             />
                                             {restaurant.hasActivePromo && (
                                                 <div className="promo-tag">
-                                                    <FaStar className="promo-icon" />
-                                                    <span>{restaurant.promoDetails}</span>
+                                                    <FaTag />{restaurant.promoTitle}
                                                 </div>
                                             )}
                                         </div>
@@ -731,22 +771,22 @@ const HomePage = () => {
                                                     <div className="location">
                                                         <FaMapMarkerAlt className="location-icon" />
                                                         <span>
-                        {restaurant.address.city}, {restaurant.address.district}
-                      </span>
+                                                    {restaurant.address.city}, {restaurant.address.district}
+                                                        </span>
                                                     </div>
                                                 )}
                                                 {restaurant.tags && restaurant.tags.length > 0 && (
                                                     <div className="tag-list">
                                                         {restaurant.tags.map(tag => (
                                                             <span key={tag.id} className="tag">
-                          {tag.name.trim()}
-                        </span>
+                                                            {tag.name.trim()}
+                                                            </span>
                                                         ))}
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="rating-container">
-                                                <FaStar className="star-icon" />
+                                                {renderStars(restaurant.rating)}
                                                 <span className="rating-value">{restaurant.rating}</span>
                                             </div>
                                         </div>

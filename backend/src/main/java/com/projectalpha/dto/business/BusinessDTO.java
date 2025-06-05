@@ -22,6 +22,6 @@ public class BusinessDTO {
 
     private String price_range;
 
-    private int avg_rating;
+    private double avg_rating;
 
 }
