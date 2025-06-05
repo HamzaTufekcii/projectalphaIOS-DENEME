@@ -3,21 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { Star, Tag, Calendar, MessageCircle, LogOut, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import '../styles/OwnerHomePage.css';
-import axios from 'axios';
-import {getUserIdFromStorage, getUserRoleFromStorage, fetchUserData} from '../services/userService';
+import {getUserRoleFromStorage} from '../services/userService';
 import {FaExclamationCircle} from "react-icons/fa";
-import {getBusinessReviews} from "../services/businessService.js";
+import {getBusinessPromotions, getBusinessReviews} from "../services/businessService.js";
 
 export default function RestaurantOwnerDashboard() {
     const navigate = useNavigate();
     const [restaurantId, setRestaurantId] = useState(null);
     const [restaurantname, setRestaurantName] = useState('');
-    const ownerData = JSON.parse(localStorage.getItem('ownerData'));
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
     const [error, setError] = useState(null);
     const [reviews, setReviews] = useState([]);
+    const [promotions, setPromotions] = useState([]);
+    const [activePromotionCount, setActivePromotionCount] = useState(0);
     const businessData = JSON.parse(localStorage.getItem('ownerData'));
     const token = localStorage.getItem('token');
     const role = getUserRoleFromStorage();
@@ -65,9 +65,13 @@ export default function RestaurantOwnerDashboard() {
 
             setRestaurantName(name);
 
-            const response = await getBusinessReviews(businessData.id);
-            setReviews(response);
-            console.log(response);
+            const reviews = await getBusinessReviews(businessData.id);
+            setReviews(reviews);
+            const promotions = await getBusinessPromotions(businessData.id);
+            setPromotions(promotions);
+            const activeCount = promotions.filter(promo => promo.active).length;
+            setActivePromotionCount(activeCount);
+
         } catch (err) {
             console.error('İşletme adı alınamadı:', err);
             setRestaurantName('İşletme Adı');
@@ -75,11 +79,11 @@ export default function RestaurantOwnerDashboard() {
     };
 
     fetchRestaurant();
-}, [businessData]);
+}, [businessData?.id, businessData?.name]);
 
     const stats = {
         reviews: reviews.length > 0 ? { count: reviews.length, new: 1 } : { count: 0, new: 0 },
-        promotions: { count: 3, active: 2 },
+        promotions: promotions.length > 0 ? { count: promotions.length, active: activePromotionCount } : { count: 0, active: 0 },
         reservations: { count: 18, today: 6 },
         questions: { count: 8, unanswered: 3 }
     };
@@ -138,7 +142,7 @@ export default function RestaurantOwnerDashboard() {
                         title="Promotions"
                         icon={<Tag size={24} className="icon-blue" />}
                         count={stats.promotions.count}
-                        subtitle={`${stats.promotions.active} aktif promosyon`}
+                        subtitle={stats.promotions.count !== 0 ? `${stats.promotions.active} aktif promosyon` : 'Oluşturulmuş hiçbir promosyon yok.'}
                         cardClass="card-blue"
                         restaurantId={restaurantId}
                     />

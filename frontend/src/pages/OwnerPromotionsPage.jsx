@@ -1,10 +1,13 @@
 // OwnerPromotionsPage.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Edit, Trash, Save, Plus, X } from 'lucide-react';
 import Button from '../components/Button'; // Özel buton bileşeni
 import '../styles/OwnerPromotionsPage.css';
+import {useParams} from "react-router-dom";
+import {deletePromotion, getBusinessPromotions, newPromotion, updatePromotion} from "../services/businessService.js";
 
 export default function OwnerPromotionsPage() {
+    const {businessId} = useParams();
     const [promotions, setPromotions] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState(null);
@@ -13,72 +16,67 @@ export default function OwnerPromotionsPage() {
         description: '',
         startDate: '',
         endDate: '',
-        isActive: true
+        amount: '',
+        isActive: true,
     });
 
     // Gerçek veriler backend'den çekilecek
     useEffect(() => {
+        const fetchPromotions = async () => {
+            const fetchedPromotions = await getBusinessPromotions(businessId);
 
-        /*
-        useEffect(() => {
-            const fetchPromotions = async () => {
-                try {
-                    const response = await axios.get('http://localhost:8080/api/promotions/owner');
-                    setPromotions(response.data);
-                } catch (error) {
-                    console.error('Kampanyalar yüklenemedi:', error);
-                }
-            };
-            fetchPromotions();
-        }, []);
-        */
+            const mappedPromotions = fetchedPromotions.map(promo => ({
+                id: promo.id,
+                title: promo.title,
+                description: promo.description,
+                startDate: promo.startat,  // burası startat oldu
+                endDate: promo.endat,      // burası endat oldu
+                amount: promo.amount,
+                isActive: promo.active,    // burası active oldu
+            }));
 
-        setPromotions([
-            {
-                id: 1,
-                title: "Happy Hour",
-                description: "16.00 - 19.00 arası tüm içeceklerde %15 indirim",
-                startDate: "2025-05-01",
-                endDate: "2025-06-30",
-                isActive: true
-            },
-            {
-                id: 2,
-                title: "Aile Menüsü",
-                description: "4 kişilik menü alanlara tatlı ikramı",
-                startDate: "2025-05-10",
-                endDate: "2025-05-31",
-                isActive: true
-            },
-            {
-                id: 3,
-                title: "Öğle Yemeği Fırsatı",
-                description: "Hafta içi tüm öğle menülerinde %20 indirim",
-                startDate: "2025-04-01",
-                endDate: "2025-04-30",
-                isActive: false
-            }
-        ]);
-    }, []);
+            setPromotions(mappedPromotions);
+        };
+        fetchPromotions();
+    }, [businessId]);
 
-    const formatDateForInput = (date) => date.toISOString().split('T')[0];
+    // Tarihi local datetime-local formatına çevir (backend UTC tarih gönderir)
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        const utcDate = new Date(dateString);  // UTC olarak alıyor zaten
+        // UTC zamanı local time’a çevir
+        const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())}T${pad(localDate.getHours())}:${pad(localDate.getMinutes())}`;
+    };
+    const formatLocalDateForInput = (date) => {
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
 
     //yeni kampanya ekleme
+    // Yeni kampanya ekleme modali açılırken
     const openAddModal = () => {
         setFormData({
             title: '',
             description: '',
-            startDate: formatDateForInput(new Date()),
-            endDate: formatDateForInput(new Date(new Date().setMonth(new Date().getMonth() + 1))),
+            startDate: formatLocalDateForInput(new Date()),
+            endDate: formatLocalDateForInput(new Date(new Date().setMonth(new Date().getMonth() + 1))),
             isActive: true
         });
         setEditingPromotion(null);
         setShowAddModal(true);
     };
 
-    //mevcut promosyon düzenleme
+// Backend'den gelen promosyonları inputa uyarlarken
     const openEditModal = (promotion) => {
-        setFormData({ ...promotion });
+        setFormData({
+            ...promotion,
+            startDate: formatDateForInput(new Date(promotion.startDate)),
+            endDate: formatDateForInput(new Date(promotion.endDate)),
+        });
         setEditingPromotion(promotion.id);
         setShowAddModal(true);
     };
@@ -89,30 +87,26 @@ export default function OwnerPromotionsPage() {
         setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
     };
 
-    const handleSubmit = () => {
-        if (editingPromotion) {
-            // PUT isteği gönderilerek güncelleme yapılabilir
-            setPromotions(promotions.map(p => p.id === editingPromotion ? { ...p, ...formData } : p));
-        } else {
-            // POST isteği ile yeni kampanya backend'e gönderilmeli
-            const newPromotion = { id: Date.now(), ...formData };
-            setPromotions([...promotions, newPromotion]);
-        }
-        setShowAddModal(false);
-        setEditingPromotion(null);
-    };
-    /*
     const handleSubmit = async () => {
         try {
             if (editingPromotion) {
-                //Kampanyayı güncelle
-                await axios.put(`http://localhost:8080/api/promotions/${editingPromotion}`, formData);
+                // Kampanyayı güncelle
+                await updatePromotion(businessId, editingPromotion, formData);
                 const updatedList = promotions.map(p => p.id === editingPromotion ? { ...p, ...formData } : p);
                 setPromotions(updatedList);
             } else {
-                //Yeni kampanya ekle
-                const response = await axios.post('http://localhost:8080/api/promotions', formData);
-                setPromotions([...promotions, response.data]);
+                // Yeni kampanya ekle
+                const response = await newPromotion(businessId, formData);
+
+                // response'daki tarihleri input formatına çeviriyoruz
+                const newPromo = {
+                    ...response,
+                    startDate: response.startat,
+                    endDate: response.endat,
+                    isActive: response.active ?? response.isActive,
+                };
+
+                setPromotions([...promotions, newPromo]);
             }
             setShowAddModal(false);
             setEditingPromotion(null);
@@ -120,45 +114,32 @@ export default function OwnerPromotionsPage() {
             console.error('Kampanya kaydedilemedi:', error);
         }
     };
-    */
 
-
-
-    const handleDeletePromotion = (id) => {
+    const handleDeletePromotion = async (id) => {
         const confirmDelete = window.confirm("Bu kampanyayı silmek istediğinize emin misiniz?");
         if (confirmDelete) {
-
+            await deletePromotion(businessId, id);
             setPromotions(promotions.filter(p => p.id !== id));
         }
     };
 
-    const handleToggleActive = (id) => {
-
-        setPromotions(promotions.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
-    };
-    /*
-    const handleDeletePromotion = async (id) => {
-        const confirmDelete = window.confirm("Bu kampanyayı silmek istediğinize emin misiniz?");
-        if (confirmDelete) {
-            try {
-                await axios.delete(`http://localhost:8080/api/promotions/${id}`);
-                setPromotions(promotions.filter(p => p.id !== id));
-            } catch (error) {
-                console.error('Silme işlemi başarısız:', error);
-            }
-        }
-    };
-
-
     const handleToggleActive = async (id) => {
         try {
-            await axios.patch(`http://localhost:8080/api/promotions/${id}/toggle`);
+            const promotion = promotions.find(p => p.id === id);
+            if (!promotion) return;
+
+            const updatedData = {
+                ...promotion,
+                isActive: !promotion.isActive
+            };
+
+            await updatePromotion(businessId, id, updatedData);
+
             setPromotions(promotions.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
         } catch (error) {
             console.error('Aktiflik değiştirilemedi:', error);
         }
     };
-    */
 
     return (
         <div className="promotions-container">
@@ -230,14 +211,39 @@ export default function OwnerPromotionsPage() {
                             <textarea name="description" value={formData.description} onChange={handleInputChange} className="form-control" />
 
                             <label>Başlangıç</label>
-                            <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} className="form-control" />
+                            <input type="datetime-local" name="startDate" value={formData.startDate} onChange={handleInputChange} className="form-control" />
 
                             <label>Bitiş</label>
-                            <input type="date" name="endDate" value={formData.endDate} onChange={handleInputChange} className="form-control" />
+                            <input type="datetime-local" name="endDate" value={formData.endDate} onChange={handleInputChange} className="form-control" />
+
+
+                            <div className="percent-input-wrapper">
+                                <label>İndirim Miktarı</label>
+                                <div className="percent-input-container">
+                                    <span className="percent-sign">%</span>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        step={5}
+                                        name="amount"
+                                        value={formData.amount}
+                                        onChange={handleInputChange}
+                                        className="percent-input"
+                                    />
+                                </div>
+                            </div>
 
                             <div className="checkbox-group">
-                                <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} className="checkbox" />
-                                <label>Aktif Olsun</label>
+                                <input
+                                    type="checkbox"
+                                    name="isActive"
+                                    checked={formData.isActive}
+                                    onChange={handleInputChange}
+                                    className="checkbox"
+                                    id="isActive"
+                                />
+                                <label htmlFor="isActive">Aktif Olsun</label>
                             </div>
 
                             <div className="modal-actions">
@@ -252,9 +258,11 @@ export default function OwnerPromotionsPage() {
     );
 }
 
+
 // Tekil kampanya kartı bileşeni
 function PromotionCard({ promotion, onEdit, onDelete, onToggleActive }) {
     const now = new Date();
+
     const start = new Date(promotion.startDate);
     const end = new Date(promotion.endDate);
 
@@ -274,6 +282,9 @@ function PromotionCard({ promotion, onEdit, onDelete, onToggleActive }) {
                     <span className={`status-badge status-${status.toLowerCase()}`}>{status}</span>
                 </div>
                 <p className="card-description">{promotion.description}</p>
+                {promotion.amount && (
+                    <p className="card-discount">İndirim: %{promotion.amount}</p>
+                )}
                 <div className="card-dates">
                     <Calendar size={14} /> {start.toLocaleDateString()} - {end.toLocaleDateString()}
                 </div>

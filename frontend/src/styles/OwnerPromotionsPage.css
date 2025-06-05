@@ -281,3 +281,36 @@ input[type="date"] {
 .icon {
     margin-right: 0.25rem;
 }
+
+.percent-input-container {
+    position: relative;
+    width: fit-content;
+}
+
+.percent-sign {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #555;
+    pointer-events: none;
+    font-size: 0.875rem;
+}
+
+.percent-input {
+    padding-left: 30px; /* % işareti için boşluk */
+    height: 36px;
+    font-size: 0.875rem;
+    display: block;
+    width: 100%;
+    color: #1f2937;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+.card-discount {
+    font-weight: bold;
+    color: #4caf50; /* yeşilimsi indirim vurgusu */
+    margin-top: 4px;
+}

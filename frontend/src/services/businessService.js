@@ -73,6 +73,42 @@ export const getByTag = async (tagId) => {
 
 export const getBusinessReviews = async (businessId) => {
     const res = await axios.get(`${API_BASE}/reviews/${businessId}`);
-    console.log(res.data.data);
+    return res.data.data;
+};
+
+export const getBusinessPromotions = async (businessId) => {
+    const res = await axios.get(`${API_BASE}/promotions/${businessId}`);
+    return res.data.data;
+}
+
+export const newPromotion = async (businessId, newPromotionData) => {
+    const promotion = {
+        title: newPromotionData.title,
+        description: newPromotionData.description,
+        startDate: newPromotionData.startDate,
+        endDate: newPromotionData.endDate,
+        amount: newPromotionData.amount,
+        isActive: newPromotionData.isActive
+    };
+
+    const res = await axios.post(`${API_BASE}/promotions/${businessId}`, promotion);
+    return res.data.data;
+}
+export const updatePromotion = async (businessId, promotionId, newPromotionData) => {
+    const promotion = {
+        title: newPromotionData.title,
+        description: newPromotionData.description,
+        startDate: newPromotionData.startDate,
+        endDate: newPromotionData.endDate,
+        amount: newPromotionData.amount,
+        isActive: newPromotionData.isActive
+    };
+
+    const res = await axios.patch(`${API_BASE}/promotions/${businessId}/${promotionId}`, promotion);
+    return res.data.data;
+}
+
+export const deletePromotion = async (businessId, promotionId) => {
+    const res = await axios.delete(`${API_BASE}/promotions/${businessId}/${promotionId}`);
     return res.data.data;
 }
