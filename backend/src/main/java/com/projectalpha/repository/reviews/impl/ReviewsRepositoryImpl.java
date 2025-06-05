@@ -157,5 +157,31 @@ public class ReviewsRepositoryImpl implements ReviewsRepository {
         }
     }
 
+    public void updateRating(String businessId, double rating){
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/business?id=eq." + businessId;
+            HttpRequest reviewRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString("{\"avg_rating\": " + rating + "}"))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(reviewRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 201 && response.statusCode() != 200) {
+                throw new RuntimeException("Review kaydedilemedi: " + response.body());
+            }
+
+            System.out.println("Review başarıyla oluşturuldu: " + response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Değerlendirme oluşturulurken hata oluştu: " + e.getMessage());
+        }
+    }
+
 
 }

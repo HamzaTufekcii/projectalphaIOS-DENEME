@@ -30,6 +30,20 @@ public class ReviewServiceImpl implements ReviewService {
     public void saveReview(String userId, String businessId, newReviewRequest review){
         String dinerId = dinerRepository.findDinerId(userId);
         repo.saveReview(dinerId,businessId,review);
+        double avg_rating = 0.0;
+        List<ReviewSupabase> reviews = repo.getReviewsByBusinessId(businessId);
+
+        for (ReviewSupabase all : reviews) {
+            avg_rating += (double) all.getRating() / reviews.size();
+        }
+
+        avg_rating = customRound(avg_rating);
+        repo.updateRating(businessId,avg_rating);
+
+    }private double customRound(double value) {
+        int base = (int) Math.floor(value);
+        int firstDecimalDigit = (int) ((value - base) * 10);
+        return base + firstDecimalDigit / 10.0;
     }
 
     public void deleteReview(String reviewId){repo.deleteReview(reviewId);}

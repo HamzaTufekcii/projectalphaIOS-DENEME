@@ -9,14 +9,15 @@ import '../styles/RestaurantDetailPage.css';
 import RestaurantReviews from '../components/RestaurantDetailComponents/RestaurantReviews.jsx';
 import {getUserListItems, getUserLists} from "../services/listService.js";
 import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
+import {useQueryClient} from "@tanstack/react-query";
+import {useBusinessById} from "../hooks/useBusinessById.js";
 
 const RestaurantDetailPage = () => {
   const { id } = useParams();
-  const [restaurant, setRestaurant] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: restaurant, isLoading: loading, error } = useBusinessById(id);
   const [showListModal, setShowListModal] = useState(false);
   const [isSaved, setIsSaved] = useState();
-  const [error, setError] = useState(null);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -60,7 +61,7 @@ const RestaurantDetailPage = () => {
           .catch(err => {
             console.error('Error fetching lists or items:', err);
           })
-          .finally(() => mounted && setLoading(false));
+          .finally(() => mounted);
 
       return () => {
         mounted = false;
@@ -68,23 +69,6 @@ const RestaurantDetailPage = () => {
     }
 
   }, [id, isLogin]);
-
-  useEffect(() => {
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await getBusinessById(id);
-        setRestaurant(data);
-      } catch (err) {
-        console.error('Error fetching restaurant details:', err);
-        setError('Restoran detayları yüklenirken bir hata oluştu.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
 
 
   const nextImage = () => setCurrentImageIndex(prev => prev === photoUrls.length - 1 ? 0 : prev + 1);

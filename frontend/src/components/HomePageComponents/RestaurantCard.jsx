@@ -12,7 +12,7 @@ import './RestaurantCard.css';
  */
 const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = false }) => {
 
-  const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails , address , tags } = restaurant;
+  const { id, name, type, distance, rating, image, priceRange, hasActivePromo, promoDetails , promoTitle, promoAmount, address , tags } = restaurant;
   const isFavorite = favorites.some(fav => fav.id === id);
   const token = localStorage.getItem('token');
   const isLogin = token !== null;
@@ -38,7 +38,7 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
           
           {hasActivePromo && (
             <div className="promo-badge">
-              <FaTag /> Promo
+              <FaTag /> {promoTitle}
             </div>
           )}
         </div>
@@ -68,9 +68,9 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
               </div>
           )}
           
-          <div className="rating">
-            <FaStar className="star" />
-            <span>{rating}</span>
+          <div className="rating-container">
+            <FaStar className="star-icon" />
+            <span className="rating-span">{rating}</span>
           </div>
           
           {hasActivePromo && promoDetails && (

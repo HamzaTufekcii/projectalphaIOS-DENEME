@@ -7,6 +7,10 @@ import com.projectalpha.dto.business.businessTag.BusinessTagDTO;
 import com.projectalpha.dto.business.photo.PhotoDTO;
 import com.projectalpha.dto.business.restaurantsettings.RestaurantSettingsDTO;
 import com.projectalpha.dto.business.tag.TagDTO;
+import com.projectalpha.dto.promotions.PromotionsSupabase;
+import com.projectalpha.dto.review.ReviewSupabase;
+import com.projectalpha.repository.promotions.PromotionsRepository;
+import com.projectalpha.repository.reviews.ReviewsRepository;
 import com.projectalpha.service.business.BusinessService;
 import com.projectalpha.repository.business.BusinessRepository;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,8 @@ public class BusinessServiceImpl implements BusinessService {
     private final com.projectalpha.repository.tag.TagRepository tagRepo;
     private final com.projectalpha.repository.photo.PhotoRepository photoRepo;
     private final com.projectalpha.repository.restaurantSettings.RestaurantSettingsRepository settingsRepo;
+    private final PromotionsRepository promotionsRepo;
+    private final ReviewsRepository reviewsRepo;
 
     public BusinessServiceImpl(
             BusinessRepository businessRepo,
@@ -34,7 +40,9 @@ public class BusinessServiceImpl implements BusinessService {
             com.projectalpha.repository.businessTag.BusinessTagRepository businessTagRepo,
             com.projectalpha.repository.tag.TagRepository tagRepo,
             com.projectalpha.repository.photo.PhotoRepository photoRepo,
-            com.projectalpha.repository.restaurantSettings.RestaurantSettingsRepository settingsRepo
+            com.projectalpha.repository.restaurantSettings.RestaurantSettingsRepository settingsRepo,
+            PromotionsRepository promotionsRepo,
+            ReviewsRepository reviewsRepo
     ) {
         this.businessRepo = businessRepo;
         this.addressRepo = addressRepo;
@@ -42,6 +50,8 @@ public class BusinessServiceImpl implements BusinessService {
         this.tagRepo = tagRepo;
         this.photoRepo = photoRepo;
         this.settingsRepo = settingsRepo;
+        this.promotionsRepo = promotionsRepo;
+        this.reviewsRepo = reviewsRepo;
     }
 
     @Override
@@ -58,6 +68,7 @@ public class BusinessServiceImpl implements BusinessService {
         BusinessDTO basic = businessRepo.findById(id);
         if (basic == null) throw new NoSuchElementException("Business not found: " + id);
 
+
         // Fetch related entities
         AddressDTO address = addressRepo.findByBusinessId(id);
         List<BusinessTagDTO> bTags = businessTagRepo.findByBusinessId(id);
@@ -66,6 +77,8 @@ public class BusinessServiceImpl implements BusinessService {
                 .collect(Collectors.toList());
         List<PhotoDTO> photos = photoRepo.findByBusinessId(id);
         RestaurantSettingsDTO settings = settingsRepo.findByBusinessId(id);
+        List<PromotionsSupabase> promotions = promotionsRepo.getPromotions(id);
+
 
         // Map and convert types appropriately
         return BusinessDetailDTO.builder()
@@ -78,6 +91,7 @@ public class BusinessServiceImpl implements BusinessService {
                 .address(address)
                 .tags(tags)
                 .photos(photos)
+                .promotions(promotions)
                 .settings(settings)
                 .build();
     }
