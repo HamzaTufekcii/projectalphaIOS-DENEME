@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaTag } from 'react-icons/fa';
+import {FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaTag, FaStarHalfAlt, FaRegStar} from 'react-icons/fa';
 import './RestaurantCard.css';
 
 /**
@@ -16,6 +16,27 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
   const isFavorite = favorites.some(fav => fav.id === id);
   const token = localStorage.getItem('token');
   const isLogin = token !== null;
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    const stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={`full-${i}`} className="stars" />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<FaStarHalfAlt key="half" className="stars" />);
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FaRegStar key={`empty-${i}`} className="stars" />);
+    }
+
+    return stars;
+  };
 
 
   return (
@@ -69,8 +90,8 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
           )}
           
           <div className="rating-container">
-            <FaStar className="star-icon" />
-            <span className="rating-span">{rating}</span>
+            {renderStars(rating)}
+            <span className="rating-value">{rating}</span>
           </div>
           
           {hasActivePromo && promoDetails && (
