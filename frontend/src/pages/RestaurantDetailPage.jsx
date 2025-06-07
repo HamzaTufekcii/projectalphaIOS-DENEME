@@ -1,15 +1,25 @@
 // src/pages/RestaurantDetailPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaStar, FaMapMarkerAlt, FaArrowLeft, FaChevronLeft, FaChevronRight, FaTag, FaTimes, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
-import { getBusinessById } from '../services/businessService';
+import {
+  FaStar,
+  FaMapMarkerAlt,
+  FaArrowLeft,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTag,
+  FaTimes,
+  FaSearchPlus,
+  FaSearchMinus,
+  FaStarHalfAlt, FaRegStar
+} from 'react-icons/fa';
+
 import SaveButton from '../components/RestaurantDetailComponents/SaveButton';
 import SaveToLists from '../components/RestaurantDetailComponents/SaveToLists';
 import '../styles/RestaurantDetailPage.css';
 import RestaurantReviews from '../components/RestaurantDetailComponents/RestaurantReviews.jsx';
 import {getUserListItems, getUserLists} from "../services/listService.js";
-import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
-import {useQueryClient} from "@tanstack/react-query";
+import {getUserIdFromStorage} from "../services/userService.js";
 import {useBusinessById} from "../hooks/useBusinessById.js";
 
 const RestaurantDetailPage = () => {
@@ -194,6 +204,28 @@ const RestaurantDetailPage = () => {
     openPhotoModal(currentImageIndex);
   };
 
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    const stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={`full-${i}`} className="stars" />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<FaStarHalfAlt key="half" className="stars" />);
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FaRegStar key={`empty-${i}`} className="stars" />);
+    }
+
+    return stars;
+  };
+
   // Improved wheel event handler with better sensitivity
   const handleWheel = (e) => {
     if (!showModal) return;
@@ -295,20 +327,26 @@ const RestaurantDetailPage = () => {
               )}
             </div>
           </div>
+          {restaurant.avgRating != 0.0 ? (
+              <div className="rating-row">
+                <div className="stars">
+                  {renderStars(restaurant.avgRating)}
+                </div>
+                <button className="rating-button" onClick={handleRatingClick}>
+                  <span className="rating-value">{restaurant.avgRating}</span>
+                </button>
+              </div>
+          ):(
+              <div className="rating-row">
+                <div className="no-reviews">
+                  Henüz bir değerlendirme yok.
+                </div>
+                <button className="rating-button" onClick={handleRatingClick}>
+                  <span className="no-reviews">İlk değerlendirmeyi siz yapın!</span>
+                </button>
+              </div>
+          )}
 
-          <div className="rating-row">
-            <div className="stars">
-              {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar
-                      key={star}
-                      className={star <= Math.floor(restaurant.avgRating) ? "star filled" : "star"}
-                  />
-              ))}
-            </div>
-            <button className="rating-button" onClick={handleRatingClick}>
-              <span className="rating-value">{restaurant.avgRating}</span>
-            </button>
-          </div>
 
           <div className="restaurant-meta">
             <div className="restaurant-type">

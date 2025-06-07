@@ -141,10 +141,6 @@ const HomePage = () => {
         if (!searchTerm.trim()) return;
         refetchSearch();
     };
-
-    // 5. Render
-    const restaurantsToShow = searchTerm ? searchResults : featuredRestaurants;
-
     /** Clear search */
     const clearSearch = () => {
         setSearchTerm('');
@@ -723,13 +719,16 @@ const HomePage = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            if(restaurant.rating != 0) {
-                                            <div className="rating-container">
-                                                {renderStars(restaurant.rating)}
-                                                <span className="rating-value">{restaurant.rating}</span>
-                                            </div>
-                                            }
-
+                                            {restaurant.rating != 0.0 ? (
+                                                <div className="rating-container">
+                                                    {renderStars(restaurant.rating)}
+                                                    <span className="rating-value">{restaurant.rating}</span>
+                                                </div>
+                                            ):(
+                                                <div className="rating-container">
+                                                    <span className="rating-value">Henüz bir değerlendirme yok</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </Link>
                                 ))}
