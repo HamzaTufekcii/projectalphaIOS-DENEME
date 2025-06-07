@@ -1,15 +1,24 @@
 // src/components/RestaurantDetailComponents/SaveToLists.jsx
-import React, { useState, useEffect } from 'react';
-import { getUserListItems, toggleFavorite, getUserLists, addToList, removeFromList } from '../../services/listService';
+import React, {useState, useEffect} from 'react';
+import {
+    getUserListItems,
+    getUserLists,
+    addToList,
+    removeFromList,
+    addToFavorites
+} from '../../services/listService';
 import './SaveToLists.css';
-import { getUserIdFromStorage } from "../../services/userService.js";
+import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../../services/userService.js";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 
 export default function SaveToLists({ itemId, onClose }) {
     const [lists, setLists]       = useState([]);
     const [selected, setSelected] = useState(new Set());
     const [loading, setLoading]   = useState(true);
     const [saving, setSaving]     = useState(false);
-
+    const currentUserId = getUserIdFromStorage();
+    const queryClient = useQueryClient();
+    const currentUserFavoriteID = getUserFavoritesIdFromStorage();
     useEffect(() => {
         let mounted = true;
         const userId = getUserIdFromStorage();
@@ -68,8 +77,8 @@ export default function SaveToLists({ itemId, onClose }) {
                 const initiallyIn = l.containsItem;
 
                 if (l.name === 'Favorilerim') {
-                    if (!initiallyIn && nowIn) await toggleFavorite(itemId);
-                    else if (initiallyIn && !nowIn) await toggleFavorite(itemId);
+                    if (!initiallyIn && nowIn) await favMutation.mutateAsync({ action: 'add', bizId: itemId });
+                    else if (initiallyIn && !nowIn) await favMutation.mutateAsync({ action: 'remove', bizId: itemId });
                 } else {
                     if (!initiallyIn && nowIn) await addToList(getUserIdFromStorage(), listId, itemId);
                     else if (initiallyIn && !nowIn) await removeFromList(getUserIdFromStorage(), listId, itemId);
@@ -82,6 +91,26 @@ export default function SaveToLists({ itemId, onClose }) {
             setSaving(false);
         }
     };
+    const {
+        data: favorites = [],
+    } = useQuery({
+        queryKey: ['favorites', currentUserId, currentUserFavoriteID],
+        queryFn: () => getUserListItems(currentUserId, currentUserFavoriteID),
+        staleTime: 2 * 60 * 1000,
+    });
+    // Mutation for adding/removing favorites
+    const favMutation = useMutation({
+        mutationFn: ({ action, bizId }) =>
+            action === 'remove'
+                ? removeFromList(currentUserId, currentUserFavoriteID, bizId)
+                : addToFavorites(currentUserId, bizId),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['favorites', currentUserId, currentUserFavoriteID]);
+        },
+        onError: (err) => {
+            console.error('Favori ekleme/çıkarma hatası:', err);
+        }
+    });
 
     if (loading) {
         return (
