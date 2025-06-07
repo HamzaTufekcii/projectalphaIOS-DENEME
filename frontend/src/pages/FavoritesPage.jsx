@@ -1,211 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import {useNavigate} from 'react-router-dom';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/FavoritesPage.css';
-import { FaHeart, FaStar, FaExclamationCircle } from 'react-icons/fa';
-import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "../services/userService.js";
-import {getUserListItems, removeFromList} from "../services/listService.js";
-
+import { FaExclamationCircle } from 'react-icons/fa';
+import { getUserFavoritesIdFromStorage, getUserIdFromStorage } from "../services/userService.js";
+import { addToFavorites, getUserListItems, removeFromList } from "../services/listService.js";
+import FavoritesRestaurantCard from '../components/FavoritesPageComponents/FavoritesRestaurantCard';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getAllBusinesses } from "../services/businessService.js";
+import { mapBusiness } from "../utils/businessMapper.js";
 
 const FavoritesPage = () => {
   const navigate = useNavigate();
-  const [favorites, setFavorites] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
+  const currentUserFavoriteID = getUserFavoritesIdFromStorage();
+  const currentUserId = getUserIdFromStorage();
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [useMockData, setUseMockData] = useState(false);
+  const [error, setError] = useState(null);
 
-  const currentUserFavoriteID = getUserFavoritesIdFromStorage();
-  const currentUserId =  getUserIdFromStorage();
-
+  // Authentication check
   useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setIsAuthenticated(false);
-        setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
-        setIsLoading(false);
-        return false;
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setIsAuthenticated(false);
+      setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
+    } else {
       setIsAuthenticated(true);
-      return true;
-    };
+      setError(null);
+    }
+  }, []);
 
-    
-    const fetchFavorites = async () => {
-      setIsLoading(true);
-      
-      if (!checkAuth()) return;
+  // Get all businesses (maybe for mapping or showing more info)
+  const { data: rawList = [], isLoading: isBusinessesLoading, error: businessesError } = useQuery({
+    queryKey: ['allBusinesses'],
+    queryFn: getAllBusinesses,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    enabled: isAuthenticated
+  });
 
-      
-      try {
-        // Get all user lists
-        const response = await getUserListItems(currentUserId, currentUserFavoriteID);
-        // Find the favorites list
-        const favList = response;
-        
-        if (favList) {
-          setFavorites(favList || []);
-        } else {
-          setFavorites([]);
-        }
-        
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching favorites:', err);
-        
-        if (err.response && err.response.status === 401) {
-          // Handle unauthorized error - token might be expired
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
-          setError('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
-        } else {
-          // For development, use mock data
-          console.log('Using mock data for development');
-          setFavorites(MOCK_DATA);
-          setUseMockData(true);
-          setError(null);
-        }
-        
-        setIsLoading(false);
-      }
-    };
-    
-    fetchFavorites();
-  }, [navigate]);
-  
-  const handleRemoveFavorite = async (businessId) => {
-    // If using mock data, just remove from UI
-    if (useMockData) {
-      setFavorites(prevFavorites => 
-        prevFavorites.filter(business => business.id !== businessId)
-      );
-      return;
+  // Get user's favorite list items
+  const {
+    data: favorites = [],
+    isLoading: isFavoritesLoading,
+    error: favoritesError
+  } = useQuery({
+    queryKey: ['favorites', currentUserId, currentUserFavoriteID],
+    queryFn: () => getUserListItems(currentUserId, currentUserFavoriteID),
+    enabled: isAuthenticated && !!currentUserId && !!currentUserFavoriteID,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Mutation for adding/removing favorites
+  const favMutation = useMutation({
+    mutationFn: ({ action, bizId }) =>
+        action === 'remove'
+            ? removeFromList(currentUserId, currentUserFavoriteID, bizId)
+            : addToFavorites(currentUserId, bizId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['favorites', currentUserId, currentUserFavoriteID]);
+    },
+    onError: (err) => {
+      console.error('Favori ekleme/çıkarma hatası:', err);
+      setError('Favori işlemi sırasında bir hata oluştu.');
     }
-    
-    const userJson = localStorage.getItem('user');
-    if (!userJson) {
-      navigate('/');
-      return;
-    }
-    
-    let userId;
-    try {
-      const userData = JSON.parse(userJson);
-      userId = userData.id || userData.userId;
-      if (!userId) throw new Error('User ID not found');
-    } catch (e) {
-      console.error('Error parsing user data', e);
-      return;
-    }
-    
-    try {
-      if (favorites) {
-        await removeFromList(currentUserId, currentUserFavoriteID,businessId);
-        // Update state to remove the business
-        setFavorites(prevFavorites => 
-          prevFavorites.filter(business => business.id !== businessId)
-        );
-      }
-    } catch (err) {
-      console.error('Error removing from favorites:', err);
-      
-      // Remove it from UI anyway
-      setFavorites(prevFavorites => 
-        prevFavorites.filter(business => business.id !== businessId)
-      );
-    }
-  };
-  
-  const handleLoginClick = () => {
-    navigate('/');
-    // If we're on HomePage, trigger the login popup
-    setTimeout(() => {
-      const homePageInstance = window.homePageInstance;
-      if (homePageInstance && typeof homePageInstance.openLoginPopup === 'function') {
-        homePageInstance.openLoginPopup();
-      }
-    }, 100);
-  };
-  
-  if (isLoading) {
+  });
+
+  // Toggle favorite handler
+  const toggleFavorite = useCallback((id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isFav = favorites.some(f => f.id === id);
+    favMutation.mutate({ action: isFav ? 'remove' : 'add', bizId: id });
+  }, [favorites, favMutation]);
+
+  // Map businesses if needed (örneğin farklı yapıya çevirmek için)
+  const mappedBusinesses = useMemo(() => {
+    return rawList.map(mapBusiness);
+  }, [rawList]);
+
+  // Combine favorite IDs with full business info (optional, depends on UI)
+  // Eğer favorites sadece ID'ler içeriyorsa, burda full bilgileri eşlemek iyi olur
+  const favoriteRestaurants = useMemo(() => {
+    if (!favorites || favorites.length === 0) return [];
+    return favorites.map(fav => {
+      const fullBiz = mappedBusinesses.find(b => b.id === fav.id);
+      return fullBiz || fav; // Eğer eşleşmezse orijinal favoriyi dön
+    });
+  }, [favorites, mappedBusinesses]);
+
+  if (isBusinessesLoading || isFavoritesLoading) {
     return <div className="loading-spinner">Loading...</div>;
   }
-  
+
   if (!isAuthenticated) {
     return (
-      <div className="not-authenticated">
-        <div className="auth-error">
-          <FaExclamationCircle className="error-icon" />
-          <h2>Giriş Gerekli</h2>
-          <p>{error || 'Bu sayfayı görüntülemek için giriş yapmalısınız.'}</p>
-          <button className="login-btn" onClick={handleLoginClick}>Giriş Yap</button>
+        <div className="not-authenticated">
+          <div className="auth-error">
+            <FaExclamationCircle className="error-icon" />
+            <h2>Giriş Gerekli</h2>
+            <p>{error || 'Bu sayfayı görüntülemek için giriş yapmalısınız.'}</p>
+            <button className="login-btn" onClick={() => {
+              navigate('/');
+              setTimeout(() => {
+                const homePageInstance = window.homePageInstance;
+                if (homePageInstance?.openLoginPopup) homePageInstance.openLoginPopup();
+              }, 100);
+            }}>Giriş Yap</button>
+          </div>
         </div>
-      </div>
     );
   }
-  
-  if (error && isAuthenticated) {
+
+  if (error) {
     return <div className="error-message">{error}</div>;
   }
-  
+
   return (
-    <div className="favorites-page">
-      <div className="favorites-header">
-        <h1>Favorilerim</h1>
-        {useMockData && (
-          <div className="dev-notice">
-            <p>Not: API bağlantısı kurulamadığı için geliştirme amaçlı test verileri görüntüleniyor.</p>
-          </div>
+      <div className="favorites-page">
+        <div className="favorites-header">
+          <h1>Favorilerim</h1>
+          {useMockData && (
+              <div className="dev-notice">
+                <p>Not: API bağlantısı kurulamadığı için geliştirme amaçlı test verileri görüntüleniyor.</p>
+              </div>
+          )}
+        </div>
+
+        {favoriteRestaurants.length > 0 ? (
+            <div className="favorites-grid">
+              {favoriteRestaurants.map(business => (
+                  <FavoritesRestaurantCard
+                      key={business.id}
+                      restaurant={business}
+                      favorites={favorites}
+                      toggleFavorite={toggleFavorite}
+                  />
+              ))}
+            </div>
+        ) : (
+            <div className="empty-favorites">
+              <p>Henüz favori işletmeniz bulunmuyor.</p>
+              <button
+                  className="browse-button"
+                  onClick={() => navigate('/')}
+              >
+                İşletmelere Göz At
+              </button>
+            </div>
         )}
       </div>
-      
-      {favorites.length > 0 ? (
-        <div className="favorites-grid">
-          {favorites.map(business => (
-            <div key={business.id} className="business-card">
-              <div className="business-image">
-                <img src={business.imageUrl} alt={business.name} />
-                <button 
-                  className="remove-favorite-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveFavorite(business.id);
-                  }}
-                >
-                  <FaHeart />
-                </button>
-              </div>
-              <div 
-                className="business-info"
-                onClick={() => navigate(`/business/${business.id}`)}
-              >
-                <h3>{business.name}</h3>
-                <p className="business-category">{business.category}</p>
-                <p className="business-address">{business.address}</p>
-                <div className="business-details">
-                  <span className="business-rating">
-                    <FaStar /> {business.rating}
-                  </span>
-                  <span className="business-price">{business.priceRange}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="empty-favorites">
-          <p>Henüz favori işletmeniz bulunmuyor.</p>
-          <button 
-            className="browse-button"
-            onClick={() => navigate('/')}
-          >
-            İşletmelere Göz At
-          </button>
-        </div>
-      )}
-    </div>
   );
 };
 
-export default FavoritesPage; 
+export default FavoritesPage;
