@@ -21,5 +21,9 @@ public interface ListsController {
     ResponseEntity<?> removeDinerList(@PathVariable String userId, @PathVariable String listId);
 
     ResponseEntity<?> removeListItem(@PathVariable String userId, @PathVariable String listId,@PathVariable String listItemId);
+
+    ResponseEntity<?> likeList(@PathVariable String userId, @PathVariable String listId);
+
+    ResponseEntity<?> unLikeList(@PathVariable String userId, @PathVariable String listId);
 }
 

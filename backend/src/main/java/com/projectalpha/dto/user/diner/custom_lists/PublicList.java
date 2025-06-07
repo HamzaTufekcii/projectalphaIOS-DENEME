@@ -1,7 +1,10 @@
 package com.projectalpha.dto.user.diner.custom_lists;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.projectalpha.dto.user.diner.custom_lists.likes.customListLike;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class PublicList {
@@ -15,4 +18,5 @@ public class PublicList {
     @JsonProperty("is_public")
     private boolean isPublic;
     private String diner_name;
+    private List<customListLike> likes;
 }

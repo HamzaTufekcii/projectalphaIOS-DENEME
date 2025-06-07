@@ -207,7 +207,43 @@ public class UserController implements DinerController, OwnerController, ListsCo
                     .body("Liste'den item silinemedi: " + e.getMessage());
         }
     }
-
+    @Override
+    @PostMapping("/diner_user/{userId}/like/{listId}")
+    public ResponseEntity<?> likeList(@PathVariable String userId,
+                                      @PathVariable String listId) {
+        try {
+            String likeId = userService.likeList(userId,listId);
+            return ResponseEntity.ok(Map.of("likeId", likeId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Hata: " + e.getMessage());
+        }
+    }
+    @Override
+    @DeleteMapping("/diner_user/{userId}/unlike/{listId}")
+    public ResponseEntity<?> unLikeList(@PathVariable String userId,
+                                        @PathVariable String listId) {
+        try{
+            userService.unLikeList(userId, listId);
+            return ResponseEntity.ok("Liste başarıyla beğenilenlerden çıkarıldı.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Hata: " + e.getMessage());
+        }
+    }
+    @GetMapping("/diner_user/{userId}/likes")
+    public ResponseEntity<?> getLikedLists(@PathVariable String userId) {
+        try {
+            return ResponseEntity.ok(
+                    new GenericResponse<>(true, "Likes", userService.getDinerLikes(userId))
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new GenericResponse<>(false, "Invalid user ID"));
+        }
+    }
 
     // -------- Owner Implementation --------
     @Override
@@ -225,4 +261,5 @@ public class UserController implements DinerController, OwnerController, ListsCo
         userService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
     }
+
 }
