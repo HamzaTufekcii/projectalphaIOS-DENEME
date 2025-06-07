@@ -12,7 +12,7 @@ export default function RestaurantOwnerDashboard() {
     const [restaurantId, setRestaurantId] = useState(null);
     const [restaurantname, setRestaurantName] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [setIsLoading] = useState(true);
+    const [isLoading,setIsLoading] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
     const [error, setError] = useState(null);
     const [reviews, setReviews] = useState([]);
