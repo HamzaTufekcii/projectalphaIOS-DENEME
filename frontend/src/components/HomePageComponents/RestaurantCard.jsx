@@ -88,12 +88,16 @@ const RestaurantCard = ({ restaurant, favorites, toggleFavorite, featured = fals
                 ))}
               </div>
           )}
-          
-          <div className="rating-container">
-            {renderStars(rating)}
-            <span className="rating-value">{rating}</span>
-          </div>
-          
+          {restaurant.rating != 0.0 ? (
+              <div className="rating-container">
+                {renderStars(rating)}
+                <span className="rating-value">{rating}</span>
+              </div>
+          ):(
+              <div className="rating-container">
+                <span className="rating-value">Henüz bir değerlendirme yok.</span>
+              </div>
+          )}
           {hasActivePromo && promoDetails && (
             <div className="promo-details">
               <FaTag className="promo-icon" />
