@@ -36,6 +36,12 @@ export default function RestaurantOwnerDashboard() {
     const handleReturnHomeClick = () => {
         navigate('/');
     }
+    const calculateNew = () => {
+        if(reviews.length > 0){
+            return reviews.filter(reviews => !reviews.review.isViewed).length;
+        }
+        return 0;
+    }
 
     useEffect(() => {
         if (!token) {
@@ -82,7 +88,7 @@ export default function RestaurantOwnerDashboard() {
 }, [businessData?.id, businessData?.name]);
 
     const stats = {
-        reviews: reviews.length > 0 ? { count: reviews.length, new: 1 } : { count: 0, new: 0 },
+        reviews: reviews.length > 0 ? { count: reviews.length, new: calculateNew(reviews) } : { count: 0, new: 0 },
         promotions: promotions.length > 0 ? { count: promotions.length, active: activePromotionCount } : { count: 0, active: 0 },
         reservations: { count: 18, today: 6 },
         questions: { count: 8, unanswered: 3 }

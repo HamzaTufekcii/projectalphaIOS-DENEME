@@ -64,5 +64,6 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return responseInfo;
     }
+    public void setViewed(String reviewId){repo.setViewed(reviewId);}
 }
 

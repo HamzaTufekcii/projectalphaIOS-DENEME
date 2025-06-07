@@ -29,5 +29,8 @@ public class ReviewSupabase {
     @JsonProperty("review_photo_url")
     private String reviewPhotoUrl;
 
+    @JsonProperty("isViewed")
+    private boolean isViewed;
+
     private BusinessSummaryDTO business;
 }
