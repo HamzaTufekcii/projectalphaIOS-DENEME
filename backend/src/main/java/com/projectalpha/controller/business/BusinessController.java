@@ -106,6 +106,11 @@ public class BusinessController {
                     .body(new GenericResponse<>(false, "Error fetching reviews: " + e.getMessage()));
         }
     }
+    @PatchMapping("/reviews/{reviewId}")
+    public ResponseEntity<?> setViewed(@PathVariable String reviewId) {
+        reviewSvc.setViewed(reviewId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/promotions/{businessId}")
     public ResponseEntity<GenericResponse<List<PromotionsSupabase>>> getPromotions(@PathVariable String businessId) {

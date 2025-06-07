@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import '../styles/OwnerReviewsPage.css';
 import Button from "../components/Button.jsx";
-import {getBusinessReviews} from "../services/businessService.js";
+import {getBusinessReviews, setViewed} from "../services/businessService.js";
 import {useParams} from "react-router-dom";
 
 export default function ReviewsPage() {
@@ -63,6 +63,7 @@ export default function ReviewsPage() {
 
     // gösterilecek yorumu ayarlar
     const handleViewReview = (id) => {
+        setViewed(id);
         setViewingReview(reviews.find(review => review.id === id));
     };
 

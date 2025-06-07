@@ -19,5 +19,6 @@ public interface ReviewsRepository {
     List<ReviewSupabase> getReviewsByBusinessId(String businessId);
 
     void updateRating(String businessId, double rating);
+    void setViewed(String reviewId);
 
 }

@@ -18,4 +18,5 @@ public interface ReviewService {
 
     List<ReviewInfoForBusiness> getReviewsForBusiness(String businessId);
 
+    void setViewed(String reviewId);
 }

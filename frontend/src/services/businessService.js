@@ -112,3 +112,8 @@ export const deletePromotion = async (businessId, promotionId) => {
     const res = await axios.delete(`${API_BASE}/promotions/${businessId}/${promotionId}`);
     return res.data.data;
 }
+
+export const setViewed = async (reviewId) => {
+    const res = await axios.patch(`${API_BASE}/reviews/${reviewId}`);
+    return res.data.data;
+}
