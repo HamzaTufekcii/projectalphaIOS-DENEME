@@ -11,7 +11,8 @@ import {
   removeList,
 } from '../services/listService';
 import '../styles/UserListsPage.css';
-import { getUserIdFromStorage } from '../services/userService';
+import {addLike, getUserIdFromStorage, getUserLikes, removeLike} from '../services/userService';
+import {FaHeart, FaRegHeart} from "react-icons/fa";
 
 export default function UserListsPage() {
   const location = useLocation();
@@ -22,6 +23,12 @@ export default function UserListsPage() {
   const [isLoading, setIsLoading]   = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [confirmListId, setConfirmListId]     = useState(null);
+  const [likes, setLikes] = useState([]);
+  const likedListIds = new Set(likes.map(like => like.list_id)); // Set daha hızlı karşılaştırma için
+  const listsWithLikeInfo = lists.map(list => ({
+    ...list,
+    isLiked: likedListIds.has(list.id)
+  }));
 
   // Düzenleme için tek obje state’i
   const [editingList, setEditingList] = useState(null);
@@ -46,16 +53,52 @@ export default function UserListsPage() {
           viewMode === 'mine'
               ? await getCustomListsbyUser()
               : await getPublicLists();
-      setLists(data);
+
+      // Sadece discover modunda like_counter'a göre sırala
+      const sortedLists =
+          viewMode === 'discover'
+              ? data.sort((a, b) => (b.like_counter || 0) - (a.like_counter || 0))
+              : data;
+
+      setLists(sortedLists);
+      setIsLoading(false);
     } catch (err) {
       console.error('Liste çekme hatası:', err);
-    } finally {
       setIsLoading(false);
     }
   };
+  const toggleLike = async (listId) => {
+    const userId = getUserIdFromStorage();
+    try {
+      if (likedListIds.has(listId)) {
+        await removeLike(userId, listId);
+      } else {
+        await addLike(userId, listId);
+      }
+      await fetchLikes();     // Kullanıcının like'ları
+      const data = await getPublicLists();
+      const sortedLists = data.sort((a, b) => (b.like_counter || 0) - (a.like_counter || 0));
+
+      setLists(sortedLists);
+    } catch (err) {
+      console.error('Beğeni işlemi hatası:', err);
+    }
+  };
+  const fetchLikes = async () => {
+    try{
+      const data = await getUserLikes(getUserIdFromStorage());
+      setLikes(data);
+    }catch (err) {
+      console.error('Like çekme hatası:', err);
+    }
+  }
   useEffect(() => {
     fetchLists();
   }, [viewMode]);
+  useEffect(() => {
+    fetchLikes();
+  }, [viewMode]);
+
   const getCustomListsbyUser = async () =>{
     const lists =  await getUserLists(getUserIdFromStorage());
     return lists.filter(list => list.name.toLowerCase() !== 'favorilerim'); //favorilerimi gösterme bu sayfada
@@ -120,7 +163,7 @@ export default function UserListsPage() {
             <div className="loading-spinner">Yükleniyor...</div>
         ) : lists.length > 0 ? (
             <div className="lists-container">
-              {lists.map(list => (
+              {listsWithLikeInfo.map(list => (
                   <div className="list-card" key={list.id}>
                     <div
                         className="list-card-content"
@@ -144,6 +187,22 @@ export default function UserListsPage() {
                               title="Listeyi sil"
                           >
                             <Trash2 size={20} />
+                          </button>
+                        </div>
+                    )}
+                    {viewMode === 'discover' && (
+                        <div className="list-card-actions">
+                          <button
+                              className="like-button"
+                              onClick={() => toggleLike(list.id)}
+                              title={list.isLiked ? "Beğeni kaldır" : "Listeyi beğen"}
+                              style={{display:'inline-block'}}
+                          >
+                            {list.isLiked ?
+                                <FaHeart className="like filled" />
+                                : <FaRegHeart className="like" />
+                            }
+                            <span>{list.like_counter}</span>
                           </button>
                         </div>
                     )}

@@ -10,6 +10,7 @@ import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.PublicList;
+import com.projectalpha.dto.user.diner.custom_lists.likes.customListLike;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.repository.user.diner.DinerRepository;
 import com.projectalpha.config.thirdparty.SupabaseConfig;
@@ -40,7 +41,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
     }
 
     @Override
-    public Optional<DinerLoginResponse> findDinerByID(String userId, List<CustomList> dinerLists) {
+    public Optional<DinerLoginResponse> findDinerByID(String userId, List<CustomList> dinerLists, List<customListLike> dinerLikes) {
         try {
             String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/user_profile_diner?select=" + "&user_id=eq." + userId;
             HttpRequest request = HttpRequest.newBuilder()
@@ -58,7 +59,7 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
 
                     DinerUserProfile dinerProfileResponse = mapper.treeToValue(root.get(0), DinerUserProfile.class);
 
-                    DinerLoginResponse profile = new DinerLoginResponse(dinerProfileResponse, dinerLists);
+                    DinerLoginResponse profile = new DinerLoginResponse(dinerProfileResponse, dinerLists, dinerLikes);
 
                     return Optional.of(profile);
 
@@ -68,6 +69,39 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+    @Override
+    public List<customListLike> findDinerLikes(String userId) {
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_like?select=*&user_id=eq." + userId;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Likeler alınamadı: " + response.body());
+            }
+            JsonNode root = mapper.readTree(response.body());
+            List<customListLike> listOfLikes = new ArrayList<>();
+
+            if (root.isArray()) {
+                for (JsonNode node : root) {
+                    customListLike dinerLike = mapper.treeToValue(node, customListLike.class);
+                    listOfLikes.add(dinerLike);
+                }
+            }
+
+            return listOfLikes;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Likeler alınırken hata oluştu: " + e.getMessage());
+        }
     }
     public String findDinerId(String userId) {
         try {
@@ -548,6 +582,119 @@ public class DinerRepositoryImpl implements DinerRepository, ListRepository {
             throw new RuntimeException("Silme işlemi sırasında hata oluştu: " + e.getMessage());
         }
 
+    }
+    @Override
+    public String likeList(String userId, String listId){
+        try {
+            String dinerId = findDinerId(userId);
+
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_like";
+
+            Map<String, Object> data = Map.of(
+                    "user_id", dinerId,
+                    "list_id", listId
+            );
+            String requestBody = mapper.writeValueAsString(data);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation") //  burada minimal yerine temsil (id dahil) istiyoruz
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Liste öğesi eklenemedi: " + response.body());
+            }
+            // Supabase response'u bir array döner: [{ "id": "...", ... }]
+            JsonNode root = mapper.readTree(response.body());
+
+            return root.get(0).get("id").asText();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("createListItem hatası: " + e.getMessage());
+        }
+    }
+    @Override
+    public void unLikeList(String userId,String listId){
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list_like?list_id=eq." + listId + "&user_id=eq." + findDinerId(userId);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("DELETE", HttpRequest.BodyPublishers.noBody())
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=minimal")
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("Like silinemedi: " + response.body());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Silme işlemi sırasında hata oluştu: " + e.getMessage());
+        }
+    }
+    @Override
+    public void updateLikeCount(String listId, int likeCount){
+        try {
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?id=eq." + listId;
+            HttpRequest listRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString("{\"like_counter\": " + likeCount + "}"))
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .header("Prefer", "return=representation")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(listRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 201 && response.statusCode() != 200) {
+                throw new RuntimeException("Like kaydedilemedi: " + response.body());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Like oluşturulurken hata oluştu: " + e.getMessage());
+        }
+    }
+    @Override
+    public int getLikeCount(String listId){
+        try {
+            String column = "like_counter";
+            String url = supabaseConfig.getSupabaseUrl() + "/rest/v1/custom_list?select=" + column + "&id=eq." + listId;
+            HttpRequest listRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("GET", HttpRequest.BodyPublishers.noBody())
+                    .header("apikey", supabaseConfig.getSupabaseApiKey())
+                    .header("Authorization", "Bearer " + supabaseConfig.getSupabaseSecretKey())
+                    .header("Content-Type", "application/json")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(listRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = mapper.readTree(response.body());
+                if (root.isArray() && root.size() > 0) {
+
+                    CustomList customListResponse = mapper.treeToValue(root.get(0), CustomList.class);
+                    int likeCount = customListResponse.getLikeCount();
+                    return likeCount;
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
 }

@@ -65,17 +65,7 @@ export const getUserFavoritesIdFromStorage = () => {
     }
     return null;
 }
-export const getUserFavorites = async () =>{
-    const favoriId = getUserFavoritesIdFromStorage();
-    if(favoriId){
-        try{
-            const response = await axios.get(`${API_URL}/${favoriId}/favorites`);
-            return response.data;
-        } catch (error) {
-            throw error.response?.data || error.message || 'Error getting favorites';
-        }
-    }
-}
+
 export const getUserRoleFromStorage = () => {
     const userJson = localStorage.getItem('user');
     if (!userJson) return null;
@@ -85,6 +75,30 @@ export const getUserRoleFromStorage = () => {
     }catch(e){
         console.error('There is no role in token.', e);
         return null;
+    }
+}
+export const getUserLikes = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/diner_user/${id}/likes`);
+        return response.data.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Error getting likes';
+    }
+}
+export const addLike = async (id, listId) =>{
+    try {
+        const response = await axios.post(`${API_URL}/diner_user/${id}/like/${listId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message || 'Error posting like';
+    }
+}
+export const removeLike = async (id, listId) =>{
+    try {
+        const response = await axios.delete(`${API_URL}/diner_user/${id}/unlike/${listId}`);
+        return response.data;
+    } catch(error) {
+        throw error.response?.data || error.message || 'Error deleting like';
     }
 }
 export const newReview = async (id,  businessId, rating, comment) => {

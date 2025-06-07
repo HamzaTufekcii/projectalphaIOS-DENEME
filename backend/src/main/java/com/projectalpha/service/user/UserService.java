@@ -12,6 +12,7 @@ import com.projectalpha.dto.user.diner.DinerUserProfile;
 import com.projectalpha.dto.user.diner.custom_lists.CustomList;
 import com.projectalpha.dto.user.diner.custom_lists.CustomListRequest;
 import com.projectalpha.dto.user.diner.custom_lists.PublicList;
+import com.projectalpha.dto.user.diner.custom_lists.likes.customListLike;
 import com.projectalpha.dto.user.diner.custom_lists.listItem.CustomListItemRequest;
 import com.projectalpha.dto.user.owner.OwnerLoginResponse;
 import com.projectalpha.dto.user.owner.OwnerUpdateRequest;
@@ -53,8 +54,14 @@ public class UserService implements DinerService, OwnerService {
     public Optional<DinerLoginResponse> getDinerProfileByUserId(String userId) {
         String dinerId = dinerRepository.findDinerId(userId);
         List<CustomList> dinerLists = listRepository.getDinerLists(userId);
-        return dinerRepository.findDinerByID(userId, dinerLists);
+        List<customListLike> dinerLikes = dinerRepository.findDinerLikes(dinerId);
+        return dinerRepository.findDinerByID(userId, dinerLists, dinerLikes);
     }
+    @Override
+    public List<customListLike> getDinerLikes(String userId) {
+        return dinerRepository.findDinerLikes(dinerRepository.findDinerId(userId));
+    }
+
     @Override
     public List<ReviewSupabase> getDinerReviews(String userId) {
         String dinerId = dinerRepository.findDinerId(userId);
@@ -91,6 +98,21 @@ public class UserService implements DinerService, OwnerService {
             list.setDiner_name(dinerRepository.findDinerNameSurname(dinerId));
         }
         return lists;
+    }
+    @Override
+    public String likeList(String userId, String listId){
+        String likeId = dinerRepository.likeList(userId,listId);
+        int likeCount = listRepository.getLikeCount(listId);
+        likeCount++;
+        listRepository.updateLikeCount(listId,likeCount);
+        return likeId;
+    }
+    @Override
+    public void unLikeList(String userId, String listId){
+        dinerRepository.unLikeList(userId,listId);
+        int likeCount = listRepository.getLikeCount(listId);
+        likeCount--;
+        listRepository.updateLikeCount(listId, likeCount);
     }
 
 

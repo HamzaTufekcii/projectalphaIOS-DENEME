@@ -6,6 +6,7 @@ import com.projectalpha.dto.review.ReviewSupabase;
 import com.projectalpha.dto.user.diner.DinerLoginResponse;
 import com.projectalpha.dto.user.diner.DinerUpdateRequest;
 import com.projectalpha.dto.user.diner.DinerUserProfile;
+import com.projectalpha.dto.user.diner.custom_lists.likes.customListLike;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,5 +29,8 @@ public interface DinerService {
     //yorum kısmını yap!
     List<BusinessDTO> getDinerListItems(String userId,String listId);
     List<ReviewSupabase> getDinerReviews(String userId);
+    String likeList(String userId, String listId);
+    void unLikeList(String listId, String likeId);
+    List<customListLike> getDinerLikes(String userId);
 
 }
