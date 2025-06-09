@@ -1,52 +1,77 @@
 // src/pages/InsideListPage.jsx
-import React, { useEffect, useState } from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import { useParams } from 'react-router-dom'
 import ListRestaurantCard from '../components/ListRestaurantCard'
-import { getUserLists, getUserListItems, removeFromList } from '../services/listService'
+import {getUserLists, getUserListItems, removeFromList, addToList} from '../services/listService'
 import { getUserIdFromStorage } from '../services/userService'
 import '../styles/InsideListPage.css'
+import {getAllBusinesses} from "../services/businessService.js";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {mapBusiness} from "../utils/businessMapper.js";
 
 const InsideListPage = () => {
     const { listId } = useParams()
-    const userId     = getUserIdFromStorage()
 
     const [listName, setListName]   = useState('Liste Detayları')
     const [items,    setItems]      = useState([])
-    const [loading,  setLoading]    = useState(true)
     const [error,    setError]      = useState(null)
     const [isEditing, setIsEditing] = useState(false)
+    const currentUserId = getUserIdFromStorage();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        if (!userId || !listId) return
-        const fetchData = async () => {
-            try {
-                setLoading(true)
-                const lists = await getUserLists(userId)
-                const me = lists.find(l => l.id === listId)
-                if (me?.name) setListName(me.name)
+    // Get all businesses (maybe for mapping or showing more info)
+    const { data: rawList = [], isLoading: isBusinessesLoading, error: businessesError } = useQuery({
+        queryKey: ['allBusinesses'],
+        queryFn: getAllBusinesses,
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 30 * 60 * 1000,
+    });
 
-                const listItems = await getUserListItems(userId, listId)
-                setItems(listItems)
-            } catch (err) {
-                setError('Liste yüklenemedi.')
-            } finally {
-                setLoading(false)
-            }
+    // Get user's favorite list items
+    const {
+        data: list = [],
+        isLoading: isItemsLoading,
+        error: itemsError
+    } = useQuery({
+        queryKey: ['custom-list', currentUserId, listId],
+        queryFn: () => getUserListItems(currentUserId, listId),
+        enabled: !!currentUserId && !!listId,
+        staleTime: 2 * 60 * 1000,
+    });
+
+    // Mutation for adding/removing favorites
+    const listMutation = useMutation({
+        mutationFn: ({ action, bizId }) =>
+            action === 'remove'
+                ? removeFromList(currentUserId, listId, bizId)
+                : addToList(currentUserId, listId, bizId),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['custom-list', currentUserId, listId]);
+        },
+        onError: (err) => {
+            console.error('Listeye ekleme/çıkarma hatası:', err);
+            setError('Liste işlemi sırasında bir hata oluştu.');
         }
-        fetchData()
-    }, [userId, listId])
+    });
 
-    // Restorantı listeden silme fonksiyonu
-    const handleRemove = async (restaurantId) => {
-        try {
-            await removeFromList(userId, listId, restaurantId)   // kendi API’nı yaz
-            setItems(items.filter(r => r.id !== restaurantId))
-        } catch (err) {
-            console.error('Silme hatası', err)
-        }
+
+    // Map businesses if needed (örneğin farklı yapıya çevirmek için)
+    const mappedBusinesses = useMemo(() => {
+        return rawList.map(mapBusiness);
+    }, [rawList]);
+
+    // Combine favorite IDs with full business info (optional, depends on UI)
+    // Eğer favorites sadece ID'ler içeriyorsa, burda full bilgileri eşlemek iyi olur
+    const listRestaurants = useMemo(() => {
+        if (!list || list.length === 0) return [];
+        return list.map(fav => {
+            const fullBiz = mappedBusinesses.find(b => b.id === fav.id);
+            return fullBiz || fav; // Eğer eşleşmezse orijinal favoriyi dön
+        });
+    }, [list, mappedBusinesses]);
+    if (isBusinessesLoading || isItemsLoading) {
+        return <div className="loading-spinner">Loading...</div>;
     }
-
-    if (loading) return <div className="loading-indicator">Yükleniyor...</div>
     if (error)   return <div className="error-message">{error}</div>
 
     return (
@@ -61,14 +86,14 @@ const InsideListPage = () => {
                 </button>
             </div>
 
-            {items.length > 0 ? (
+            {listRestaurants.length > 0 ? (
                 <div className="items-grid">
-                    {items.map(rest => (
+                    {listRestaurants.map(business => (
                         <ListRestaurantCard
-                            key={rest.id}
-                            restaurant={rest}
+                            key={business.id}
+                            restaurant={business}
                             isEditing={isEditing}
-                            onRemove={() => handleRemove(rest.id)}
+                            onRemove={() => listMutation.mutate({ action: 'remove', bizId: business.id })}
                         />
                     ))}
                 </div>
@@ -80,5 +105,6 @@ const InsideListPage = () => {
         </div>
     )
 }
+
 
 export default InsideListPage

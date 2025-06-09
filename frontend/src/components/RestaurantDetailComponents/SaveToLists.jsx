@@ -80,8 +80,16 @@ export default function SaveToLists({ itemId, onClose }) {
                     if (!initiallyIn && nowIn) await favMutation.mutateAsync({ action: 'add', bizId: itemId });
                     else if (initiallyIn && !nowIn) await favMutation.mutateAsync({ action: 'remove', bizId: itemId });
                 } else {
-                    if (!initiallyIn && nowIn) await addToList(getUserIdFromStorage(), listId, itemId);
-                    else if (initiallyIn && !nowIn) await removeFromList(getUserIdFromStorage(), listId, itemId);
+                    if (!initiallyIn && nowIn) await listMutation.mutateAsync({
+                        action: 'add',
+                        listId: listId,
+                        bizId: itemId
+                    });
+                    else if (initiallyIn && !nowIn) await listMutation.mutateAsync({
+                        action: 'remove',
+                        listId: listId,
+                        bizId: itemId
+                    });
                 }
             }
             onClose(selected.size > 0);
@@ -91,13 +99,6 @@ export default function SaveToLists({ itemId, onClose }) {
             setSaving(false);
         }
     };
-    const {
-        data: favorites = [],
-    } = useQuery({
-        queryKey: ['favorites', currentUserId, currentUserFavoriteID],
-        queryFn: () => getUserListItems(currentUserId, currentUserFavoriteID),
-        staleTime: 2 * 60 * 1000,
-    });
     // Mutation for adding/removing favorites
     const favMutation = useMutation({
         mutationFn: ({ action, bizId }) =>
@@ -109,6 +110,19 @@ export default function SaveToLists({ itemId, onClose }) {
         },
         onError: (err) => {
             console.error('Favori ekleme/çıkarma hatası:', err);
+        }
+    });
+    const listMutation = useMutation({
+        mutationFn: ({ action, listId,bizId }) =>
+            action === 'remove'
+                ? removeFromList(currentUserId, listId, bizId)
+                : addToList(currentUserId, listId, bizId),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['custom-list', currentUserId]);
+        },
+        onError: (err) => {
+            console.error('Favori ekleme/çıkarma hatası:', err);
+
         }
     });
 
