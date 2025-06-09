@@ -8,11 +8,14 @@ import '../styles/InsideListPage.css'
 import {getAllBusinesses} from "../services/businessService.js";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {mapBusiness} from "../utils/businessMapper.js";
+import { useLocation } from 'react-router-dom';
 
 const InsideListPage = () => {
     const { listId } = useParams()
 
-    const [listName, setListName]   = useState('Liste Detayları')
+    const location = useLocation();
+    const initialListName = location.state?.listName || 'Liste Detayları';
+    const [listName, setListName] = useState(initialListName);
     const [items,    setItems]      = useState([])
     const [error,    setError]      = useState(null)
     const [isEditing, setIsEditing] = useState(false)
