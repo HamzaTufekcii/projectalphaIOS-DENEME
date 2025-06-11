@@ -111,7 +111,9 @@ export default function UserListsPage() {
         state: { listName: listName }
       });
     if(viewMode === 'mine')
-      return navigate(`/lists/${listId}`);
+      return navigate(`/lists/${listId}`, {
+        state: { listName: listName }
+      });
   };
 
   // Silme onayı aç/kapat
