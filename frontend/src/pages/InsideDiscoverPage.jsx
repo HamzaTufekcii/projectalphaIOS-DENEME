@@ -1,5 +1,5 @@
 // src/pages/InsideDiscoverPage.jsx
-import React, { useState, useCallback } from 'react';
+import React, {useState, useCallback, useMemo} from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ListRestaurantCard from '../components/ListRestaurantCard';
@@ -9,6 +9,8 @@ import {
 } from '../services/listService';
 import { getUserIdFromStorage } from '../services/userService';
 import '../styles/InsideListPage.css';
+import {getAllBusinesses} from "../services/businessService.js";
+import {mapBusiness} from "../utils/businessMapper.js";
 
 export default function InsideDiscoverPage() {
     const { listId } = useParams();
@@ -28,6 +30,25 @@ export default function InsideDiscoverPage() {
         enabled: !!userId && !!listId,
         staleTime: 5 * 60 * 1000,
     });
+    const { data: rawList = [], isLoading: isBusinessesLoading, error: businessesError } = useQuery({
+        queryKey: ['allBusinesses'],
+        queryFn: getAllBusinesses,
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 30 * 60 * 1000,
+    });
+    const mappedBusinesses = useMemo(() => {
+        return rawList.map(mapBusiness);
+    }, [rawList]);
+
+    // Combine favorite IDs with full business info (optional, depends on UI)
+    // Eğer favorites sadece ID'ler içeriyorsa, burda full bilgileri eşlemek iyi olur
+    const listRestaurants = useMemo(() => {
+        if (!items || items.length === 0) return [];
+        return items.map(fav => {
+            const fullBiz = mappedBusinesses.find(b => b.id === fav.id);
+            return fullBiz || fav; // Eğer eşleşmezse orijinal favoriyi dön
+        });
+    }, [items, mappedBusinesses]);
 
     // 2️⃣ Silme işlemi için mutation
     const removeMutation = useMutation({
@@ -43,7 +64,7 @@ export default function InsideDiscoverPage() {
 
     const listName = state?.listName || 'Liste Detayları';
 
-    if (isLoading) return <div className="loading-indicator">Yükleniyor…</div>;
+    if (isLoading || isBusinessesLoading) return <div className="loading-indicator">Yükleniyor…</div>;
     if (isError)   return <div className="error-message">{error.message}</div>;
 
     return (
@@ -52,9 +73,9 @@ export default function InsideDiscoverPage() {
                 <h2 className="page-title">{listName}</h2>
             </div>
 
-            {items.length > 0 ? (
+            {listRestaurants.length > 0 ? (
                 <div className="items-grid">
-                    {items.map(rest => (
+                    {listRestaurants.map(rest => (
                         <ListRestaurantCard
                             key={rest.id}
                             restaurant={rest}
