@@ -6,6 +6,7 @@ import '../styles/OwnerHomePage.css';
 import {getUserRoleFromStorage} from '../services/userService';
 import {FaExclamationCircle} from "react-icons/fa";
 import {getBusinessPromotions, getBusinessReviews} from "../services/businessService.js";
+import {toast, ToastContainer} from "react-toastify";
 
 export default function RestaurantOwnerDashboard() {
     const navigate = useNavigate();
@@ -21,6 +22,8 @@ export default function RestaurantOwnerDashboard() {
     const businessData = JSON.parse(localStorage.getItem('ownerData'));
     const token = localStorage.getItem('token');
     const role = getUserRoleFromStorage();
+    const [newReviewCount, setNewReviewCount] = useState(0);
+
 
 
     const handleLoginClick = () => {
@@ -36,12 +39,9 @@ export default function RestaurantOwnerDashboard() {
     const handleReturnHomeClick = () => {
         navigate('/');
     }
-    const calculateNew = () => {
-        if(reviews.length > 0){
-            return reviews.filter(reviews => !reviews.review.isViewed).length;
-        }
-        return 0;
-    }
+    const calculateNew = (reviews) => {
+        return reviews.filter(r => !r.review?.isViewed).length;
+    };
 
     useEffect(() => {
         if (!token) {
@@ -62,33 +62,53 @@ export default function RestaurantOwnerDashboard() {
     }, []);
 
     useEffect(() => {
-    const fetchRestaurant = async () => {
-        setRestaurantName(businessData.name);
-        setRestaurantId(businessData.id);
-        try {
-            const name =
-                businessData.name || 'İşletme Adı';
-
-            setRestaurantName(name);
-
-            const reviews = await getBusinessReviews(businessData.id);
-            setReviews(reviews);
-            const promotions = await getBusinessPromotions(businessData.id);
-            setPromotions(promotions);
-            const activeCount = promotions.filter(promo => promo.active).length;
-            setActivePromotionCount(activeCount);
-
-        } catch (err) {
-            console.error('İşletme adı alınamadı:', err);
-            setRestaurantName('İşletme Adı');
+        if (!token) {
+            setIsAuthenticated(false);
+            setError('Bu sayfayı görüntülemek için giriş yapmalısınız.');
+            setIsLoading(false);
+            return;
+        } else if (role !== 'owner_user' && token) {
+            setError('Bu sayfa sadece işletme sahipleri içindir.');
+            setIsLoading(false);
+            setIsOwner(false);
+            setIsAuthenticated(true);
+            return;
         }
-    };
+        setIsAuthenticated(true);
+        setIsOwner(true);
+        setIsLoading(false);
+    }, []);
 
-    fetchRestaurant();
-}, [businessData?.id, businessData?.name]);
+    useEffect(() => {
+        const fetchRestaurant = async () => {
+            setRestaurantName(businessData.name || 'İşletme Adı');
+            setRestaurantId(businessData.id);
+            try {
+                const reviews = await getBusinessReviews(businessData.id);
+                setReviews(reviews);
+                setNewReviewCount(calculateNew(reviews));
+
+                const promotions = await getBusinessPromotions(businessData.id);
+                setPromotions(promotions);
+                const activeCount = promotions.filter(promo => promo.active).length;
+                setActivePromotionCount(activeCount);
+            } catch (err) {
+                console.error('İşletme adı alınamadı:', err);
+                setRestaurantName('İşletme Adı');
+            }
+        };
+
+        fetchRestaurant();
+    }, [businessData?.id, businessData?.name]);
+
+    useEffect(() => {
+        if (newReviewCount > 0) {
+            toast.info(`${newReviewCount} yeni yorum var.`, {});
+        }
+    }, [newReviewCount]);
 
     const stats = {
-        reviews: reviews.length > 0 ? { count: reviews.length, new: calculateNew(reviews) } : { count: 0, new: 0 },
+        reviews: reviews.length > 0 ? { count: reviews.length, new: newReviewCount } : { count: 0, new: 0 },
         promotions: promotions.length > 0 ? { count: promotions.length, active: activePromotionCount } : { count: 0, active: 0 },
         reservations: { count: 18, today: 6 },
         questions: { count: 8, unanswered: 3 }
@@ -170,6 +190,7 @@ export default function RestaurantOwnerDashboard() {
                     />
                 </div>
             </main>
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 }
