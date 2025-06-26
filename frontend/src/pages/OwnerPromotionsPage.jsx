@@ -132,22 +132,44 @@ export default function OwnerPromotionsPage() {
     };
 
     const handleDeletePromotion = async (id) => {
-        const confirmDelete = window.confirm("Bu kampanyayı silmek istediğinize emin misiniz?");
-        if (!confirmDelete) return;
-
-        try {
-            await promoMutation.mutateAsync({
-                action: 'delete',
-                bizId: businessId,
-                id: id,
-                data: null
-            });
-            toast.success('Kampanya silindi.');
-            setPromotions(promotions.filter(p => p.id !== id));
-        } catch (error) {
-            console.error('Kampanya silinemedi:', error);
-            toast.error('Kampanya silinirken bir hata oluştu.');
-        }
+        toast(
+            ({ closeToast }) => (
+                <div className="toast-confirm">
+                    <p className="toast-message">Bu kampanyayı silmek istediğinize emin misiniz?</p>
+                    <div className="toast-buttons">
+                        <button
+                            className="toast-btn yes"
+                            onClick={async () => {
+                                try {
+                                    await promoMutation.mutateAsync({
+                                        action: 'delete',
+                                        bizId: businessId,
+                                        id: id,
+                                        data: null
+                                    });
+                                    setPromotions(promotions.filter(p => p.id !== id));
+                                    toast.success('Kampanya silindi.');
+                                    closeToast();
+                                } catch (error) {
+                                    console.error('Kampanya silinemedi:', error);
+                                    toast.error('Kampanya silinirken bir hata oluştu.');
+                                    closeToast();
+                                }
+                            }}
+                        >
+                            Evet
+                        </button>
+                        <button className="toast-btn no" onClick={closeToast}>Hayır</button>
+                    </div>
+                </div>
+            ),
+            {
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                className: 'custom-toast' // extra styling if needed
+            }
+        );
     };
     const promoMutation = useMutation({
         mutationFn: async ({ action, bizId, id, data }) => {

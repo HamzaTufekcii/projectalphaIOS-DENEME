@@ -31,6 +31,8 @@ import { mapBusiness } from '../utils/businessMapper';
 import { login, saveAuthData } from '../services/authService';
 import axios from 'axios';
 import { getUserIdFromStorage, getUserRoleFromStorage, fetchUserData } from '../services/userService';
+import {toast, ToastContainer} from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 const HomePage = () => {
@@ -263,7 +265,7 @@ const HomePage = () => {
     const handleRegister = async () => {
 
         if (!validateEmail(registerEmail)) {
-            alert("Lütfen geçerli bir e-posta adresi girin.");
+            toast.error("Lütfen geçerli bir e-posta adresi girin.");
             return;
         }
 
@@ -508,6 +510,7 @@ const HomePage = () => {
     };
 
     return (
+
         <div className="app-container">
             {/* Hidden popups that will be shown when triggered */}
             <LoginPopup
@@ -851,6 +854,7 @@ const HomePage = () => {
                     <p>&copy; {new Date().getFullYear()} FeastFine. Tüm hakları saklıdır.</p>
                 </div>
             </footer>
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 };
