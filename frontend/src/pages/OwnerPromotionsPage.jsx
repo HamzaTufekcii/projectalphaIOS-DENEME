@@ -6,7 +6,8 @@ import '../styles/OwnerPromotionsPage.css';
 import {useParams} from "react-router-dom";
 import {deletePromotion, getBusinessPromotions, newPromotion, updatePromotion} from "../services/businessService.js";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {addToFavorites, removeFromList} from "../services/listService.js";
+import {ToastContainer , toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function OwnerPromotionsPage() {
     const {businessId} = useParams();
@@ -103,6 +104,7 @@ export default function OwnerPromotionsPage() {
                 const updatedList = promotions.map(p =>
                     p.id === editingPromotion ? { ...p, ...formData } : p
                 );
+                toast.success('Kampanya güncellendi.');
                 setPromotions(updatedList);
             } else {
                 const response = await promoMutation.mutateAsync({
@@ -117,7 +119,7 @@ export default function OwnerPromotionsPage() {
                     endDate: response.endat,
                     isActive: response.active ?? response.isActive,
                 };
-
+                toast.success('Kampanya oluşturuldu.');
                 setPromotions([...promotions, newPromo]);
             }
 
@@ -125,7 +127,7 @@ export default function OwnerPromotionsPage() {
             setEditingPromotion(null);
         } catch (error) {
             console.error('Kampanya kaydedilemedi:', error);
-            alert('Kampanya kaydedilemedi:');
+            toast.error('Kampanya kaydedilemedi:');
         }
     };
 
@@ -140,11 +142,11 @@ export default function OwnerPromotionsPage() {
                 id: id,
                 data: null
             });
-
+            toast.success('Kampanya silindi.');
             setPromotions(promotions.filter(p => p.id !== id));
         } catch (error) {
             console.error('Kampanya silinemedi:', error);
-            alert('Kampanya silinirken bir hata oluştu.');
+            toast.error('Kampanya silinirken bir hata oluştu.');
         }
     };
     const promoMutation = useMutation({
@@ -163,7 +165,7 @@ export default function OwnerPromotionsPage() {
         },
         onError: (err) => {
             console.error('Kampanya işlemi hatası:', err);
-            alert('Kampanya işlemi sırasında bir hata oluştu.');
+            toast.error('Kampanya işlemi sırasında bir hata oluştu.');
         }
     });
 
@@ -196,7 +198,7 @@ export default function OwnerPromotionsPage() {
                     </div>
                 </div>
             </header>
-
+            <ToastContainer position="top-right" autoClose={3000} />
             <main className="main-content">
                 <div className="section-header">
                     <h2>Aktif Promosyonlar</h2>

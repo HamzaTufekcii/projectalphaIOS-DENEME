@@ -53,15 +53,6 @@ export const getTopRated = async (limit = 5) => {
 };
 
 /**
- * Retrieves businesses under active promotions.
- * @returns {Promise<Array>} List of businesses.
- */
-export const getActivePromotions = async () => {
-    const res = await axios.get(`${API_BASE}/promotions/active`);
-    return res.data.data;
-};
-
-/**
  * Fetches businesses tagged with a specific UUID.
  * @param {string} tagId UUID string of tag.
  * @returns {Promise<Array>} List of businesses.
