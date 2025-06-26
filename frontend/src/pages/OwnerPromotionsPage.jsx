@@ -5,6 +5,8 @@ import Button from '../components/Button'; // Özel buton bileşeni
 import '../styles/OwnerPromotionsPage.css';
 import {useParams} from "react-router-dom";
 import {deletePromotion, getBusinessPromotions, newPromotion, updatePromotion} from "../services/businessService.js";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {addToFavorites, removeFromList} from "../services/listService.js";
 
 export default function OwnerPromotionsPage() {
     const {businessId} = useParams();
@@ -19,6 +21,7 @@ export default function OwnerPromotionsPage() {
         amount: '',
         isActive: true,
     });
+    const queryClient = useQueryClient();
 
     // Gerçek veriler backend'den çekilecek
     useEffect(() => {
@@ -90,15 +93,24 @@ export default function OwnerPromotionsPage() {
     const handleSubmit = async () => {
         try {
             if (editingPromotion) {
-                // Kampanyayı güncelle
-                await updatePromotion(businessId, editingPromotion, formData);
-                const updatedList = promotions.map(p => p.id === editingPromotion ? { ...p, ...formData } : p);
+                await promoMutation.mutateAsync({
+                    action: 'update',
+                    bizId: businessId,
+                    id: editingPromotion,
+                    data: formData
+                });
+
+                const updatedList = promotions.map(p =>
+                    p.id === editingPromotion ? { ...p, ...formData } : p
+                );
                 setPromotions(updatedList);
             } else {
-                // Yeni kampanya ekle
-                const response = await newPromotion(businessId, formData);
+                const response = await promoMutation.mutateAsync({
+                    action: 'create',
+                    bizId: businessId,
+                    data: formData
+                });
 
-                // response'daki tarihleri input formatına çeviriyoruz
                 const newPromo = {
                     ...response,
                     startDate: response.startat,
@@ -108,20 +120,52 @@ export default function OwnerPromotionsPage() {
 
                 setPromotions([...promotions, newPromo]);
             }
+
             setShowAddModal(false);
             setEditingPromotion(null);
         } catch (error) {
             console.error('Kampanya kaydedilemedi:', error);
+            alert('Kampanya kaydedilemedi:');
         }
     };
 
     const handleDeletePromotion = async (id) => {
         const confirmDelete = window.confirm("Bu kampanyayı silmek istediğinize emin misiniz?");
-        if (confirmDelete) {
-            await deletePromotion(businessId, id);
+        if (!confirmDelete) return;
+
+        try {
+            await promoMutation.mutateAsync({
+                action: 'delete',
+                bizId: businessId,
+                id: id,
+                data: null
+            });
+
             setPromotions(promotions.filter(p => p.id !== id));
+        } catch (error) {
+            console.error('Kampanya silinemedi:', error);
+            alert('Kampanya silinirken bir hata oluştu.');
         }
     };
+    const promoMutation = useMutation({
+        mutationFn: async ({ action, bizId, id, data }) => {
+            if (action === 'delete') {
+                return await deletePromotion(bizId, id);
+            } else if (action === 'create') {
+                return await newPromotion(bizId, data);
+            } else if (action === 'update') {
+                return await updatePromotion(bizId, id, data);
+            }
+            throw new Error('Geçersiz işlem türü');
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['promotions', businessId]);
+        },
+        onError: (err) => {
+            console.error('Kampanya işlemi hatası:', err);
+            alert('Kampanya işlemi sırasında bir hata oluştu.');
+        }
+    });
 
     const handleToggleActive = async (id) => {
         try {
