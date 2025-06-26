@@ -314,3 +314,48 @@ input[type="date"] {
     color: #4caf50; /* yeşilimsi indirim vurgusu */
     margin-top: 4px;
 }
+.toast-confirm {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.toast-message {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.toast-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.toast-btn {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.toast-btn.yes {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.toast-btn.yes:hover {
+    background-color: #27ae60;
+}
+
+.toast-btn.no {
+    background-color: #c0392b;
+    color: white;
+}
+
+.toast-btn.no:hover {
+    background-color: #992d22;
+}

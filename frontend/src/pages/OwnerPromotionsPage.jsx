@@ -5,6 +5,9 @@ import Button from '../components/Button'; // Özel buton bileşeni
 import '../styles/OwnerPromotionsPage.css';
 import {useParams} from "react-router-dom";
 import {deletePromotion, getBusinessPromotions, newPromotion, updatePromotion} from "../services/businessService.js";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {ToastContainer , toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function OwnerPromotionsPage() {
     const {businessId} = useParams();
@@ -19,6 +22,7 @@ export default function OwnerPromotionsPage() {
         amount: '',
         isActive: true,
     });
+    const queryClient = useQueryClient();
 
     // Gerçek veriler backend'den çekilecek
     useEffect(() => {
@@ -90,38 +94,102 @@ export default function OwnerPromotionsPage() {
     const handleSubmit = async () => {
         try {
             if (editingPromotion) {
-                // Kampanyayı güncelle
-                await updatePromotion(businessId, editingPromotion, formData);
-                const updatedList = promotions.map(p => p.id === editingPromotion ? { ...p, ...formData } : p);
+                await promoMutation.mutateAsync({
+                    action: 'update',
+                    bizId: businessId,
+                    id: editingPromotion,
+                    data: formData
+                });
+
+                const updatedList = promotions.map(p =>
+                    p.id === editingPromotion ? { ...p, ...formData } : p
+                );
+                toast.success('Kampanya güncellendi.');
                 setPromotions(updatedList);
             } else {
-                // Yeni kampanya ekle
-                const response = await newPromotion(businessId, formData);
+                const response = await promoMutation.mutateAsync({
+                    action: 'create',
+                    bizId: businessId,
+                    data: formData
+                });
 
-                // response'daki tarihleri input formatına çeviriyoruz
                 const newPromo = {
                     ...response,
                     startDate: response.startat,
                     endDate: response.endat,
                     isActive: response.active ?? response.isActive,
                 };
-
+                toast.success('Kampanya oluşturuldu.');
                 setPromotions([...promotions, newPromo]);
             }
+
             setShowAddModal(false);
             setEditingPromotion(null);
         } catch (error) {
             console.error('Kampanya kaydedilemedi:', error);
+            toast.error('Kampanya kaydedilemedi:');
         }
     };
 
     const handleDeletePromotion = async (id) => {
-        const confirmDelete = window.confirm("Bu kampanyayı silmek istediğinize emin misiniz?");
-        if (confirmDelete) {
-            await deletePromotion(businessId, id);
-            setPromotions(promotions.filter(p => p.id !== id));
-        }
+        toast(
+            ({ closeToast }) => (
+                <div className="toast-confirm">
+                    <p className="toast-message">Bu kampanyayı silmek istediğinize emin misiniz?</p>
+                    <div className="toast-buttons">
+                        <button
+                            className="toast-btn yes"
+                            onClick={async () => {
+                                try {
+                                    await promoMutation.mutateAsync({
+                                        action: 'delete',
+                                        bizId: businessId,
+                                        id: id,
+                                        data: null
+                                    });
+                                    setPromotions(promotions.filter(p => p.id !== id));
+                                    toast.success('Kampanya silindi.');
+                                    closeToast();
+                                } catch (error) {
+                                    console.error('Kampanya silinemedi:', error);
+                                    toast.error('Kampanya silinirken bir hata oluştu.');
+                                    closeToast();
+                                }
+                            }}
+                        >
+                            Evet
+                        </button>
+                        <button className="toast-btn no" onClick={closeToast}>Hayır</button>
+                    </div>
+                </div>
+            ),
+            {
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                className: 'custom-toast' // extra styling if needed
+            }
+        );
     };
+    const promoMutation = useMutation({
+        mutationFn: async ({ action, bizId, id, data }) => {
+            if (action === 'delete') {
+                return await deletePromotion(bizId, id);
+            } else if (action === 'create') {
+                return await newPromotion(bizId, data);
+            } else if (action === 'update') {
+                return await updatePromotion(bizId, id, data);
+            }
+            throw new Error('Geçersiz işlem türü');
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['promotions', businessId]);
+        },
+        onError: (err) => {
+            console.error('Kampanya işlemi hatası:', err);
+            toast.error('Kampanya işlemi sırasında bir hata oluştu.');
+        }
+    });
 
     const handleToggleActive = async (id) => {
         try {
@@ -152,7 +220,7 @@ export default function OwnerPromotionsPage() {
                     </div>
                 </div>
             </header>
-
+            <ToastContainer position="top-right" autoClose={3000} />
             <main className="main-content">
                 <div className="section-header">
                     <h2>Aktif Promosyonlar</h2>
