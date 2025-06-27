@@ -203,6 +203,15 @@ const RestaurantDetailPage = () => {
   const handleMainImageClick = () => {
     openPhotoModal(currentImageIndex);
   };
+  const weekdayMap = {
+    0: "Pazar",
+    1: "Pazartesi",
+    2: "Salı",
+    3: "Çarşamba",
+    4: "Perşembe",
+    5: "Cuma",
+    6: "Cumartesi"
+  };
 
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
@@ -350,7 +359,7 @@ const RestaurantDetailPage = () => {
 
           <div className="restaurant-meta">
             <div className="restaurant-type">
-              {restaurant.type || 'Tür bilinmiyor'} • {restaurant.priceRange}
+              {restaurant.description || 'Tür bilinmiyor'} • {restaurant.priceRange}
             </div>
             <div className="restaurant-address">
               <FaMapMarkerAlt />
@@ -394,18 +403,24 @@ const RestaurantDetailPage = () => {
           <div className="tab-content">
             {activeTab === 'overview' && (
                 <div className="overview-tab">
-                  {restaurant.hasActivePromo && (
+                  {restaurant.promotions?.length > 0 && (
                       <div className="promotions-section">
                         <h3>Güncel Promosyonlar</h3>
-                        <div className="promotion-card">
-                          <div className="promotion-content">
-                            <FaTag className="promotion-icon" />
-                            <div className="promotion-details">
-                              <h4>Tüm Ana Yemeklerde %10 İndirim - Pazartesi'den Perşembe'ye Geçerli</h4>
-                              <p>Kod: FEAST10</p>
+                        {restaurant.promotions.map((promo) => (
+                            <div key={promo.id} className="promotion-card">
+                              <div className="promotion-content">
+                                <FaTag className="promotion-icon" />
+                                <div className="promotion-details">
+                                  <div className="promotion-details title">{promo.title}</div>
+                                  <div className="promotion-details description">{promo.description}</div>
+                                  <div className="promotion-details amount">%{promo.amount}</div>
+                                  <div className="promotion-details date">
+                                    {new Date(promo.startat).toLocaleDateString()} - {new Date(promo.endat).toLocaleDateString()}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                   )}
 
@@ -420,38 +435,21 @@ const RestaurantDetailPage = () => {
                   <div className="hours-section">
                     <h3>Çalışma Saatleri</h3>
                     <div className="hours-list">
-                      <div className="hours-item">
-                        <span className="day">Pazartesi</span>
-                        <span className="time">11:00 - 22:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Salı</span>
-                        <span className="time">11:00 - 22:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Çarşamba</span>
-                        <span className="time">11:00 - 22:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Perşembe</span>
-                        <span className="time">11:00 - 22:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Cuma</span>
-                        <span className="time">11:00 - 23:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Cumartesi</span>
-                        <span className="time">10:00 - 23:00</span>
-                      </div>
-                      <div className="hours-item">
-                        <span className="day">Pazar</span>
-                        <span className="time">10:00 - 21:00</span>
-                      </div>
+                      {restaurant.operatingHours?.map((day) => (
+                          <div key={day.weekday} className="hours-item">
+                            <span className="day">{weekdayMap[day.weekday]}</span>
+                            <span className="time">
+              {day.o_c
+                  ? "Kapalı"
+                  : `${day.opening_time?.slice(0, 5)} - ${day.closing_time?.slice(0, 5)}`}
+            </span>
+                          </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-            )}
+              )}
+
 
             {activeTab === 'menu' && (
                 <div className="menu-tab">

@@ -401,16 +401,26 @@
   color: #ff6b6b;
 }
 
-.promotion-details h4 {
+.promotion-details.title {
   margin: 0 0 5px 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #ff6b6b;
 }
 
-.promotion-details p {
-  margin: 0;
+.promotion-details.date {
+  margin: 3px 0 0 0;
   color: #666;
+  font-size: 12px;
+}
+.promotion-details.description {
+  margin: 0;
+  color: #555;
+  font-size: 15px;
+}
+.promotion-details.amount {
+  margin: 3px 0 0 0;
+  color: #ff6b6b;
   font-size: 14px;
 }
 
