@@ -1,6 +1,7 @@
 package com.projectalpha.dto.business;
 
 import com.projectalpha.dto.business.address.AddressDTO;
+import com.projectalpha.dto.business.operatingHour.OperatingHourDTO;
 import com.projectalpha.dto.business.photo.PhotoDTO;
 import com.projectalpha.dto.business.restaurantsettings.RestaurantSettingsDTO;
 import com.projectalpha.dto.business.tag.TagDTO;
@@ -35,4 +36,5 @@ public class BusinessDetailDTO {
     private List<PhotoDTO> photos;
     private RestaurantSettingsDTO settings;
     private List<PromotionsSupabase> promotions;
+    private List<OperatingHourDTO> operatingHours;
 }

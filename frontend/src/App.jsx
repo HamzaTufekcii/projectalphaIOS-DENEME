@@ -63,7 +63,7 @@ function App() {
         </Router>
 
         {/* 🔍 Devtools (geliştirme sırasında görünür) */}
-        {/*<ReactQueryDevtools initialIsOpen={false} />*/}
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
   );
 }

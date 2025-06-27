@@ -4,11 +4,13 @@ import com.projectalpha.dto.business.BusinessDetailDTO;
 import com.projectalpha.dto.business.BusinessDTO;
 import com.projectalpha.dto.business.address.AddressDTO;
 import com.projectalpha.dto.business.businessTag.BusinessTagDTO;
+import com.projectalpha.dto.business.operatingHour.OperatingHourDTO;
 import com.projectalpha.dto.business.photo.PhotoDTO;
 import com.projectalpha.dto.business.restaurantsettings.RestaurantSettingsDTO;
 import com.projectalpha.dto.business.tag.TagDTO;
 import com.projectalpha.dto.promotions.PromotionsSupabase;
 import com.projectalpha.dto.review.ReviewSupabase;
+import com.projectalpha.repository.operatingHour.OperatingHourRepository;
 import com.projectalpha.repository.promotions.PromotionsRepository;
 import com.projectalpha.repository.reviews.ReviewsRepository;
 import com.projectalpha.service.business.BusinessService;
@@ -33,6 +35,7 @@ public class BusinessServiceImpl implements BusinessService {
     private final com.projectalpha.repository.restaurantSettings.RestaurantSettingsRepository settingsRepo;
     private final PromotionsRepository promotionsRepo;
     private final ReviewsRepository reviewsRepo;
+    private final OperatingHourRepository operatingHourRepo;
 
     public BusinessServiceImpl(
             BusinessRepository businessRepo,
@@ -42,7 +45,8 @@ public class BusinessServiceImpl implements BusinessService {
             com.projectalpha.repository.photo.PhotoRepository photoRepo,
             com.projectalpha.repository.restaurantSettings.RestaurantSettingsRepository settingsRepo,
             PromotionsRepository promotionsRepo,
-            ReviewsRepository reviewsRepo
+            ReviewsRepository reviewsRepo,
+            OperatingHourRepository operatingHourRepo
     ) {
         this.businessRepo = businessRepo;
         this.addressRepo = addressRepo;
@@ -52,6 +56,7 @@ public class BusinessServiceImpl implements BusinessService {
         this.settingsRepo = settingsRepo;
         this.promotionsRepo = promotionsRepo;
         this.reviewsRepo = reviewsRepo;
+        this.operatingHourRepo = operatingHourRepo;
     }
 
     @Override
@@ -78,6 +83,7 @@ public class BusinessServiceImpl implements BusinessService {
         List<PhotoDTO> photos = photoRepo.findByBusinessId(id);
         RestaurantSettingsDTO settings = settingsRepo.findByBusinessId(id);
         List<PromotionsSupabase> promotions = promotionsRepo.getPromotions(id);
+        List<OperatingHourDTO> operatingHours = operatingHourRepo.getOperatingHoursByBusinessId(id);
 
 
         // Map and convert types appropriately
@@ -93,6 +99,7 @@ public class BusinessServiceImpl implements BusinessService {
                 .photos(photos)
                 .promotions(promotions)
                 .settings(settings)
+                .operatingHours(operatingHours)
                 .build();
     }
 

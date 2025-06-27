@@ -45,7 +45,7 @@ export function mapBusiness(raw) {
         promoAmount: latestPromoAmount ? `%${latestPromoAmount}` : '',
         promoTitle: latestPromoTitle,
         distance: raw.distance || '—',
-
+        operatingHours: raw.operatingHours || [],
         address: raw.address,
         promotions: mappedPromotions,
         tags: raw.tags || [],
