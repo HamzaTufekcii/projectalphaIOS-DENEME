@@ -4,7 +4,7 @@ import { Star, Tag, Calendar, MessageCircle, LogOut, ChevronRight } from 'lucide
 import { Link } from 'react-router-dom';
 import '../styles/OwnerHomePage.css';
 import {getUserRoleFromStorage} from '../services/userService';
-import {FaExclamationCircle} from "react-icons/fa";
+import {FaCog, FaExclamationCircle} from "react-icons/fa";
 import {getBusinessPromotions, getBusinessReviews} from "../services/businessService.js";
 import {toast, ToastContainer} from "react-toastify";
 
@@ -157,15 +157,15 @@ export default function RestaurantOwnerDashboard() {
             <main className="dashboard-main">
                 <div className="dashboard-grid">
                     <DashboardCard
-                        title="Reviews"
+                        title="Değerlendirmeler"
                         icon={<Star size={24} className="icon-yellow" />}
                         count={stats.reviews.count}
-                        subtitle={`${stats.reviews.new} yeni yorum`}
+                        subtitle={`${stats.reviews.new} yeni değerlendirme`}
                         cardClass="card-yellow"
                         restaurantId={restaurantId}
                     />
                     <DashboardCard
-                        title="Promotions"
+                        title="Promosyonlar"
                         icon={<Tag size={24} className="icon-blue" />}
                         count={stats.promotions.count}
                         subtitle={stats.promotions.count !== 0 ? `${stats.promotions.active} aktif promosyon` : 'Oluşturulmuş hiçbir promosyon yok.'}
@@ -173,7 +173,7 @@ export default function RestaurantOwnerDashboard() {
                         restaurantId={restaurantId}
                     />
                     <DashboardCard
-                        title="Reservations"
+                        title="Rezervasyonlar"
                         icon={<Calendar size={24} className="icon-green" />}
                         count={stats.reservations.count}
                         subtitle={`bugün için ${stats.reservations.today} yeni rezervasyon`}
@@ -181,10 +181,10 @@ export default function RestaurantOwnerDashboard() {
                         restaurantId={restaurantId}
                     />
                     <DashboardCard
-                        title="Customer Questions"
-                        icon={<MessageCircle size={24} className="icon-purple" />}
-                        count={stats.questions.count}
-                        subtitle={`cevaplanmamış ${stats.questions.unanswered} soru`}
+                        title="İşletme Ayarları"
+                        icon={<FaCog size={24} className="icon-purple" />}
+                        count={businessData.name}
+                        subtitle={`İşletme ayarlarını ve detaylarını göster`}
                         cardClass="card-purple"
                         restaurantId={restaurantId}
                     />
@@ -199,10 +199,10 @@ export default function RestaurantOwnerDashboard() {
 function DashboardCard({ title, icon, count, subtitle, cardClass, restaurantId }) {
     // Başlık → route segmenti eşleştirmesi
     const routeMap = {
-        Reviews: 'reviews',
-        Promotions: 'promotions',
-        Reservations: 'reservations',
-        'Customer Questions': 'questions'
+        Değerlendirmeler: 'reviews',
+        Promosyonlar: 'promotions',
+        Rezervasyonlar: 'reservations',
+        "İşletme Ayarları": 'settings'
     };
 
     const path = `/restaurant/${restaurantId}/${routeMap[title]}`;
