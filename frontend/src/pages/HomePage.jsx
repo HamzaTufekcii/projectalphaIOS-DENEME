@@ -61,7 +61,7 @@ const HomePage = () => {
 
     // Location state
     const [userLocation, setUserLocation] = useState(null);
-    const [locationStatus, setLocationStatus] = useState('idle');
+    const [locationStatus, setLocationStatus] = useState('success');
 
     // Featured (top-rated) restaurants
     const navigate = useNavigate();
@@ -74,24 +74,6 @@ const HomePage = () => {
 
     // On mount: get location & load featured
     // 1. Geolocation
-    useEffect(() => {
-        if (navigator.geolocation) {
-            setLocationStatus('loading');
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                    setLocationStatus('success');
-                },
-                (err) => {
-                    console.error('Location error:', err);
-                    setLocationStatus('error');
-                }
-            );
-        } else {
-            setLocationStatus('error');
-            console.error('Geolocation not supported');
-        }
-    }, []);
 
     // 2. Use Top Rated (featured)
     const { data: featuredRestaurants, isLoading: isLoadingFeatured } = useTopRated(5);
@@ -599,7 +581,7 @@ const HomePage = () => {
                                 <button
                                     type="button"
                                     className="location-btn"
-                                    onClick={getUserLocation}
+                                    onClick={alert("Şu an konum sistemi düzgün çalışmıyor.")}
                                 >
                                     <FaLocationArrow /> Konumumu kullan
                                 </button>
