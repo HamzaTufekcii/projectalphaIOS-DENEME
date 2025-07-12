@@ -15,6 +15,7 @@ import InsideListPage from './pages/InsideListPage';
 import OwnerHomePage from './pages/OwnerHomePage';
 import OwnerReviewsPage from './pages/OwnerReviewsPage';
 import OwnerPromotionsPage from './pages/OwnerPromotionsPage';
+import OwnerSettingsPage from './pages/OwnerSettingsPage';
 import MyReviewsPage from './pages/MyReviewspage';
 import InsideDiscoverPage from "./pages/InsideDiscoverPage.jsx";
 
@@ -52,7 +53,7 @@ function App() {
                 <Route path="/restaurant/:id/reviews" element={<OwnerReviewsPage />} />
                 <Route path="/restaurant/:businessId/promotions" element={<OwnerPromotionsPage />} />
                 <Route path="/restaurant/:id/reservations" element={<div>Rezervasyonlar</div>} />
-                <Route path="/restaurant/:id/questions" element={<div>Müşteri Soruları</div>} />
+                <Route path="/restaurant/:id/settings" element={<OwnerSettingsPage />} />
 
                 {/* Geriye dönük uyumluluk */}
                 <Route path="/restaurant/:id" element={<RestaurantDetailPage />} />
