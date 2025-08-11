@@ -4,7 +4,7 @@
  */
 import axios from 'axios';
 
-const API_URL = '/api/auth';
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Send verification code to email for registration
@@ -67,14 +67,20 @@ export const updateUser = async (email, password, role = 'user') => {
  */
 export const login = async (email, password, role) => {
   try {
+    console.log("Login request to:", `${API_URL}/login`);
+    console.log("Login payload:", {
+      email: email.trim(),
+      password: password.trim(),
+      role: role
+    });
     const response = await axios.post(
-        "/api/auth/login",
-        {
+        `${API_URL}/login`,        {
           email: email.trim(),
           password: password.trim(),
           role: role
         }
     );
+    console.log("Login response:", response.data);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message || 'Error logging in';
@@ -82,14 +88,20 @@ export const login = async (email, password, role) => {
 };
 export const checkPassword = async (email, password, role) => {
   try {
+    console.log("CheckPassword request to:", `${API_URL}/login`);
+    console.log("CheckPassword payload:", {
+      email: email.trim(),
+      password: password.trim(),
+      role: role
+    });
     const response = await axios.post(
-        "/api/auth/login",
-        {
+        `${API_URL}/login`,        {
           email: email.trim(),
           password: password.trim(),
           role
         }
     );
+    console.log("CheckPassword response:", response.data);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message || 'Password is not matched';
