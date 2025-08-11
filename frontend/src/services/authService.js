@@ -4,7 +4,7 @@
  */
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/auth';
+const API_URL = '/api/auth';
 
 /**
  * Send verification code to email for registration
@@ -68,7 +68,7 @@ export const updateUser = async (email, password, role = 'user') => {
 export const login = async (email, password, role) => {
   try {
     const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        "/api/auth/login",
         {
           email: email.trim(),
           password: password.trim(),
@@ -83,7 +83,7 @@ export const login = async (email, password, role) => {
 export const checkPassword = async (email, password, role) => {
   try {
     const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        "/api/auth/login",
         {
           email: email.trim(),
           password: password.trim(),

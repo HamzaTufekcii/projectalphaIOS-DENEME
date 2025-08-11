@@ -77,7 +77,7 @@ export default function RestaurantRegistration() {
 
 
         try {
-            await axios.post('http://localhost:8080/api/auth/send-verification-code', {
+            await axios.post('/api/auth/send-verification-code', {
                 email: registerEmail.trim()
             });
             setFormStep(2);
@@ -110,7 +110,7 @@ export default function RestaurantRegistration() {
 
 
         try {
-            await axios.post('http://localhost:8080/api/auth/verify-verification-code', {
+            await axios.post('/api/auth/verify-verification-code', {
                 email: registerEmail.trim(),
                 token: confirmationCode.trim()
             });
@@ -182,7 +182,7 @@ export default function RestaurantRegistration() {
                 }
             };
 
-            await axios.post('http://localhost:8080/api/auth/update-owner-user', requestBody);
+            await axios.post('/api/auth/update-owner-user', requestBody);
 
             setSubmitted(true);
             alert("Test aşamasında işletme profili şifresi otomatik olarak isletmetest olmaktadır.");

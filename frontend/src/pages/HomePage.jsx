@@ -253,7 +253,7 @@ const HomePage = () => {
 
         try {
             await axios.post(
-                "http://localhost:8080/api/auth/send-verification-code",
+                "/api/auth/send-verification-code",
                 { email: registerEmail.trim() }
             );
             setError('');
@@ -316,7 +316,7 @@ const HomePage = () => {
 
         try {
             await axios.post(
-                "http://localhost:8080/api/auth/verify-verification-code",
+                "/api/auth/verify-verification-code",
                 {
                     email: registerEmail.trim(),
                     token: confirmationCode.trim(),
@@ -453,7 +453,7 @@ const HomePage = () => {
             const email = registerEmail.trim();
             const password = registerPassword.trim();
             await axios.post(
-                "http://localhost:8080/api/auth/update-user",
+                "/api/auth/update-user",
                 {
                     email: email,
                     password: password,
@@ -465,7 +465,7 @@ const HomePage = () => {
             // Auto login after successful registration
             try {
                 const loginResponse = await axios.post(
-                    "http://localhost:8080/api/auth/login",
+                    "/api/auth/login",
                     {
                         email: email,
                         password: password

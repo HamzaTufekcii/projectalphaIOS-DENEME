@@ -11,7 +11,7 @@ import {
 } from '../services/userService';
 import {checkPassword, updateUser} from "../services/authService.js";
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 const MOCK_USER_PROFILE = {
   id: 'user123',
