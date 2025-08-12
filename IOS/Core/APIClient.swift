@@ -1,5 +1,9 @@
 import Foundation
 
+enum APIClientError: Error {
+    case insecureURL
+}
+
 /// Simple API client used by feature services to perform network calls.
 final class APIClient {
     static let shared = APIClient()
@@ -15,7 +19,12 @@ final class APIClient {
     func request<T: Decodable>(_ path: String,
                                method: String = "GET",
                                body: Data? = nil) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        let url = baseURL.appendingPathComponent(path)
+        guard url.scheme?.lowercased() == "https" else {
+            throw APIClientError.insecureURL
+        }
+
+        var request = URLRequest(url: url)
         request.httpMethod = method
 
         if let body = body {
