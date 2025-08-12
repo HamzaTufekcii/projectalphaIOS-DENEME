@@ -12,10 +12,13 @@ let package = Package(
             targets: ["IOS"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/supabase-community/supabase-swift.git", from: "1.0.0")
+    ],
     targets: [
         .target(
             name: "IOS",
+            dependencies: ["Supabase"],
             path: "IOS",
             exclude: [
                 "IOS.xcodeproj",
