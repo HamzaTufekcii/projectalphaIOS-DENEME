@@ -1,42 +1,33 @@
 import Foundation
-#if canImport(Security)
-import Security
-#endif
 
-/// Manages access to the persisted user identifier.
+/// Manages access to the persisted user identifier and authentication token.
 final class UserSession {
     static let shared = UserSession()
+    private let storage = SecureStorage.shared
     private let userIdKey = "userId"
+    private let tokenKey = "authToken"
     private init() {}
+
+    /// Stores the user identifier and optional token securely.
+    func save(userId: String?, token: String? = nil) {
+        if let userId {
+            storage.save(userId, for: userIdKey)
+        }
+        if let token {
+            storage.save(token, for: tokenKey)
+        }
+    }
 
     /// Returns the stored user identifier from UserDefaults or Keychain.
     func getUserId() -> String? {
         if let id = UserDefaults.standard.string(forKey: userIdKey) {
             return id
         }
-        return KeychainHelper.read(service: "com.example.app", account: userIdKey)
+        return storage.read(for: userIdKey)
     }
-}
 
-enum KeychainHelper {
-    static func read(service: String, account: String) -> String? {
-#if canImport(Security)
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecReturnData as String: true
-        ]
-        var item: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status == errSecSuccess, let data = item as? Data,
-              let value = String(data: data, encoding: .utf8) else {
-            return nil
-        }
-        return value
-#else
-        return nil
-#endif
+    /// Retrieves the stored authentication token, if available.
+    func getToken() -> String? {
+        return storage.read(for: tokenKey)
     }
 }
