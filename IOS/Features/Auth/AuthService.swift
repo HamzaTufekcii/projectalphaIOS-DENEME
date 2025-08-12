@@ -1,82 +1,61 @@
 import Foundation
 
-struct AuthData: Codable {
-    let accessToken: String
-    let refreshToken: String
-}
-
+/// Handles authentication related network operations.
 final class AuthService {
-    private let baseURL = URL(string: "https://example.com/api")!
-    private let session: URLSession
+    private let api = APIClient.shared
     private let authStorageKey = "authData"
-    
-    init(session: URLSession = .shared) {
-        self.session = session
-    }
-    
+
     // MARK: - Networking
     func sendVerificationCode(to phone: String) async throws {
-        let url = baseURL.appendingPathComponent("auth/send-code")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["phone": phone])
-        _ = try await session.data(for: request)
+        let body = try JSONEncoder().encode(["phone": phone])
+        let _: EmptyResponse = try await api.request("auth/send-code", method: "POST", body: body)
     }
-    
+
     func verifyCode(phone: String, code: String) async throws -> AuthData {
-        let url = baseURL.appendingPathComponent("auth/verify-code")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["phone": phone, "code": code])
-        let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode(AuthData.self, from: data)
+        let body = try JSONEncoder().encode(["phone": phone, "code": code])
+        let auth: AuthData = try await api.request("auth/verify-code", method: "POST", body: body)
+        api.setAuthData(auth)
+        return auth
     }
-    
+
     func updateUser(name: String, email: String) async throws {
-        let url = baseURL.appendingPathComponent("user")
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["name": name, "email": email])
-        _ = try await session.data(for: request)
+        let body = try JSONEncoder().encode(["name": name, "email": email])
+        let _: EmptyResponse = try await api.request("user", method: "PUT", body: body)
     }
-    
+
     func login(email: String, password: String) async throws -> AuthData {
-        let url = baseURL.appendingPathComponent("auth/login")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["email": email, "password": password])
-        let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode(AuthData.self, from: data)
+        let body = try JSONEncoder().encode(["email": email, "password": password])
+        let auth: AuthData = try await api.request("auth/login", method: "POST", body: body)
+        api.setAuthData(auth)
+        return auth
     }
-    
+
     func checkPassword(_ password: String) async throws -> Bool {
-        let url = baseURL.appendingPathComponent("auth/check-password")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["password": password])
-        let (data, _) = try await session.data(for: request)
-        return (try? JSONDecoder().decode([String: Bool].self, from: data)["valid"]) ?? false
+        let body = try JSONEncoder().encode(["password": password])
+        let response: [String: Bool] = try await api.request("auth/check-password", method: "POST", body: body)
+        return response["valid"] ?? false
     }
-    
+
     // MARK: - Auth Storage
     func saveAuthData(_ data: AuthData) {
         if let encoded = try? JSONEncoder().encode(data) {
             UserDefaults.standard.set(encoded, forKey: authStorageKey)
         }
+        api.setAuthData(data)
     }
-    
+
     func getAuthData() -> AuthData? {
         guard let data = UserDefaults.standard.data(forKey: authStorageKey) else { return nil }
-        return try? JSONDecoder().decode(AuthData.self, from: data)
+        let auth = try? JSONDecoder().decode(AuthData.self, from: data)
+        if let auth { api.setAuthData(auth) }
+        return auth
     }
-    
+
     func logout() {
         UserDefaults.standard.removeObject(forKey: authStorageKey)
+        api.setAuthData(nil)
     }
 }
+
+private struct EmptyResponse: Decodable {}
 
