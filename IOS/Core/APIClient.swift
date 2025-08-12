@@ -7,11 +7,12 @@ enum APIClientError: Error {
 /// Simple API client used by feature services to perform network calls.
 final class APIClient {
     static let shared = APIClient()
-
-    private let baseURL = URL(string: "https://example.com/api")!
+    private let baseURL: URL
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(baseURL: URL = URL(string: "https://example.com/api")!,
+         session: URLSession = .shared) {
+        self.baseURL = baseURL
         self.session = session
     }
 
