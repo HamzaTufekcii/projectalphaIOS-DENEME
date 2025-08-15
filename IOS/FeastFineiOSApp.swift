@@ -6,13 +6,8 @@ struct FeastFineiOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if appViewModel.isAuthenticated {
-                HomeView()
-                    .environmentObject(appViewModel)
-            } else {
-                LoginView(appViewModel: appViewModel)
-                    .environmentObject(appViewModel)
-            }
+            HomeView()
+                .environmentObject(appViewModel)
         }
     }
 }
