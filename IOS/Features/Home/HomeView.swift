@@ -3,9 +3,11 @@ import CoreLocation
 
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var viewModel = BusinessViewModel()
     @StateObject private var locationManager = LocationManager()
     @State private var showLogin = false
+    @State private var showProfile = false
 
     var body: some View {
         NavigationView {
@@ -65,12 +67,27 @@ struct HomeView: View {
             .listStyle(.plain)
             .navigationTitle("Home")
             .toolbar {
-                if !appViewModel.isAuthenticated {
-                    Button("Giriş yap") { showLogin = true }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        if authViewModel.isAuthenticated {
+                            showProfile = true
+                        } else {
+                            showLogin = true
+                        }
+                    } label: {
+                        if authViewModel.isAuthenticated {
+                            Image(systemName: "person.crop.circle")
+                        } else {
+                            Text("Giriş")
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showLogin) {
-                LoginView(appViewModel: appViewModel)
+                LoginView()
+            }
+            .sheet(isPresented: $showProfile) {
+                ProfileView()
             }
             .task {
                 await viewModel.fetchTopRated()
@@ -96,12 +113,17 @@ struct HomeView: View {
             } message: {
                 Text(locationManager.locationStatus ?? "")
             }
+            .onChange(of: authViewModel.isAuthenticated) { isAuth in
+                if isAuth { showLogin = false }
+            }
         }
     }
 }
 
 #Preview {
-    HomeView()
-        .environmentObject(AppViewModel())
+    let appVM = AppViewModel()
+    return HomeView()
+        .environmentObject(appVM)
+        .environmentObject(AuthViewModel(appViewModel: appVM))
 }
 

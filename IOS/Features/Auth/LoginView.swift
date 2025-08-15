@@ -1,12 +1,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var viewModel: AuthViewModel
-
-    init(appViewModel: AppViewModel) {
-        _viewModel = StateObject(wrappedValue: AuthViewModel(appViewModel: appViewModel))
-    }
-
+    @EnvironmentObject private var viewModel: AuthViewModel
+    
     var body: some View {
         VStack(spacing: 16) {
             TextField("Email", text: $viewModel.email)
@@ -27,6 +23,9 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(appViewModel: AppViewModel())
+    let appVM = AppViewModel()
+    let authVM = AuthViewModel(appViewModel: appVM)
+    return LoginView()
+        .environmentObject(appVM)
+        .environmentObject(authVM)
 }
-
