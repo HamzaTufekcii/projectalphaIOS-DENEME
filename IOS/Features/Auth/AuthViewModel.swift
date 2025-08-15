@@ -7,13 +7,15 @@ final class AuthViewModel: ObservableObject {
     @Published var role: String = "user"
     @Published var isAuthenticated: Bool = false
     @Published var errorMessage: String?
-    
+
     private let service = AuthService()
-    
+    private let session = UserSession.shared
+
     // MARK: - Actions
     func login() async {
         do {
             let data = try await service.login(email: email, password: password, role: role)
+            session.save(userId: data.user?.id, token: data.accessToken)
             service.saveAuthData(data)
             isAuthenticated = true
             errorMessage = nil
