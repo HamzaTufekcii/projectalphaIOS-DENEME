@@ -1,7 +1,6 @@
 import XCTest
 @testable import IOS
 
-private struct EmptyResponse: Decodable {}
 
 final class APIClientTests: XCTestCase {
     func testRequestToInsecureURLThrows() async {

@@ -6,9 +6,10 @@ final class AuthService {
     private let authStorageKey = "authData"
 
     // MARK: - Networking
-    func sendVerificationCode(email: String) async throws {
+    func sendVerificationCode(email: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["email": email])
-        let _: EmptyResponse = try await api.request("api/auth/send-verification-code", method: "POST", body: body)
+        let response: EmptyResponse = try await api.request("api/auth/send-verification-code", method: "POST", body: body)
+        return response
     }
 
     func verifyCode(email: String, token: String) async throws -> VerificationResponse {
@@ -17,9 +18,10 @@ final class AuthService {
         return response
     }
 
-    func updateUser(email: String, password: String, role: String) async throws {
+    func updateUser(email: String, password: String, role: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["email": email, "password": password, "role": role])
-        let _: EmptyResponse = try await api.request("api/auth/update-user", method: "POST", body: body)
+        let response: EmptyResponse = try await api.request("api/auth/update-user", method: "POST", body: body)
+        return response
     }
 
     func login(email: String, password: String, role: String) async throws -> AuthData {
@@ -50,5 +52,4 @@ final class AuthService {
     }
 }
 
-private struct EmptyResponse: Decodable {}
 

@@ -22,7 +22,7 @@ final class ReviewsViewModel: ObservableObject {
         guard let userId = session.getUserId() else { return }
         let request = ReviewRequest(rating: rating, comment: comment)
         do {
-            try await service.newReview(userId: userId, businessId: businessId, review: request)
+            _ = try await service.newReview(userId: userId, businessId: businessId, review: request)
             await loadReviews()
         } catch {
             errorMessage = error.localizedDescription

@@ -58,12 +58,12 @@ final class BusinessService {
         return PromotionMapper.map(dto)
     }
 
-    func deletePromotion(_ businessId: String, promotionId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/promotions/\(businessId)/\(promotionId)", method: "DELETE")
+    func deletePromotion(_ businessId: String, promotionId: String) async throws -> EmptyResponse {
+        return try await api.request("\(base)/promotions/\(businessId)/\(promotionId)", method: "DELETE")
     }
 
-    func setViewed(_ reviewId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH")
+    func setViewed(_ reviewId: String) async throws -> EmptyResponse {
+        return try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH")
     }
 }
 
@@ -106,4 +106,3 @@ private func encodePromotionRequest(_ promotion: PromotionRequest) throws -> Dat
     return try JSONEncoder().encode(request)
 }
 
-private struct EmptyResponse: Decodable {}

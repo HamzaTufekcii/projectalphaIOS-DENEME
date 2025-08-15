@@ -95,9 +95,9 @@ final class UserService {
 
     // MARK: - Remote Operations
     /// Requests a password change for the specified user.
-    func changePassword(userId: String, newPassword: String) async throws {
+    func changePassword(userId: String, newPassword: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["newPassword": newPassword])
-        let _: EmptyResponse = try await api.request("\(base)/\(userId)/change-password", method: "PATCH", body: body)
+        return try await api.request("\(base)/\(userId)/change-password", method: "PATCH", body: body)
     }
 
     /// Fetches profile information for the given user identifier.
@@ -111,19 +111,19 @@ final class UserService {
     }
 
     /// Adds a like to a list for the user.
-    func addLike(userId: String, listId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST")
+    func addLike(userId: String, listId: String) async throws -> EmptyResponse {
+        return try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST")
     }
 
     /// Removes a like from a list for the user.
-    func removeLike(userId: String, listId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE")
+    func removeLike(userId: String, listId: String) async throws -> EmptyResponse {
+        return try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE")
     }
 
     /// Creates a new review for a business.
-    func newReview(userId: String, businessId: String, review: ReviewRequest) async throws {
+    func newReview(userId: String, businessId: String, review: ReviewRequest) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(review)
-        let _: EmptyResponse = try await api.request("\(base)/diner_user/\(userId)/reviews/\(businessId)", method: "POST", body: body)
+        return try await api.request("\(base)/diner_user/\(userId)/reviews/\(businessId)", method: "POST", body: body)
     }
 
     /// Retrieves reviews written by the user.
@@ -153,7 +153,6 @@ private struct UserProfileResponse: Decodable {
     let dinerLists: [UserList]?
 }
 
-private struct EmptyResponse: Decodable {}
 
 private struct DinerUpdateRequest: Codable {
     let email: String?

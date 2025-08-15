@@ -34,7 +34,7 @@ final class AuthViewModel: ObservableObject {
 
     func sendVerificationCode(email: String) async {
         do {
-            try await service.sendVerificationCode(email: email)
+            _ = try await service.sendVerificationCode(email: email)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -51,7 +51,7 @@ final class AuthViewModel: ObservableObject {
 
     func updateUser(email: String, password: String, role: String) async {
         do {
-            try await service.updateUser(email: email, password: password, role: role)
+            _ = try await service.updateUser(email: email, password: password, role: role)
         } catch {
             errorMessage = error.localizedDescription
         }

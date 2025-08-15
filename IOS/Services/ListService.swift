@@ -25,19 +25,19 @@ final class ListService {
         return "api/users/\(role)"
     }
 
-    func addToList(userId: String, listId: String, itemId: String) async throws {
+    func addToList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        let _: EmptyResponse = try await api.request(path, method: "POST")
+        return try await api.request(path, method: "POST")
     }
 
-    func addToFavorites(userId: String, itemId: String) async throws {
-        guard let favoritesId = userService.getUserFavoritesIdFromStorage() else { return }
-        try await addToList(userId: userId, listId: favoritesId, itemId: itemId)
+    func addToFavorites(userId: String, itemId: String) async throws -> EmptyResponse {
+        guard let favoritesId = userService.getUserFavoritesIdFromStorage() else { return EmptyResponse() }
+        return try await addToList(userId: userId, listId: favoritesId, itemId: itemId)
     }
 
-    func removeFromList(userId: String, listId: String, itemId: String) async throws {
+    func removeFromList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        let _: EmptyResponse = try await api.request(path, method: "DELETE")
+        return try await api.request(path, method: "DELETE")
     }
 
     func createList(userId: String, name: String, isPublic: Bool) async throws -> UserList {
@@ -46,9 +46,9 @@ final class ListService {
         return try await api.request(path, method: "POST", body: body)
     }
 
-    func removeList(userId: String, listId: String) async throws {
+    func removeList(userId: String, listId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)"
-        let _: EmptyResponse = try await api.request(path, method: "DELETE")
+        return try await api.request(path, method: "DELETE")
     }
 
     func updateList(userId: String, listId: String, name: String, isPublic: Bool) async throws -> UserList {
@@ -79,16 +79,15 @@ final class ListService {
         let isFavorited = favorites.contains { $0.id == itemId }
 
         if isFavorited {
-            try await removeFromList(userId: userId, listId: favoritesId, itemId: itemId)
+            _ = try await removeFromList(userId: userId, listId: favoritesId, itemId: itemId)
         } else {
-            try await addToFavorites(userId: userId, itemId: itemId)
+            _ = try await addToFavorites(userId: userId, itemId: itemId)
         }
 
         return try await getUserListItems(userId: userId, listId: favoritesId)
     }
 }
 
-private struct EmptyResponse: Decodable {}
 
 private struct ListRequest: Encodable {
     let name: String

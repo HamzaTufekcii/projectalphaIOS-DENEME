@@ -32,7 +32,7 @@ final class ListsViewModel: ObservableObject {
     func removeList(_ id: String) async {
         guard let userId = session.getUserId() else { return }
         do {
-            try await service.removeList(userId: userId, listId: id)
+            _ = try await service.removeList(userId: userId, listId: id)
             lists.removeAll { $0.id == id }
             errorMessage = nil
         } catch {
