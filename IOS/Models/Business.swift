@@ -95,6 +95,11 @@ struct Business: Identifiable {
     let address: Address?
     let tags: [Tag]
     let promotions: [Promotion]
+
+    /// Convenience flag to check if any promotion is currently active.
+    var hasActivePromo: Bool {
+        promotions.contains { $0.isActive }
+    }
 }
 
 struct Promotion: Identifiable {

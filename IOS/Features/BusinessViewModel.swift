@@ -60,6 +60,10 @@ final class BusinessViewModel: ObservableObject {
         do {
             if filter == .all {
                 await search()
+            } else if filter == .promo {
+                allResults = try await service.getAllBusinesses()
+                applyFiltersAndSort()
+                searchResults = searchResults.filter { $0.hasActivePromo }
             } else if let tag = filter.tagId {
                 allResults = try await service.getByTag(tag)
                 applyFiltersAndSort()
@@ -132,10 +136,7 @@ final class BusinessViewModel: ObservableObject {
         }
 
         if let hasPromo = hasActivePromoFilter {
-            filtered = filtered.filter { business in
-                let active = business.promotions.contains { $0.isActive }
-                return active == hasPromo
-            }
+            filtered = filtered.filter { $0.hasActivePromo == hasPromo }
         }
 
         if !addressFilter.city.isEmpty {
@@ -160,8 +161,8 @@ final class BusinessViewModel: ObservableObject {
             filtered.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         case .promo:
             filtered.sort {
-                let a = $0.promotions.contains { $0.isActive }
-                let b = $1.promotions.contains { $1.isActive }
+                let a = $0.hasActivePromo
+                let b = $1.hasActivePromo
                 if a == b { return $0.name < $1.name }
                 return a && !b
             }
