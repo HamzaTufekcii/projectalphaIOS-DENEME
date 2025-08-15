@@ -17,12 +17,17 @@ final class AuthServiceTests: XCTestCase {
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.url?.path, "/api/auth/login")
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            let data = Data("{\"accessToken\":\"abc\",\"refreshToken\":\"def\"}".utf8)
+            let json = "{" +
+                "\"access_token\":\"abc\"," +
+                "\"refresh_token\":\"def\"," +
+                "\"user\":{\"id\":\"1\",\"email\":\"test@example.com\",\"app_metadata\":{\"role\":\"user\"}}}" 
+            let data = Data(json.utf8)
             return (response, data)
         }
         let service = AuthService()
-        let auth = try await service.login(email: "test@example.com", password: "secret")
+        let auth = try await service.login(email: "test@example.com", password: "secret", role: "user")
         XCTAssertEqual(auth.accessToken, "abc")
         XCTAssertEqual(auth.refreshToken, "def")
+        XCTAssertEqual(auth.user?.id, "1")
     }
 }

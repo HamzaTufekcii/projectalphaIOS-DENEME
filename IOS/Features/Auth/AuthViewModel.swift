@@ -4,6 +4,7 @@ import Foundation
 final class AuthViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
+    @Published var role: String = "user"
     @Published var isAuthenticated: Bool = false
     @Published var errorMessage: String?
     
@@ -12,7 +13,7 @@ final class AuthViewModel: ObservableObject {
     // MARK: - Actions
     func login() async {
         do {
-            let data = try await service.login(email: email, password: password)
+            let data = try await service.login(email: email, password: password, role: role)
             service.saveAuthData(data)
             isAuthenticated = true
             errorMessage = nil
@@ -20,18 +21,18 @@ final class AuthViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
-    
-    func sendVerificationCode(to phone: String) async {
+
+    func sendVerificationCode(email: String) async {
         do {
-            try await service.sendVerificationCode(to: phone)
+            try await service.sendVerificationCode(email: email)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
-    
-    func verifyCode(phone: String, code: String) async {
+
+    func verifyCode(email: String, token: String) async {
         do {
-            let data = try await service.verifyCode(phone: phone, code: code)
+            let data = try await service.verifyCode(email: email, token: token)
             service.saveAuthData(data)
             isAuthenticated = true
             errorMessage = nil
@@ -39,21 +40,12 @@ final class AuthViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
-    
-    func updateUser(name: String, email: String) async {
+
+    func updateUser(email: String, password: String, role: String) async {
         do {
-            try await service.updateUser(name: name, email: email)
+            try await service.updateUser(email: email, password: password, role: role)
         } catch {
             errorMessage = error.localizedDescription
-        }
-    }
-    
-    func checkPassword(_ password: String) async -> Bool {
-        do {
-            return try await service.checkPassword(password)
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
         }
     }
     

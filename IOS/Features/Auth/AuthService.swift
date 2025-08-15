@@ -6,34 +6,28 @@ final class AuthService {
     private let authStorageKey = "authData"
 
     // MARK: - Networking
-    func sendVerificationCode(to phone: String) async throws {
-        let body = try JSONEncoder().encode(["phone": phone])
-        let _: EmptyResponse = try await api.request("auth/send-code", method: "POST", body: body)
+    func sendVerificationCode(email: String) async throws {
+        let body = try JSONEncoder().encode(["email": email])
+        let _: EmptyResponse = try await api.request("api/auth/send-verification-code", method: "POST", body: body)
     }
 
-    func verifyCode(phone: String, code: String) async throws -> AuthData {
-        let body = try JSONEncoder().encode(["phone": phone, "code": code])
-        let auth: AuthData = try await api.request("auth/verify-code", method: "POST", body: body)
+    func verifyCode(email: String, token: String) async throws -> AuthData {
+        let body = try JSONEncoder().encode(["email": email, "token": token])
+        let auth: AuthData = try await api.request("api/auth/verify-verification-code", method: "POST", body: body)
         api.setAuthData(auth)
         return auth
     }
 
-    func updateUser(name: String, email: String) async throws {
-        let body = try JSONEncoder().encode(["name": name, "email": email])
-        let _: EmptyResponse = try await api.request("user", method: "PUT", body: body)
+    func updateUser(email: String, password: String, role: String) async throws {
+        let body = try JSONEncoder().encode(["email": email, "password": password, "role": role])
+        let _: EmptyResponse = try await api.request("api/auth/update-user", method: "POST", body: body)
     }
 
-    func login(email: String, password: String) async throws -> AuthData {
-        let body = try JSONEncoder().encode(["email": email, "password": password])
-        let auth: AuthData = try await api.request("auth/login", method: "POST", body: body)
+    func login(email: String, password: String, role: String) async throws -> AuthData {
+        let body = try JSONEncoder().encode(["email": email, "password": password, "role": role])
+        let auth: AuthData = try await api.request("api/auth/login", method: "POST", body: body)
         api.setAuthData(auth)
         return auth
-    }
-
-    func checkPassword(_ password: String) async throws -> Bool {
-        let body = try JSONEncoder().encode(["password": password])
-        let response: [String: Bool] = try await api.request("auth/check-password", method: "POST", body: body)
-        return response["valid"] ?? false
     }
 
     // MARK: - Auth Storage
