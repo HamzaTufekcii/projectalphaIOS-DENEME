@@ -7,7 +7,7 @@ struct HomeView: View {
         NavigationView {
             List(viewModel.businesses) { business in
                 NavigationLink(destination: RestaurantDetailView(businessId: business.id)) {
-                    Text(business.name)
+                    RestaurantRow(restaurant: business)
                 }
             }
             .navigationTitle("Home")

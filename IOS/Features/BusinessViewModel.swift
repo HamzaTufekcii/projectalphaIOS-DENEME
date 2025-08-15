@@ -2,8 +2,8 @@ import Foundation
 
 @MainActor
 final class BusinessViewModel: ObservableObject {
-    @Published var businesses: [Business] = []
-    @Published var selectedBusiness: Business?
+    @Published var businesses: [Restaurant] = []
+    @Published var selectedBusiness: Restaurant?
     @Published var promotions: [Promotion] = []
     @Published var reviews: [Review] = []
     @Published var errorMessage: String?

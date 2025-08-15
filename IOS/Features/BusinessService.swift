@@ -5,33 +5,33 @@ final class BusinessService {
     private let api = APIClient.shared
     private let base = "business"
 
-    func getAllBusinesses() async throws -> [Business] {
+    func getAllBusinesses() async throws -> [Restaurant] {
         let dtos: [BusinessDTO] = try await api.request(base)
         return dtos.map(BusinessMapper.map)
     }
 
-    func getBusinessById(_ id: String) async throws -> Business {
+    func getBusinessById(_ id: String) async throws -> Restaurant {
         let dto: BusinessDTO = try await api.request("\(base)/\(id)")
         return BusinessMapper.map(dto)
     }
 
-    func searchBusinesses(_ name: String) async throws -> [Business] {
+    func searchBusinesses(_ name: String) async throws -> [Restaurant] {
         let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
         let dtos: [BusinessDTO] = try await api.request("\(base)/search?name=\(encoded)")
         return dtos.map(BusinessMapper.map)
     }
 
-    func getBusinessesByOwner(_ ownerId: String) async throws -> [Business] {
+    func getBusinessesByOwner(_ ownerId: String) async throws -> [Restaurant] {
         let dtos: [BusinessDTO] = try await api.request("\(base)/owner/\(ownerId)")
         return dtos.map(BusinessMapper.map)
     }
 
-    func getTopRated(limit: Int = 5) async throws -> [Business] {
+    func getTopRated(limit: Int = 5) async throws -> [Restaurant] {
         let dtos: [BusinessDTO] = try await api.request("\(base)/top?limit=\(limit)")
         return dtos.map(BusinessMapper.map)
     }
 
-    func getByTag(_ tagId: String) async throws -> [Business] {
+    func getByTag(_ tagId: String) async throws -> [Restaurant] {
         let dtos: [BusinessDTO] = try await api.request("\(base)/tag/\(tagId)")
         return dtos.map(BusinessMapper.map)
     }

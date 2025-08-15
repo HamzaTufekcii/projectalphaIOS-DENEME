@@ -7,7 +7,22 @@ struct BusinessDTO: Decodable {
     let description: String?
     let priceRange: String?
     let avgRating: Double
+    let address: AddressDTO?
+    let tags: [TagDTO]
     let promotions: [PromotionDTO]
+}
+
+struct AddressDTO: Decodable {
+    let id: String?
+    let street: String?
+    let city: String?
+    let district: String?
+    let neighborhood: String?
+}
+
+struct TagDTO: Decodable {
+    let id: String
+    let name: String
 }
 
 struct PromotionDTO: Decodable {
@@ -35,6 +50,8 @@ struct Business: Identifiable {
     let description: String
     let priceRange: String
     let rating: Double
+    let address: Address?
+    let tags: [Tag]
     let promotions: [Promotion]
 }
 
@@ -56,6 +73,19 @@ struct Review: Identifiable {
     let comment: String
 }
 
+struct Address: Identifiable {
+    let id: String
+    let street: String
+    let city: String
+    let district: String
+    let neighborhood: String
+}
+
+struct Tag: Identifiable {
+    let id: String
+    let name: String
+}
+
 // MARK: - Mappers
 enum BusinessMapper {
     static func map(_ dto: BusinessDTO) -> Business {
@@ -65,6 +95,8 @@ enum BusinessMapper {
             description: dto.description ?? "",
             priceRange: dto.priceRange ?? "",
             rating: dto.avgRating,
+            address: AddressMapper.map(dto.address),
+            tags: dto.tags.map(TagMapper.map),
             promotions: dto.promotions.map(PromotionMapper.map)
         )
     }
@@ -93,5 +125,24 @@ enum ReviewMapper {
             rating: dto.rating,
             comment: dto.comment ?? ""
         )
+    }
+}
+
+enum AddressMapper {
+    static func map(_ dto: AddressDTO?) -> Address? {
+        guard let dto = dto else { return nil }
+        return Address(
+            id: dto.id ?? "",
+            street: dto.street ?? "",
+            city: dto.city ?? "",
+            district: dto.district ?? "",
+            neighborhood: dto.neighborhood ?? ""
+        )
+    }
+}
+
+enum TagMapper {
+    static func map(_ dto: TagDTO) -> Tag {
+        Tag(id: dto.id, name: dto.name)
     }
 }

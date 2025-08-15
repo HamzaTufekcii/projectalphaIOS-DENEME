@@ -7,8 +7,25 @@ struct RestaurantDetailView: View {
     var body: some View {
         List {
             if let business = viewModel.selectedBusiness {
-                Text(business.name)
-                    .font(.title)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(business.name)
+                        .font(.title)
+                    Text(business.description)
+                    HStack {
+                        Text("⭐️ \(String(format: "%.1f", business.rating))")
+                        Text(business.priceRange)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    if let address = business.address {
+                        Text("Address: \(address.street), \(address.city)")
+                            .font(.subheadline)
+                    }
+                    if !business.tags.isEmpty {
+                        Text("Tags: \(business.tags.map { $0.name }.joined(separator: ", "))")
+                            .font(.subheadline)
+                    }
+                }
             } else {
                 Text("Loading...")
             }
