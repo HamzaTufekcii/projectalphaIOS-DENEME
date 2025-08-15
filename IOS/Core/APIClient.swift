@@ -54,8 +54,8 @@ final class APIClient {
         case 200..<300:
             let decoder = JSONDecoder()
 
-            if data.isEmpty, String(describing: T.self) == "EmptyResponse" {
-                return try decoder.decode(T.self, from: Data("{}".utf8))
+            if data.isEmpty && T.self == EmptyResponse.self {
+                return EmptyResponse() as! T
             }
 
             if let direct = try? decoder.decode(T.self, from: data) {
@@ -72,8 +72,8 @@ final class APIClient {
                 return payload
             }
 
-            if String(describing: T.self) == "EmptyResponse" {
-                return try decoder.decode(T.self, from: Data("{}".utf8))
+            if T.self == EmptyResponse.self {
+                return EmptyResponse() as! T
             }
 
             throw APIError.unknown(statusCode: http.statusCode, message: wrapped.message)
