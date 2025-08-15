@@ -20,9 +20,12 @@ enum AppConfiguration {
     }()
 
     static var apiBaseURL: URL {
-        guard let urlString = info["API_BASE_URL"] as? String,
-              let url = URL(string: urlString) else {
-            fatalError("API_BASE_URL not set")
+        guard
+            let urlString = info["API_BASE_URL"] as? String,
+            let url = URL(string: urlString),
+            url.scheme?.lowercased() == "https"
+        else {
+            fatalError("API_BASE_URL must be a valid https URL")
         }
         return url
     }
