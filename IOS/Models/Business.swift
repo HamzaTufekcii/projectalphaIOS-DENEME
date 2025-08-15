@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - DTOs from backend
-struct BusinessDTO: Decodable {
+struct BusinessDTO: Decodable, Identifiable {
     let id: String
     let name: String
     let description: String?

@@ -15,10 +15,6 @@ struct UserList: Identifiable, Decodable {
     }
 }
 
-struct ListItem: Identifiable, Decodable {
-    let id: String
-    let name: String
-}
 
 /// Service handling list operations through the API client.
 final class ListService {
@@ -63,7 +59,7 @@ final class ListService {
         return try await api.request(path)
     }
 
-    func getUserListItems(userId: String, listId: String) async throws -> [ListItem] {
+    func getUserListItems(userId: String, listId: String) async throws -> [BusinessDTO] {
         let path = "\(base)/\(userId)/lists/\(listId)/items"
         return try await api.request(path)
     }
@@ -73,7 +69,7 @@ final class ListService {
         return try await api.request(path)
     }
 
-    func toggleFavorite(userId: String, itemId: String) async throws -> [ListItem] {
+    func toggleFavorite(userId: String, itemId: String) async throws -> [BusinessDTO] {
         guard let favoritesId = userService.getUserFavoritesIdFromStorage() else { return [] }
         let favorites = try await getUserListItems(userId: userId, listId: favoritesId)
         let isFavorited = favorites.contains { $0.id == itemId }
