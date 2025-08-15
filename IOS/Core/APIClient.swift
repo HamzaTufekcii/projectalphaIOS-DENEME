@@ -25,8 +25,7 @@ final class APIClient {
     /// Performs a request and decodes the response into the expected type.
     func request<T: Decodable>(_ path: String,
                                method: String = "GET",
-                               body: Data? = nil,
-                               retrying: Bool = false) async throws -> T {
+                               body: Data? = nil) async throws -> T {
         let url = baseURL.appendingPathComponent(path)
         guard url.scheme?.lowercased() == "https" else {
             throw APIClientError.insecureURL
@@ -52,33 +51,15 @@ final class APIClient {
         switch http.statusCode {
         case 200..<300:
             return try JSONDecoder().decode(T.self, from: data)
-        case 401 where !retrying && authData?.refreshToken != nil:
-            try await refreshAccessToken()
-            return try await request(path, method: method, body: body, retrying: true)
+        case 401:
+            throw APIError.unauthorized
         default:
             throw APIError.from(statusCode: http.statusCode, data: data)
         }
     }
 
-    /// Requests a new access token using the stored refresh token.
-    private func refreshAccessToken() async throws {
-        guard let refreshToken = authData?.refreshToken else {
-            throw APIError.unauthorized
-        }
-
-        var request = URLRequest(url: baseURL.appendingPathComponent("auth/refresh"))
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["refreshToken": refreshToken])
-
-        let (data, response) = try await session.data(for: request)
-        guard let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else {
-            throw APIError.unauthorized
-        }
-
-        let newAuth = try JSONDecoder().decode(AuthData.self, from: data)
-        self.authData = newAuth
-    }
+    // TODO: When a refresh endpoint becomes available, coordinate with the
+    // backend team to determine the proper path and request body before
+    // reintroducing refresh logic.
 }
 
