@@ -3,7 +3,7 @@ import Foundation
 /// Service responsible for fetching business related data from backend.
 final class BusinessService {
     private let api = APIClient.shared
-    private let base = "business"
+    private let base = "api/business"
 
     func getAllBusinesses() async throws -> [Restaurant] {
         let dtos: [BusinessDTO] = try await api.request(base)
