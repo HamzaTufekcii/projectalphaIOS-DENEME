@@ -4,11 +4,18 @@ struct MyReviewsView: View {
     @StateObject private var viewModel = MyReviewsViewModel()
 
     var body: some View {
-        List(viewModel.reviews) { review in
-            VStack(alignment: .leading) {
-                Text("Rating: \(review.rating)")
-                if let comment = review.comment {
-                    Text(comment)
+        Group {
+            if viewModel.reviews.isEmpty {
+                Text("No reviews yet")
+                    .foregroundColor(.secondary)
+            } else {
+                List(viewModel.reviews) { review in
+                    VStack(alignment: .leading) {
+                        Text("Rating: \(review.rating)")
+                        if let comment = review.comment {
+                            Text(comment)
+                        }
+                    }
                 }
             }
         }

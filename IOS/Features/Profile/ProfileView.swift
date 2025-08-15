@@ -21,9 +21,11 @@ struct ProfileView: View {
                 Button("Save") {
                     Task { await viewModel.updateProfile(name: name, surname: surname, phoneNumber: phoneNumber, email: email) }
                 }
+            } else if let error = viewModel.errorMessage {
+                Text(error)
+                    .foregroundColor(.red)
             } else {
-                Text(viewModel.errorMessage ?? "Loading...")
-                    .foregroundColor(viewModel.errorMessage == nil ? .primary : .red)
+                ProgressView()
             }
         }
         .padding()

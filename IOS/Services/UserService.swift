@@ -55,10 +55,12 @@ final class UserService {
     }
 
     // MARK: - Secure Storage
-    /// Persists user identifier and token securely using Keychain.
+    /// Persists user identifier and token securely using Keychain and updates the in-memory session.
     func saveUserData(_ data: UserData) {
         storage.save(data.userId, for: userIdKey)
         storage.save(data.token, for: tokenKey)
+        // Also update the session so that UI layers can access the fresh values immediately.
+        UserSession.shared.save(userId: data.userId, token: data.token)
     }
 
     func saveUserRole(_ role: String) {
