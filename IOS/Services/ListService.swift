@@ -1,21 +1,5 @@
 import Foundation
 
-struct UserList: Identifiable, Decodable {
-    let id: String
-    let name: String
-    var isFavorite: Bool?
-    let isPublic: Bool
-    let likeCount: Int
-
-    enum CodingKeys: String, CodingKey {
-        case id, name
-        case isFavorite = "is_favorite"
-        case isPublic = "is_public"
-        case likeCount = "like_counter"
-    }
-}
-
-
 /// Service handling list operations through the API client.
 final class ListService {
     private let api: APIClientProtocol
@@ -26,10 +10,7 @@ final class ListService {
         self.userService = userService
     }
 
-    private var base: String {
-        let role = userService.getUserRoleFromStorage() ?? "diner_user"
-        return "api/users/\(role)"
-    }
+    private let base = "api/users/diner_user"
 
     func addToList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
