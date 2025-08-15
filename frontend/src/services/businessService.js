@@ -78,7 +78,7 @@ export const newPromotion = async (businessId, newPromotionData) => {
         description: newPromotionData.description,
         startDate: newPromotionData.startDate,
         endDate: newPromotionData.endDate,
-        amount: newPromotionData.amount,
+        amount: parseInt(newPromotionData.amount, 10),
         isActive: newPromotionData.isActive
     };
 
@@ -91,7 +91,7 @@ export const updatePromotion = async (businessId, promotionId, newPromotionData)
         description: newPromotionData.description,
         startDate: newPromotionData.startDate,
         endDate: newPromotionData.endDate,
-        amount: newPromotionData.amount,
+        amount: parseInt(newPromotionData.amount, 10),
         isActive: newPromotionData.isActive
     };
 

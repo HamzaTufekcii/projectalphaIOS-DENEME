@@ -31,7 +31,7 @@ struct PromotionDTO: Decodable {
     let description: String?
     let startDate: String?
     let endDate: String?
-    let amount: Double?
+    let amount: Int?
     let active: Bool
     let createdAt: String?
 }
@@ -61,7 +61,7 @@ struct Promotion: Identifiable {
     let description: String
     let startDate: String?
     let endDate: String?
-    let amount: Double?
+    let amount: Int?
     let isActive: Bool
     let createdAt: String?
 }

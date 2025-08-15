@@ -72,7 +72,7 @@ struct PromotionRequest: Encodable {
     let description: String?
     let startDate: String?
     let endDate: String?
-    let amount: Double?
+    let amount: Int?
     let isActive: Bool
 }
 
