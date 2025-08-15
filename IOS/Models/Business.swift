@@ -10,6 +10,11 @@ struct BusinessDTO: Decodable, Identifiable {
     let address: AddressDTO?
     let tags: [TagDTO]
     let promotions: [PromotionDTO]
+    /// Optional distance in meters from the user's location. Some endpoints
+    /// such as `/nearby` include this value which can then be used for sorting
+    /// purposes on the client side. When not provided by the backend this will
+    /// simply be `nil`.
+    let distance: Double?
 }
 
 struct AddressDTO: Decodable {
@@ -85,6 +90,8 @@ struct Business: Identifiable {
     let description: String
     let priceRange: String
     let rating: Double
+    /// Distance in meters from the user's location if available.
+    let distance: Double?
     let address: Address?
     let tags: [Tag]
     let promotions: [Promotion]
@@ -130,6 +137,7 @@ enum BusinessMapper {
             description: dto.description ?? "",
             priceRange: dto.priceRange ?? "",
             rating: dto.avgRating,
+            distance: dto.distance,
             address: AddressMapper.map(dto.address),
             tags: dto.tags.map(TagMapper.map),
             promotions: dto.promotions.map(PromotionMapper.map)

@@ -4,6 +4,7 @@ import CoreLocation
 @MainActor
 final class BusinessViewModel: ObservableObject {
     @Published var topRated: [Restaurant] = []
+    /// Results after applying filters and sorting
     @Published var searchResults: [Restaurant] = []
     @Published var selectedBusiness: Restaurant?
     @Published var promotions: [Promotion] = []
@@ -13,6 +14,17 @@ final class BusinessViewModel: ObservableObject {
     @Published var selectedFilter: FilterType?
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var favoriteIds: Set<String> = []
+    /// Selected price range filter (`$`, `$$`, `$$$`)
+    @Published var priceRangeFilter: String?
+    /// Filter businesses that have an active promotion (`true`) or not (`false`).
+    @Published var hasActivePromoFilter: Bool?
+    /// Address based filtering. Leaving a field empty means it won't be used.
+    @Published var addressFilter = AddressFilter()
+    /// Currently selected sorting option
+    @Published var sortOption: SortOption = .rating
+
+    /// Internal storage for the raw results before applying filtering & sorting
+    private var allResults: [Restaurant] = []
 
     private let service = BusinessService()
     private let listService = ListService()
@@ -30,10 +42,11 @@ final class BusinessViewModel: ObservableObject {
     func search() async {
         do {
             if searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                searchResults = try await service.getAllBusinesses()
+                allResults = try await service.getAllBusinesses()
             } else {
-                searchResults = try await service.searchBusinesses(searchTerm)
+                allResults = try await service.searchBusinesses(searchTerm)
             }
+            applyFiltersAndSort()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -48,7 +61,8 @@ final class BusinessViewModel: ObservableObject {
             if filter == .all {
                 await search()
             } else if let tag = filter.tagId {
-                searchResults = try await service.getByTag(tag)
+                allResults = try await service.getByTag(tag)
+                applyFiltersAndSort()
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -82,7 +96,8 @@ final class BusinessViewModel: ObservableObject {
     func fetchNearby() async {
         guard let location = userLocation else { return }
         do {
-            searchResults = try await service.getNearby(latitude: location.latitude, longitude: location.longitude)
+            allResults = try await service.getNearby(latitude: location.latitude, longitude: location.longitude)
+            applyFiltersAndSort()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -107,6 +122,76 @@ final class BusinessViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
+
+    /// Apply address, price and promotion filters and then sort the results
+    func applyFiltersAndSort() {
+        var filtered = allResults
+
+        if let price = priceRangeFilter {
+            filtered = filtered.filter { $0.priceRange == price }
+        }
+
+        if let hasPromo = hasActivePromoFilter {
+            filtered = filtered.filter { business in
+                let active = business.promotions.contains { $0.isActive }
+                return active == hasPromo
+            }
+        }
+
+        if !addressFilter.city.isEmpty {
+            filtered = filtered.filter { $0.address?.city == addressFilter.city }
+        }
+        if !addressFilter.district.isEmpty {
+            filtered = filtered.filter { $0.address?.district == addressFilter.district }
+        }
+        if !addressFilter.neighborhood.isEmpty {
+            filtered = filtered.filter { $0.address?.neighborhood == addressFilter.neighborhood }
+        }
+        if !addressFilter.street.isEmpty {
+            filtered = filtered.filter { $0.address?.street == addressFilter.street }
+        }
+
+        switch sortOption {
+        case .rating:
+            filtered.sort { $0.rating > $1.rating }
+        case .distance:
+            filtered.sort { ($0.distance ?? .infinity) < ($1.distance ?? .infinity) }
+        case .name:
+            filtered.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .promo:
+            filtered.sort {
+                let a = $0.promotions.contains { $0.isActive }
+                let b = $1.promotions.contains { $1.isActive }
+                if a == b { return $0.name < $1.name }
+                return a && !b
+            }
+        }
+
+        searchResults = filtered
+    }
+
+    /// Reset all filter fields
+    func clearFilters() {
+        priceRangeFilter = nil
+        hasActivePromoFilter = nil
+        addressFilter = AddressFilter()
+        applyFiltersAndSort()
+    }
+}
+
+// MARK: - Supporting Types
+struct AddressFilter {
+    var city: String = ""
+    var district: String = ""
+    var neighborhood: String = ""
+    var street: String = ""
+}
+
+enum SortOption: String, CaseIterable {
+    case rating
+    case distance
+    case name
+    case promo
 }
 
 enum FilterType: String, CaseIterable {

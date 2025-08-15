@@ -51,6 +51,7 @@ struct RestaurantRow: View {
             description: "",
             priceRange: "$$",
             rating: 4.5,
+            distance: 1500,
             address: Address(id: "a1", street: "Main St", city: "City", district: "District", neighborhood: "Neighborhood"),
             tags: [Tag(id: "t1", name: "Fast Food")],
             promotions: []

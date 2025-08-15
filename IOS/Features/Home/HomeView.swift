@@ -8,6 +8,7 @@ struct HomeView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var showLogin = false
     @State private var showProfile = false
+    @State private var showAddressSheet = false
 
     var body: some View {
         NavigationView {
@@ -17,6 +18,38 @@ struct HomeView: View {
                         HStack {
                             TextField("Ara", text: $viewModel.searchTerm)
                                 .textFieldStyle(.roundedBorder)
+
+                            Menu {
+                                Section("Fiyat") {
+                                    Button("$") { viewModel.priceRangeFilter = "$"; viewModel.applyFiltersAndSort() }
+                                    Button("$$") { viewModel.priceRangeFilter = "$$"; viewModel.applyFiltersAndSort() }
+                                    Button("$$$") { viewModel.priceRangeFilter = "$$$"; viewModel.applyFiltersAndSort() }
+                                }
+                                Section("Promosyon") {
+                                    Button("Var") { viewModel.hasActivePromoFilter = true; viewModel.applyFiltersAndSort() }
+                                    Button("Yok") { viewModel.hasActivePromoFilter = false; viewModel.applyFiltersAndSort() }
+                                }
+                                Section {
+                                    Button("Adres") { showAddressSheet = true }
+                                    Button("Temizle") { viewModel.clearFilters() }
+                                }
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .padding(8)
+                            }
+
+                            Menu {
+                                ForEach(SortOption.allCases, id: \.self) { option in
+                                    Button(option.rawValue.capitalized) {
+                                        viewModel.sortOption = option
+                                        viewModel.applyFiltersAndSort()
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up.arrow.down")
+                                    .padding(8)
+                            }
+
                             Button("Ara") {
                                 Task { await viewModel.search() }
                             }
@@ -90,6 +123,30 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showProfile) {
                 ProfileView()
+            }
+            .sheet(isPresented: $showAddressSheet) {
+                NavigationView {
+                    Form {
+                        Section("Adres") {
+                            TextField("City", text: $viewModel.addressFilter.city)
+                            TextField("District", text: $viewModel.addressFilter.district)
+                            TextField("Neighborhood", text: $viewModel.addressFilter.neighborhood)
+                            TextField("Street", text: $viewModel.addressFilter.street)
+                        }
+                    }
+                    .navigationTitle("Adres Filtrele")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") {
+                                showAddressSheet = false
+                                viewModel.applyFiltersAndSort()
+                            }
+                        }
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") { showAddressSheet = false }
+                        }
+                    }
+                }
             }
             .task {
                 await viewModel.fetchTopRated()
