@@ -5,8 +5,8 @@ import Supabase
 enum SupabaseClientFactory {
     /// Shared Supabase client instance used across the app.
     static let shared: SupabaseClient = createClient(
-        url: URL(string: "https://your-project.supabase.co")!,
-        anonKey: "public-anon-key"
+        url: AppConfiguration.supabaseURL,
+        anonKey: AppConfiguration.supabaseAnonKey
     )
 }
 

@@ -11,7 +11,7 @@ final class APIClient {
     private let session: URLSession
     private var authData: AuthData?
 
-    init(baseURL: URL = URL(string: "https://example.com/api")!,
+    init(baseURL: URL = AppConfiguration.apiBaseURL,
          session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session

@@ -25,6 +25,9 @@ let package = Package(
                 "IOSUITests",
                 "IOSTests",
                 "Assets.xcassets"
+            ],
+            resources: [
+                .process("Configuration.plist")
             ]
         ),
         .testTarget(
