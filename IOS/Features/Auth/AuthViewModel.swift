@@ -9,7 +9,6 @@ final class AuthViewModel: ObservableObject {
     @Published var isAuthenticated: Bool
 
     private let service = AuthService()
-    private let session = UserSession.shared
     private let userService = UserService()
     private let appViewModel: AppViewModel
 
@@ -17,8 +16,7 @@ final class AuthViewModel: ObservableObject {
         self.appViewModel = appViewModel
         self.isAuthenticated = appViewModel.isAuthenticated
 
-        if let auth = service.getAuthData() {
-            session.save(userId: auth.user?.id, token: auth.accessToken)
+        if service.getAuthData() != nil {
             appViewModel.isAuthenticated = true
             isAuthenticated = true
         }
@@ -28,8 +26,6 @@ final class AuthViewModel: ObservableObject {
     func login() async {
         do {
             let data = try await service.login(email: email, password: password, role: role)
-            session.save(userId: data.user?.id, token: data.accessToken)
-            service.saveAuthData(data)
             if let id = data.user?.id {
                 try await userService.fetchUserData(userId: id, role: role)
             }
