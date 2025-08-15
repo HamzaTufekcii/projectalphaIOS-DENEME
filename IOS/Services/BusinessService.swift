@@ -37,7 +37,7 @@ final class BusinessService {
     }
 
     func getBusinessReviews(_ businessId: String) async throws -> [Review] {
-        let dtos: [ReviewDTO] = try await api.request("\(base)/reviews/\(businessId)")
+        let dtos: [ReviewInfoDTO] = try await api.request("\(base)/reviews/\(businessId)")
         return dtos.map(ReviewMapper.map)
     }
 
