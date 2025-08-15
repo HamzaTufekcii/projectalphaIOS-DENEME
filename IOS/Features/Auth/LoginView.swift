@@ -1,8 +1,11 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var viewModel = AuthViewModel()
-    @EnvironmentObject var appViewModel: AppViewModel
+    @StateObject private var viewModel: AuthViewModel
+
+    init(appViewModel: AppViewModel) {
+        _viewModel = StateObject(wrappedValue: AuthViewModel(appViewModel: appViewModel))
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -16,9 +19,6 @@ struct LoginView: View {
             Button("Login") {
                 Task {
                     await viewModel.login()
-                    if viewModel.isAuthenticated {
-                        appViewModel.isAuthenticated = true
-                    }
                 }
             }
         }
@@ -27,6 +27,6 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginView(appViewModel: AppViewModel())
 }
 

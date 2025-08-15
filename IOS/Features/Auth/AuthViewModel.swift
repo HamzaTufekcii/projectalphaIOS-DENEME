@@ -5,12 +5,16 @@ final class AuthViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var role: String = "user"
-    @Published var isAuthenticated: Bool = false
     @Published var errorMessage: String?
 
     private let service = AuthService()
     private let session = UserSession.shared
     private let userService = UserService()
+    private let appViewModel: AppViewModel
+
+    init(appViewModel: AppViewModel) {
+        self.appViewModel = appViewModel
+    }
 
     // MARK: - Actions
     func login() async {
@@ -21,7 +25,7 @@ final class AuthViewModel: ObservableObject {
             if let id = data.user?.id {
                 try await userService.fetchUserData(userId: id, role: role)
             }
-            isAuthenticated = true
+            appViewModel.isAuthenticated = true
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -55,7 +59,7 @@ final class AuthViewModel: ObservableObject {
     
     func logout() {
         service.logout()
-        isAuthenticated = false
+        appViewModel.isAuthenticated = false
     }
 }
 

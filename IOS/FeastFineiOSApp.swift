@@ -10,7 +10,7 @@ struct FeastFineiOSApp: App {
                 HomeView()
                     .environmentObject(appViewModel)
             } else {
-                LoginView()
+                LoginView(appViewModel: appViewModel)
                     .environmentObject(appViewModel)
             }
         }
