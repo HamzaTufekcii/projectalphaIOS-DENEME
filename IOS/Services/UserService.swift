@@ -9,6 +9,16 @@ struct UserProfile: Codable {
     let id: String
     let name: String
     let email: String?
+    let surname: String?
+    let phoneNumber: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case email
+        case surname
+        case phoneNumber = "phone_numb"
+    }
 }
 
 struct UserLike: Identifiable, Codable {
@@ -36,12 +46,22 @@ final class UserService {
     private let base = "users"
     private let tokenKey = "authToken"
     private let userIdKey = "userId"
+    private let userRoleKey = "userRole"
+    private let favoritesIdKey = "favoritesListId"
 
     // MARK: - Secure Storage
     /// Persists user identifier and token securely using Keychain.
     func saveUserData(_ data: UserData) {
         storage.save(data.userId, for: userIdKey)
         storage.save(data.token, for: tokenKey)
+    }
+
+    func saveUserRole(_ role: String) {
+        storage.save(role, for: userRoleKey)
+    }
+
+    func saveUserFavoritesId(_ id: String) {
+        storage.save(id, for: favoritesIdKey)
     }
 
     /// Retrieves stored user identifier and token.
@@ -51,6 +71,14 @@ final class UserService {
             return nil
         }
         return UserData(userId: userId, token: token)
+    }
+
+    func getUserRoleFromStorage() -> String? {
+        return storage.read(for: userRoleKey)
+    }
+
+    func getUserFavoritesIdFromStorage() -> String? {
+        return storage.read(for: favoritesIdKey)
     }
 
     // MARK: - Remote Operations
@@ -93,9 +121,37 @@ final class UserService {
 
     /// Updates profile information for the given user and returns the updated profile.
     func updateUserData(userId: String, profile: UserProfile) async throws -> UserProfile {
-        let body = try JSONEncoder().encode(profile)
+        let role = getUserRoleFromStorage()
+        let request = DinerUpdateRequest(
+            email: profile.email,
+            role: role,
+            requestDiner: .init(
+                name: profile.name,
+                surname: profile.surname,
+                phoneNumber: profile.phoneNumber
+            )
+        )
+        let body = try JSONEncoder().encode(request)
         return try await api.request("\(base)/diner_user/\(userId)/profile", method: "PUT", body: body)
     }
 }
 
 private struct EmptyResponse: Decodable {}
+
+private struct DinerUpdateRequest: Codable {
+    let email: String?
+    let role: String?
+    let requestDiner: DinerUserProfile
+
+    struct DinerUserProfile: Codable {
+        let name: String
+        let surname: String?
+        let phoneNumber: String?
+
+        enum CodingKeys: String, CodingKey {
+            case name
+            case surname
+            case phoneNumber = "phone_numb"
+        }
+    }
+}
