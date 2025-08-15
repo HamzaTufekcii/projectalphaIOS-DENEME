@@ -43,7 +43,7 @@ struct UserReview: Identifiable, Codable {
 final class UserService {
     private let api = APIClient.shared
     private let storage = SecureStorage.shared
-    private let base = "users"
+    private let base = "api/users"
     private let tokenKey = "authToken"
     private let userIdKey = "userId"
     private let userRoleKey = "userRole"
