@@ -67,6 +67,17 @@ struct ReviewDTO: Decodable {
     let comment: String?
 }
 
+struct ReviewInfoForBusinessDTO: Decodable {
+    let review: InnerReview
+    let reviewerName: String?
+
+    struct InnerReview: Decodable {
+        let id: String
+        let comment: String?
+        let rating: Double
+    }
+}
+
 // MARK: - Domain models
 struct Business: Identifiable {
     let id: String
@@ -148,6 +159,17 @@ enum ReviewMapper {
             reviewerName: dto.reviewerName ?? "",
             rating: dto.rating,
             comment: dto.comment ?? ""
+        )
+    }
+}
+
+enum ReviewInfoMapper {
+    static func map(_ dto: ReviewInfoForBusinessDTO) -> Review {
+        Review(
+            id: dto.review.id,
+            reviewerName: dto.reviewerName ?? "",
+            rating: dto.review.rating,
+            comment: dto.review.comment ?? ""
         )
     }
 }
