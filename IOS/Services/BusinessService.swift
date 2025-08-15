@@ -52,14 +52,28 @@ final class BusinessService {
         return PromotionMapper.map(dto)
     }
 
-    func updatePromotion(_ businessId: String, promotionId: String, promotion: PromotionRequest) async throws -> Promotion {
+    func updatePromotion(_ businessId: String, promotionId: String, promotion: PromotionRequest) async throws {
         let body = try encodePromotionRequest(promotion)
-        let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)/\(promotionId)", method: "PATCH", body: body)
-        return PromotionMapper.map(dto)
+        let response: GenericResponse<EmptyResponse> = try await api.request(
+            "\(base)/promotions/\(businessId)/\(promotionId)",
+            method: "PATCH",
+            body: body
+        )
+        guard response.success else { throw APIError.badRequest(response.message) }
+        if let message = response.message {
+            print(message)
+        }
     }
 
-    func deletePromotion(_ businessId: String, promotionId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/promotions/\(businessId)/\(promotionId)", method: "DELETE")
+    func deletePromotion(_ businessId: String, promotionId: String) async throws {
+        let response: GenericResponse<EmptyResponse> = try await api.request(
+            "\(base)/promotions/\(businessId)/\(promotionId)",
+            method: "DELETE"
+        )
+        guard response.success else { throw APIError.badRequest(response.message) }
+        if let message = response.message {
+            print(message)
+        }
     }
 
     func setViewed(_ reviewId: String) async throws -> EmptyResponse {
