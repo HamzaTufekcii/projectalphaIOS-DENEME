@@ -18,10 +18,10 @@ final class ListsViewModel: ObservableObject {
         }
     }
 
-    func createList(name: String) async {
+    func createList(name: String, isPublic: Bool = false) async {
         guard let userId = session.getUserId() else { return }
         do {
-            let newList = try await service.createList(userId: userId, name: name)
+            let newList = try await service.createList(userId: userId, name: name, isPublic: isPublic)
             lists.append(newList)
             errorMessage = nil
         } catch {
