@@ -30,4 +30,20 @@ final class AuthServiceTests: XCTestCase {
         XCTAssertEqual(auth.refreshToken, "def")
         XCTAssertEqual(auth.user?.id, "1")
     }
+
+    func testVerifyCodeParsesVerificationResponse() async throws {
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.url?.path, "/api/auth/verify-verification-code")
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            let json = "{" +
+                "\"token\":\"abc\"," +
+                "\"userId\":\"1\"}"
+            let data = Data(json.utf8)
+            return (response, data)
+        }
+        let service = AuthService()
+        let verification = try await service.verifyCode(email: "test@example.com", token: "123456")
+        XCTAssertEqual(verification.token, "abc")
+        XCTAssertEqual(verification.userId, "1")
+    }
 }

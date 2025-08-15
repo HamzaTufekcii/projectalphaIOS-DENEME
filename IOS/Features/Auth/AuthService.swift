@@ -11,11 +11,10 @@ final class AuthService {
         let _: EmptyResponse = try await api.request("api/auth/send-verification-code", method: "POST", body: body)
     }
 
-    func verifyCode(email: String, token: String) async throws -> AuthData {
+    func verifyCode(email: String, token: String) async throws -> VerificationResponse {
         let body = try JSONEncoder().encode(["email": email, "token": token])
-        let auth: AuthData = try await api.request("api/auth/verify-verification-code", method: "POST", body: body)
-        api.setAuthData(auth)
-        return auth
+        let response: VerificationResponse = try await api.request("api/auth/verify-verification-code", method: "POST", body: body)
+        return response
     }
 
     func updateUser(email: String, password: String, role: String) async throws {

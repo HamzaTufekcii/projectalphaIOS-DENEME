@@ -15,24 +15,7 @@ public struct AuthData: Codable {
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
         case refreshToken = "refresh_token"
-        case accessTokenCamel = "accessToken"
-        case refreshTokenCamel = "refreshToken"
         case user
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let token = try? container.decode(String.self, forKey: .accessToken) {
-            accessToken = token
-        } else {
-            accessToken = try container.decode(String.self, forKey: .accessTokenCamel)
-        }
-        if let token = try? container.decode(String.self, forKey: .refreshToken) {
-            refreshToken = token
-        } else {
-            refreshToken = try container.decode(String.self, forKey: .refreshTokenCamel)
-        }
-        user = try container.decodeIfPresent(User.self, forKey: .user)
     }
 }
 

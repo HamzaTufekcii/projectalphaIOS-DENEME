@@ -32,9 +32,7 @@ final class AuthViewModel: ObservableObject {
 
     func verifyCode(email: String, token: String) async {
         do {
-            let data = try await service.verifyCode(email: email, token: token)
-            service.saveAuthData(data)
-            isAuthenticated = true
+            _ = try await service.verifyCode(email: email, token: token)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
