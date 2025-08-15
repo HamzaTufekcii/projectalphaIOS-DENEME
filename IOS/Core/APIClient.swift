@@ -31,26 +31,35 @@ final class APIClient: APIClientProtocol {
         self.authData = data
     }
 
-    /// Performs a request and decodes the response into the expected type.
+    /// Performs a request for the given path and HTTP method.
     func request<T: Decodable>(_ path: String,
                                method: String = "GET",
                                body: Data? = nil) async throws -> T {
         message = nil
         let url = baseURL.appendingPathComponent(path)
-        guard url.scheme?.lowercased() == "https" else {
-            throw APIClientError.insecureURL
-        }
-
         var request = URLRequest(url: url)
         request.httpMethod = method
-
-        if let token = authData?.accessToken {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
 
         if let body = body {
             request.httpBody = body
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+
+        return try await performRequest(request)
+    }
+
+    /// Executes the URLRequest and decodes the response into either `T`
+    /// directly or a `GenericResponse<T>` wrapper.
+    private func performRequest<T: Decodable>(_ request: URLRequest,
+                                              includeToken: Bool = true,
+                                              allowRefresh: Bool = true) async throws -> T {
+        guard request.url?.scheme?.lowercased() == "https" else {
+            throw APIClientError.insecureURL
+        }
+
+        var request = request
+        if includeToken, let token = authData?.accessToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
         let (data, response) = try await session.data(for: request)
@@ -69,7 +78,6 @@ final class APIClient: APIClientProtocol {
             }
 
             let decoder = JSONDecoder()
-
             if let direct = try? decoder.decode(T.self, from: data) {
                 return direct
             }
@@ -89,15 +97,36 @@ final class APIClient: APIClientProtocol {
             }
 
             throw APIError.unknown(statusCode: http.statusCode, message: wrapped.message)
+
         case 401:
+            if allowRefresh, await refreshTokens() {
+                return try await performRequest(request, includeToken: includeToken, allowRefresh: false)
+            }
             throw APIError.unauthorized
+
         default:
             throw APIError.from(statusCode: http.statusCode, data: data)
         }
     }
 
-    // TODO: When a refresh endpoint becomes available, coordinate with the
-    // backend team to determine the proper path and request body before
-    // reintroducing refresh logic.
+    /// Attempts to refresh the authentication tokens using the stored refresh token.
+    private func refreshTokens() async -> Bool {
+        guard let refresh = authData?.refreshToken else { return false }
+        var url = baseURL.appendingPathComponent("api/auth/refresh")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try? JSONEncoder().encode(["refresh_token": refresh])
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            let newAuth: AuthData = try await performRequest(request,
+                                                             includeToken: false,
+                                                             allowRefresh: false)
+            setAuthData(newAuth)
+            return true
+        } catch {
+            return false
+        }
+    }
 }
 
