@@ -19,12 +19,12 @@ struct HomeView: View {
                         }
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
-                                ForEach(Category.allCases, id: \.self) { category in
+                                ForEach(FilterType.allCases, id: \.self) { filter in
                                     Button {
-                                        viewModel.searchTerm = category.rawValue
-                                        Task { await viewModel.search() }
+                                        viewModel.selectedFilter = filter
+                                        Task { await viewModel.applyFilter() }
                                     } label: {
-                                        Image(systemName: category.icon)
+                                        Image(systemName: filter.icon)
                                             .padding(8)
                                     }
                                 }
@@ -49,10 +49,10 @@ struct HomeView: View {
                 }
 
                 Section {
-                    if viewModel.businesses.isEmpty {
+                    if viewModel.searchResults.isEmpty {
                         Text("Sonuç bulunamadı")
                     } else {
-                        ForEach(viewModel.businesses) { business in
+                        ForEach(viewModel.searchResults) { business in
                             NavigationLink(destination: RestaurantDetailView(businessId: business.id)) {
                                 RestaurantRow(restaurant: business)
                             }
@@ -71,29 +71,17 @@ struct HomeView: View {
                 LoginView(appViewModel: appViewModel)
             }
             .task {
-                await viewModel.fetchAll()
                 await viewModel.fetchTopRated()
+                await viewModel.search()
             }
-        }
-    }
-}
-
-enum Category: String, CaseIterable {
-    case wine = "Wine"
-    case pizza = "Pizza"
-    case coffee = "Coffee"
-    case burger = "Burger"
-    case cafe = "Cafe"
-    case promo = "Promo"
-
-    var icon: String {
-        switch self {
-        case .wine: return "wineglass"
-        case .pizza: return "takeoutbag.and.cup.and.straw"
-        case .coffee: return "cup.and.saucer"
-        case .burger: return "fork.knife"
-        case .cafe: return "building.2"
-        case .promo: return "tag"
+            .alert("Error", isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { _ in viewModel.errorMessage = nil }
+            )) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
         }
     }
 }
