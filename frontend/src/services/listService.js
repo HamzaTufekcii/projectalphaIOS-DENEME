@@ -1,16 +1,16 @@
 // src/services/listService.js
 
 import axios from 'axios';
-import {getUserFavoritesIdFromStorage, getUserIdFromStorage} from "./userService.js";
+import {getUserFavoritesIdFromStorage} from "./userService.js";
 
 const API_URL = '/api/users';
 
 export const addToList = async (userId, listId, itemId) => {
-    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`, {});
+    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${listId}/items/${itemId}`);
     return response.data;
 }
 export const addToFavorites = async (userId, itemId) => {
-    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${getUserFavoritesIdFromStorage()}/items/${itemId}`, {});
+    const response = await axios.post(`${API_URL}/diner_user/${userId}/lists/${getUserFavoritesIdFromStorage()}/items/${itemId}`);
     return response.data;
 }
 export const removeFromList = async (userId, listId,itemId) => {
@@ -65,18 +65,15 @@ export const getPublicLists = async () => {
 
 }
 
-export const toggleFavorite = async (id) => {
-
-    const favorites = await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
-    const isFavorited = favorites.some(fav => fav.id === id);
-
+export const toggleFavorite = async (userId, itemId) => {
+    const favorites = await getUserListItems(userId, getUserFavoritesIdFromStorage());
+    const isFavorited = favorites.some(fav => fav.id === itemId);
 
     if (isFavorited) {
-        await removeFromList(getUserIdFromStorage(), getUserFavoritesIdFromStorage(), id);
-        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
-
+        await removeFromList(userId, getUserFavoritesIdFromStorage(), itemId);
     } else {
-        await addToFavorites(getUserIdFromStorage(), id);
-        return await getUserListItems(getUserIdFromStorage(), getUserFavoritesIdFromStorage());
+        await addToFavorites(userId, itemId);
     }
+
+    return await getUserListItems(userId, getUserFavoritesIdFromStorage());
 }

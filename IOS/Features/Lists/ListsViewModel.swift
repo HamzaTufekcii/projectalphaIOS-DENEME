@@ -19,8 +19,9 @@ final class ListsViewModel: ObservableObject {
     }
 
     func createList(name: String) async {
+        guard let userId = session.getUserId() else { return }
         do {
-            let newList = try await service.createList(name: name)
+            let newList = try await service.createList(userId: userId, name: name)
             lists.append(newList)
             errorMessage = nil
         } catch {
@@ -29,21 +30,10 @@ final class ListsViewModel: ObservableObject {
     }
 
     func removeList(_ id: String) async {
+        guard let userId = session.getUserId() else { return }
         do {
-            try await service.removeList(listId: id)
+            try await service.removeList(userId: userId, listId: id)
             lists.removeAll { $0.id == id }
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func toggleFavorite(_ id: String) async {
-        do {
-            let updated = try await service.toggleFavorite(listId: id)
-            if let index = lists.firstIndex(where: { $0.id == updated.id }) {
-                lists[index] = updated
-            }
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

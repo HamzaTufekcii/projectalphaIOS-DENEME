@@ -14,49 +14,65 @@ struct ListItem: Identifiable, Decodable {
 /// Service handling list operations through the API client.
 final class ListService {
     private let api = APIClient.shared
-    private let base = "lists"
+    private let base = "api/users/diner_user"
 
-    func addToList(listId: String, itemId: String) async throws {
-        let body = try JSONEncoder().encode(["itemId": itemId])
-        let _: EmptyResponse = try await api.request("\(base)/\(listId)/items", method: "POST", body: body)
+    func addToList(userId: String, listId: String, itemId: String) async throws {
+        let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
+        let _: EmptyResponse = try await api.request(path, method: "POST")
     }
 
-    func addToFavorites(itemId: String) async throws {
-        try await addToList(listId: "favorites", itemId: itemId)
+    func addToFavorites(userId: String, itemId: String) async throws {
+        try await addToList(userId: userId, listId: "favorites", itemId: itemId)
     }
 
-    func removeFromList(listId: String, itemId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/\(listId)/items/\(itemId)", method: "DELETE")
+    func removeFromList(userId: String, listId: String, itemId: String) async throws {
+        let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
+        let _: EmptyResponse = try await api.request(path, method: "DELETE")
     }
 
-    func createList(name: String) async throws -> UserList {
+    func createList(userId: String, name: String) async throws -> UserList {
         let body = try JSONEncoder().encode(["name": name])
-        return try await api.request(base, method: "POST", body: body)
+        let path = "\(base)/\(userId)/lists"
+        return try await api.request(path, method: "POST", body: body)
     }
 
-    func removeList(listId: String) async throws {
-        let _: EmptyResponse = try await api.request("\(base)/\(listId)", method: "DELETE")
+    func removeList(userId: String, listId: String) async throws {
+        let path = "\(base)/\(userId)/lists/\(listId)"
+        let _: EmptyResponse = try await api.request(path, method: "DELETE")
     }
 
-    func updateList(listId: String, name: String) async throws -> UserList {
+    func updateList(userId: String, listId: String, name: String) async throws -> UserList {
         let body = try JSONEncoder().encode(["name": name])
-        return try await api.request("\(base)/\(listId)", method: "PATCH", body: body)
+        let path = "\(base)/\(userId)/lists/\(listId)"
+        return try await api.request(path, method: "PATCH", body: body)
     }
 
     func getUserLists(userId: String) async throws -> [UserList] {
-        return try await api.request("users/\(userId)/\(base)")
+        let path = "\(base)/\(userId)/lists"
+        return try await api.request(path)
     }
 
-    func getUserListItems(listId: String) async throws -> [ListItem] {
-        return try await api.request("\(base)/\(listId)/items")
+    func getUserListItems(userId: String, listId: String) async throws -> [ListItem] {
+        let path = "\(base)/\(userId)/lists/\(listId)/items"
+        return try await api.request(path)
     }
 
-    func getPublicLists() async throws -> [UserList] {
-        return try await api.request("\(base)/public")
+    func getPublicLists(userId: String) async throws -> [UserList] {
+        let path = "\(base)/\(userId)/public/lists"
+        return try await api.request(path)
     }
 
-    func toggleFavorite(listId: String) async throws -> UserList {
-        return try await api.request("\(base)/\(listId)/favorite", method: "POST")
+    func toggleFavorite(userId: String, itemId: String) async throws -> [ListItem] {
+        let favorites = try await getUserListItems(userId: userId, listId: "favorites")
+        let isFavorited = favorites.contains { $0.id == itemId }
+
+        if (isFavorited) {
+            try await removeFromList(userId: userId, listId: "favorites", itemId: itemId)
+        } else {
+            try await addToFavorites(userId: userId, itemId: itemId)
+        }
+
+        return try await getUserListItems(userId: userId, listId: "favorites")
     }
 }
 

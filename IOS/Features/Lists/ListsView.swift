@@ -16,9 +16,6 @@ struct ListsView: View {
                                 Image(systemName: "star.fill").foregroundColor(.yellow)
                             }
                         }
-                        .onTapGesture {
-                            Task { await viewModel.toggleFavorite(list.id) }
-                        }
                     }
                     .onDelete { indexSet in
                         for index in indexSet {
