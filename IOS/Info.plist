@@ -26,6 +26,7 @@
     <array>
         <string>UIInterfaceOrientationPortrait</string>
     </array>
+    <!-- No ATS exceptions defined; HTTP-based tests will not run on real devices -->
     <key>NSAppTransportSecurity</key>
     <dict/>
 </dict>
