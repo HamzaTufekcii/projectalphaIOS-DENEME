@@ -52,11 +52,15 @@ final class APIClient {
 
         switch http.statusCode {
         case 200..<300:
-            let decoder = JSONDecoder()
-
-            if data.isEmpty && T.self == EmptyResponse.self {
-                return EmptyResponse() as! T
+            if data.isEmpty {
+                if T.self == EmptyResponse.self {
+                    return EmptyResponse() as! T
+                } else {
+                    throw APIError.unknown(statusCode: http.statusCode, message: nil)
+                }
             }
+
+            let decoder = JSONDecoder()
 
             if let direct = try? decoder.decode(T.self, from: data) {
                 return direct
