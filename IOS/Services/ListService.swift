@@ -20,7 +20,10 @@ struct UserList: Identifiable, Decodable {
 final class ListService {
     private let api = APIClient.shared
     private let userService = UserService()
-    private let base = "api/users/diner_user"
+    private var base: String {
+        let role = userService.getUserRoleFromStorage() ?? "diner_user"
+        return "api/users/\(role)"
+    }
 
     func addToList(userId: String, listId: String, itemId: String) async throws {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"

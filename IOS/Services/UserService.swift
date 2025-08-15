@@ -81,6 +81,18 @@ final class UserService {
         return storage.read(for: favoritesIdKey)
     }
 
+    /// Retrieves profile and list data for the user and persists role and favorites list id.
+    func fetchUserData(userId: String, role: String) async throws {
+        let rolePath = role == "owner" ? "owner_user" : "diner_user"
+        saveUserRole(rolePath)
+
+        let response: UserProfileResponse = try await api.request("\(base)/\(rolePath)/\(userId)/profile")
+
+        if let favorites = response.dinerLists?.first(where: { $0.name == "Favorilerim" }) {
+            saveUserFavoritesId(favorites.id)
+        }
+    }
+
     // MARK: - Remote Operations
     /// Requests a password change for the specified user.
     func changePassword(userId: String, newPassword: String) async throws {
@@ -134,6 +146,11 @@ final class UserService {
         let body = try JSONEncoder().encode(request)
         return try await api.request("\(base)/diner_user/\(userId)/profile", method: "PUT", body: body)
     }
+}
+
+private struct UserProfileResponse: Decodable {
+    let profile: UserProfile
+    let dinerLists: [UserList]?
 }
 
 private struct EmptyResponse: Decodable {}
