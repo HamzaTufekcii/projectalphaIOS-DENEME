@@ -26,8 +26,11 @@
     <array>
         <string>UIInterfaceOrientationPortrait</string>
     </array>
-    <!-- No ATS exceptions defined; HTTP-based tests will not run on real devices -->
+    <!-- Only HTTPS connections are allowed; no ATS exceptions -->
     <key>NSAppTransportSecurity</key>
-    <dict/>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+    </dict>
 </dict>
 </plist>

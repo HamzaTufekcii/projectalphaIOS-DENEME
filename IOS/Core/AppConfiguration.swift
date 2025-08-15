@@ -2,21 +2,26 @@ import Foundation
 
 enum AppConfiguration {
     private static let info: [String: Any] = {
-        if let envBaseURL = ProcessInfo.processInfo.environment["API_BASE_URL"],
-           let envSupabaseURL = ProcessInfo.processInfo.environment["SUPABASE_URL"],
-           let envSupabaseKey = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"] {
-            return [
-                "API_BASE_URL": envBaseURL,
-                "SUPABASE_URL": envSupabaseURL,
-                "SUPABASE_ANON_KEY": envSupabaseKey
-            ]
+        var config: [String: Any] = [:]
+
+        if let url = Bundle.module.url(forResource: "Configuration", withExtension: "plist"),
+           let data = try? Data(contentsOf: url),
+           let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+            config = dict
         }
-        guard let url = Bundle.module.url(forResource: "Configuration", withExtension: "plist"),
-              let data = try? Data(contentsOf: url),
-              let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
-            return [:]
+
+        let env = ProcessInfo.processInfo.environment
+        if let envBaseURL = env["API_BASE_URL"] {
+            config["API_BASE_URL"] = envBaseURL
         }
-        return dict
+        if let envSupabaseURL = env["SUPABASE_URL"] {
+            config["SUPABASE_URL"] = envSupabaseURL
+        }
+        if let envSupabaseKey = env["SUPABASE_ANON_KEY"] {
+            config["SUPABASE_ANON_KEY"] = envSupabaseKey
+        }
+
+        return config
     }()
 
     static var apiBaseURL: URL {
