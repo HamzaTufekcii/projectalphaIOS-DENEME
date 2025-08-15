@@ -50,7 +50,30 @@ final class APIClient {
 
         switch http.statusCode {
         case 200..<300:
-            return try JSONDecoder().decode(T.self, from: data)
+            let decoder = JSONDecoder()
+
+            if data.isEmpty, String(describing: T.self) == "EmptyResponse" {
+                return try decoder.decode(T.self, from: Data("{}".utf8))
+            }
+
+            if let direct = try? decoder.decode(T.self, from: data) {
+                return direct
+            }
+
+            let wrapped = try decoder.decode(GenericResponse<T>.self, from: data)
+            guard wrapped.success else {
+                throw APIError.badRequest(wrapped.message)
+            }
+
+            if let payload = wrapped.data {
+                return payload
+            }
+
+            if String(describing: T.self) == "EmptyResponse" {
+                return try decoder.decode(T.self, from: Data("{}".utf8))
+            }
+
+            throw APIError.unknown(statusCode: http.statusCode, message: wrapped.message)
         case 401:
             throw APIError.unauthorized
         default:
