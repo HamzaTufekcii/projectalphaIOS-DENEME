@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE = '/api/business';
+const API_BASE = 'api/business';
 
 /**
  * Fetches all businesses.

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>API_BASE_URL</key>
-    <string>https://example.com/api</string>
+    <string>https://example.com</string>
     <key>SUPABASE_URL</key>
     <string>https://your-project.supabase.co</string>
     <key>SUPABASE_ANON_KEY</key>
