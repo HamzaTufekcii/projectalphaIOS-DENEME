@@ -62,9 +62,10 @@ final class ListService {
         return try await api.request(path)
     }
 
-    func getUserListItems(userId: String, listId: String) async throws -> [BusinessDTO] {
+    func getUserListItems(userId: String, listId: String) async throws -> [Restaurant] {
         let path = "\(base)/\(userId)/lists/\(listId)/items"
-        return try await api.request(path)
+        let dtos: [BusinessDTO] = try await api.request(path)
+        return dtos.map(BusinessMapper.map)
     }
 
     func getPublicLists() async throws -> [UserList] {
@@ -72,7 +73,7 @@ final class ListService {
         return try await api.request(path)
     }
 
-    func toggleFavorite(userId: String, itemId: String) async throws -> [BusinessDTO] {
+    func toggleFavorite(userId: String, itemId: String) async throws -> [Restaurant] {
         guard let favoritesId = userService.getUserFavoritesIdFromStorage() else { return [] }
         let favorites = try await getUserListItems(userId: userId, listId: favoritesId)
         let isFavorited = favorites.contains { $0.id == itemId }
