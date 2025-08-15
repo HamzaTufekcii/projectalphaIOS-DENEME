@@ -1,6 +1,6 @@
 import Foundation
 
-/// Service responsible for fetching business related data from backend.
+/// Service responsible for fetching business related data from backend via `APIClient`.
 final class BusinessService {
     private let api: APIClientProtocol
     private let base = "api/business"

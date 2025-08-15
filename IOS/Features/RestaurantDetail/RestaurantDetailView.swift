@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RestaurantDetailView: View {
     let businessId: String
-    @StateObject private var viewModel = BusinessViewModel()
+    @StateObject private var viewModel = RestaurantDetailViewModel()
 
     var body: some View {
         List {

@@ -4,7 +4,7 @@ import CoreLocation
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @StateObject private var viewModel = BusinessViewModel()
+    @StateObject private var viewModel = HomeViewModel()
     @StateObject private var locationManager = LocationManager()
     @State private var showLogin = false
     @State private var showProfile = false

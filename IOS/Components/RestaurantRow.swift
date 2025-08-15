@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RestaurantRow: View {
     let restaurant: Restaurant
-    @EnvironmentObject var listViewModel: BusinessViewModel
+    @EnvironmentObject var listViewModel: HomeViewModel
 
     var body: some View {
         HStack(alignment: .top) {
@@ -57,5 +57,5 @@ struct RestaurantRow: View {
             promotions: []
         )
     )
-    .environmentObject(BusinessViewModel())
+    .environmentObject(HomeViewModel())
 }

@@ -36,8 +36,9 @@ struct PromotionDTO: Decodable {
     let description: String?
     let startDate: String?
     let endDate: String?
-    /// Backend now returns promotion amounts as integers. Support decoding either
-    /// an integer or a double value to maintain backwards compatibility.
+    /// Promotion discount amount represented as an optional integer to avoid
+    /// floating point precision issues. Old backend versions might return a
+    /// double which is coerced to `Int` during decoding.
     let amount: Int?
     let active: Bool
     let createdAt: String?
@@ -135,6 +136,7 @@ struct Tag: Identifiable {
 
 // MARK: - Mappers
 enum BusinessMapper {
+    /// Converts a backend `BusinessDTO` into the app's `Business` model.
     static func map(_ dto: BusinessDTO) -> Business {
         Business(
             id: dto.id,
