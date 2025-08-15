@@ -1,8 +1,10 @@
 import SwiftUI
+import CoreLocation
 
 struct HomeView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @StateObject private var viewModel = BusinessViewModel()
+    @StateObject private var locationManager = LocationManager()
     @State private var showLogin = false
 
     var body: some View {
@@ -74,6 +76,10 @@ struct HomeView: View {
                 await viewModel.fetchTopRated()
                 await viewModel.search()
             }
+            .onReceive(locationManager.$userLocation.compactMap { $0 }) { location in
+                viewModel.userLocation = location
+                Task { await viewModel.fetchNearby() }
+            }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { _ in viewModel.errorMessage = nil }
@@ -81,6 +87,14 @@ struct HomeView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(viewModel.errorMessage ?? "")
+            }
+            .alert("Location Error", isPresented: Binding(
+                get: { locationManager.locationStatus != nil },
+                set: { _ in locationManager.locationStatus = nil }
+            )) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(locationManager.locationStatus ?? "")
             }
         }
     }

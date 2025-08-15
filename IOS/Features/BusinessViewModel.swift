@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 
 @MainActor
 final class BusinessViewModel: ObservableObject {
@@ -10,6 +11,7 @@ final class BusinessViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var searchTerm: String = ""
     @Published var selectedFilter: FilterType?
+    @Published var userLocation: CLLocationCoordinate2D?
 
     private let service = BusinessService()
 
@@ -68,6 +70,15 @@ final class BusinessViewModel: ObservableObject {
     func fetchReviews(businessId: String) async {
         do {
             reviews = try await service.getBusinessReviews(businessId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func fetchNearby() async {
+        guard let location = userLocation else { return }
+        do {
+            searchResults = try await service.getNearby(latitude: location.latitude, longitude: location.longitude)
         } catch {
             errorMessage = error.localizedDescription
         }

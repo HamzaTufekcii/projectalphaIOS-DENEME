@@ -46,6 +46,11 @@ final class BusinessService {
         return dtos.map(PromotionMapper.map)
     }
 
+    func getNearby(latitude: Double, longitude: Double) async throws -> [Restaurant] {
+        let dtos: [BusinessDTO] = try await api.request("\(base)/nearby?lat=\(latitude)&lng=\(longitude)")
+        return dtos.map(BusinessMapper.map)
+    }
+
     func newPromotion(_ businessId: String, promotion: PromotionRequest) async throws -> Promotion {
         let body = try encodePromotionRequest(promotion)
         let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)", method: "POST", body: body)
