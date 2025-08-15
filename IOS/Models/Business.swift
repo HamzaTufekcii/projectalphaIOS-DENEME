@@ -31,9 +31,33 @@ struct PromotionDTO: Decodable {
     let description: String?
     let startDate: String?
     let endDate: String?
+    /// Backend now returns promotion amounts as integers. Support decoding either
+    /// an integer or a double value to maintain backwards compatibility.
     let amount: Int?
     let active: Bool
     let createdAt: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, description, startDate, endDate, amount, active, createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        startDate = try container.decodeIfPresent(String.self, forKey: .startDate)
+        endDate = try container.decodeIfPresent(String.self, forKey: .endDate)
+        if let intAmount = try container.decodeIfPresent(Int.self, forKey: .amount) {
+            amount = intAmount
+        } else if let doubleAmount = try container.decodeIfPresent(Double.self, forKey: .amount) {
+            amount = Int(doubleAmount)
+        } else {
+            amount = nil
+        }
+        active = try container.decode(Bool.self, forKey: .active)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+    }
 }
 
 struct ReviewDTO: Decodable {

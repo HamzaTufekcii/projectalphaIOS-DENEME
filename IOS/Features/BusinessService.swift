@@ -47,13 +47,13 @@ final class BusinessService {
     }
 
     func newPromotion(_ businessId: String, promotion: PromotionRequest) async throws -> Promotion {
-        let body = try JSONEncoder().encode(promotion)
+        let body = try encodePromotionRequest(promotion)
         let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)", method: "POST", body: body)
         return PromotionMapper.map(dto)
     }
 
     func updatePromotion(_ businessId: String, promotionId: String, promotion: PromotionRequest) async throws -> Promotion {
-        let body = try JSONEncoder().encode(promotion)
+        let body = try encodePromotionRequest(promotion)
         let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)/\(promotionId)", method: "PATCH", body: body)
         return PromotionMapper.map(dto)
     }
@@ -72,8 +72,38 @@ struct PromotionRequest: Encodable {
     let description: String?
     let startDate: String?
     let endDate: String?
+    /// Amount is now an optional integer. Encode as `Int` to avoid floating point
+    /// representations.
     let amount: Int?
     let isActive: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case title, description, startDate, endDate, amount, isActive
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(startDate, forKey: .startDate)
+        try container.encodeIfPresent(endDate, forKey: .endDate)
+        if let amount = amount {
+            try container.encode(Int(amount), forKey: .amount)
+        }
+        try container.encode(isActive, forKey: .isActive)
+    }
+}
+
+private func encodePromotionRequest(_ promotion: PromotionRequest) throws -> Data {
+    let request = PromotionRequest(
+        title: promotion.title,
+        description: promotion.description,
+        startDate: promotion.startDate,
+        endDate: promotion.endDate,
+        amount: promotion.amount.map(Int.init),
+        isActive: promotion.isActive
+    )
+    return try JSONEncoder().encode(request)
 }
 
 private struct EmptyResponse: Decodable {}
