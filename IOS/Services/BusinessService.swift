@@ -54,24 +54,22 @@ final class BusinessService {
 
     func updatePromotion(_ businessId: String, promotionId: String, promotion: PromotionRequest) async throws {
         let body = try encodePromotionRequest(promotion)
-        let response: GenericResponse<EmptyResponse> = try await api.request(
+        try await api.request(
             "\(base)/promotions/\(businessId)/\(promotionId)",
             method: "PATCH",
             body: body
-        )
-        guard response.success else { throw APIError.badRequest(response.message) }
-        if let message = response.message {
+        ) as EmptyResponse
+        if let message = api.message {
             print(message)
         }
     }
 
     func deletePromotion(_ businessId: String, promotionId: String) async throws {
-        let response: GenericResponse<EmptyResponse> = try await api.request(
+        try await api.request(
             "\(base)/promotions/\(businessId)/\(promotionId)",
             method: "DELETE"
-        )
-        guard response.success else { throw APIError.badRequest(response.message) }
-        if let message = response.message {
+        ) as EmptyResponse
+        if let message = api.message {
             print(message)
         }
     }

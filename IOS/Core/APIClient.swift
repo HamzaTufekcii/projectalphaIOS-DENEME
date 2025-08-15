@@ -10,6 +10,7 @@ final class APIClient {
     private let baseURL: URL
     private let session: URLSession
     private var authData: AuthData?
+    private(set) var message: String?
 
     init(baseURL: URL = AppConfiguration.apiBaseURL,
          session: URLSession = .shared) {
@@ -26,6 +27,7 @@ final class APIClient {
     func request<T: Decodable>(_ path: String,
                                method: String = "GET",
                                body: Data? = nil) async throws -> T {
+        message = nil
         let url = baseURL.appendingPathComponent(path)
         guard url.scheme?.lowercased() == "https" else {
             throw APIClientError.insecureURL
@@ -61,6 +63,7 @@ final class APIClient {
             }
 
             let wrapped = try decoder.decode(GenericResponse<T>.self, from: data)
+            message = wrapped.message
             guard wrapped.success else {
                 throw APIError.badRequest(wrapped.message)
             }

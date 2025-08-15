@@ -70,4 +70,19 @@ final class APIClientTests: XCTestCase {
             XCTAssertEqual(error as? APIError, .badRequest("bad"))
         }
     }
+
+    func testStoresMessageFromResponse() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: config)
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            let body = "{\"success\":true,\"message\":\"ok\"}"
+            return (response, Data(body.utf8))
+        }
+
+        let client = APIClient(baseURL: URL(string: "https://example.com/api")!, session: session)
+        _ = try await client.request("msg") as EmptyResponse
+        XCTAssertEqual(client.message, "ok")
+    }
 }
