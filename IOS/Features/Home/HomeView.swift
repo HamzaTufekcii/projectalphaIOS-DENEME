@@ -53,6 +53,10 @@ struct HomeView: View {
                             Button("Ara") {
                                 Task { await viewModel.search() }
                             }
+
+                            Button("Temizle") {
+                                Task { await viewModel.reset() }
+                            }
                         }
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {

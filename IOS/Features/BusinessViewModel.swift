@@ -178,6 +178,22 @@ final class BusinessViewModel: ObservableObject {
         addressFilter = AddressFilter()
         applyFiltersAndSort()
     }
+
+    /// Restore default state and fetch businesses again
+    func reset() async {
+        // Reset search and selection state
+        searchTerm = ""
+        selectedFilter = nil
+        sortOption = .rating
+
+        // Reset advanced filters
+        priceRangeFilter = nil
+        hasActivePromoFilter = nil
+        addressFilter = AddressFilter()
+
+        // Reload businesses with the cleared criteria
+        await search()
+    }
 }
 
 // MARK: - Supporting Types
