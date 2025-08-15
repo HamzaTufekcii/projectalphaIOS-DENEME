@@ -45,6 +45,7 @@ struct HomeView: View {
                                     NavigationLink(destination: RestaurantDetailView(businessId: business.id)) {
                                         RestaurantRow(restaurant: business)
                                             .frame(width: 200)
+                                            .environmentObject(viewModel)
                                     }
                                 }
                             }
@@ -59,6 +60,7 @@ struct HomeView: View {
                         ForEach(viewModel.searchResults) { business in
                             NavigationLink(destination: RestaurantDetailView(businessId: business.id)) {
                                 RestaurantRow(restaurant: business)
+                                    .environmentObject(viewModel)
                             }
                         }
                     }
@@ -92,6 +94,7 @@ struct HomeView: View {
             .task {
                 await viewModel.fetchTopRated()
                 await viewModel.search()
+                await viewModel.refreshFavorites()
             }
             .onReceive(locationManager.$userLocation.compactMap { $0 }) { location in
                 viewModel.userLocation = location

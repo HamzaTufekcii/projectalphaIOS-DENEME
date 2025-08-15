@@ -2,29 +2,43 @@ import SwiftUI
 
 struct RestaurantRow: View {
     let restaurant: Restaurant
+    @EnvironmentObject var listViewModel: BusinessViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(restaurant.name)
-                .font(.headline)
-            HStack {
-                Text("⭐️ \(String(format: "%.1f", restaurant.rating))")
-                Text(restaurant.priceRange)
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(restaurant.name)
+                    .font(.headline)
+                HStack {
+                    Text("⭐️ \(String(format: "%.1f", restaurant.rating))")
+                    Text(restaurant.priceRange)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
-            if let address = restaurant.address {
-                Text("\(address.street), \(address.city)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+                if let address = restaurant.address {
+                    Text("\(address.street), \(address.city)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
 
-            if !restaurant.tags.isEmpty {
-                Text(restaurant.tags.map { $0.name }.joined(separator: ", "))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                if !restaurant.tags.isEmpty {
+                    Text(restaurant.tags.map { $0.name }.joined(separator: ", "))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
+            Spacer()
+            Button {
+                Task {
+                    await listViewModel.toggleFavorite(restaurant.id)
+                    await listViewModel.refreshFavorites()
+                }
+            } label: {
+                Image(systemName: listViewModel.favoriteIds.contains(restaurant.id) ? "heart.fill" : "heart")
+                    .foregroundStyle(.red)
+            }
+            .buttonStyle(.plain)
         }
     }
 }
@@ -42,4 +56,5 @@ struct RestaurantRow: View {
             promotions: []
         )
     )
+    .environmentObject(BusinessViewModel())
 }

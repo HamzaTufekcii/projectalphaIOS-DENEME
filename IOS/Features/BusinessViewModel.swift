@@ -12,8 +12,12 @@ final class BusinessViewModel: ObservableObject {
     @Published var searchTerm: String = ""
     @Published var selectedFilter: FilterType?
     @Published var userLocation: CLLocationCoordinate2D?
+    @Published var favoriteIds: Set<String> = []
 
     private let service = BusinessService()
+    private let listService = ListService()
+    private let userService = UserService()
+    private let session = UserSession.shared
 
     func fetchTopRated(limit: Int = 5) async {
         do {
@@ -79,6 +83,26 @@ final class BusinessViewModel: ObservableObject {
         guard let location = userLocation else { return }
         do {
             searchResults = try await service.getNearby(latitude: location.latitude, longitude: location.longitude)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func toggleFavorite(_ id: String) async {
+        guard let userId = session.getUserId() else { return }
+        do {
+            _ = try await listService.toggleFavorite(userId: userId, itemId: id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func refreshFavorites() async {
+        guard let userId = session.getUserId(),
+              let favoritesId = userService.getUserFavoritesIdFromStorage() else { return }
+        do {
+            let favorites = try await listService.getUserListItems(userId: userId, listId: favoritesId)
+            favoriteIds = Set(favorites.map { $0.id })
         } catch {
             errorMessage = error.localizedDescription
         }
