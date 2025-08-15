@@ -4,8 +4,18 @@ struct RestaurantRegistrationView: View {
     @StateObject private var viewModel = RestaurantRegistrationViewModel()
 
     var body: some View {
-        Text("Restaurant Registration")
-            .navigationTitle("Register")
+        List(viewModel.restaurants) { restaurant in
+            Text(restaurant.name)
+        }
+        .navigationTitle("Register")
+        .task {
+            await viewModel.loadOwnedBusinesses()
+        }
+        .overlay {
+            if let error = viewModel.errorMessage {
+                Text(error).foregroundColor(.red)
+            }
+        }
     }
 }
 
