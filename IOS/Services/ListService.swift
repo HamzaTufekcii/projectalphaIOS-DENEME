@@ -11,7 +11,7 @@ struct UserList: Identifiable, Decodable {
         case id, name
         case isFavorite = "is_favorite"
         case isPublic = "is_public"
-        case likeCount = "like_count"
+        case likeCount = "like_counter"
     }
 }
 
