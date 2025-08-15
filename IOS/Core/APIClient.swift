@@ -20,9 +20,9 @@ final class APIClient: APIClientProtocol {
     private var authData: AuthData?
     private(set) var message: String?
 
-    init(baseURL: URL = AppConfiguration.apiBaseURL,
+    init(baseURL: URL? = nil,
          session: URLSession = .shared) {
-        self.baseURL = baseURL
+        self.baseURL = baseURL ?? AppConfiguration.apiBaseURL
         self.session = session
     }
 
