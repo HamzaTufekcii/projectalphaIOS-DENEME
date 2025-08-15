@@ -6,15 +6,29 @@ struct InsideListView: View {
 
     var body: some View {
         List(viewModel.items) { restaurant in
-            Text(restaurant.name)
+            HStack {
+                Text(restaurant.name)
+                Spacer()
+                Button {
+                    Task { await viewModel.removeItem(listId: list.id, itemId: restaurant.id) }
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+                }
+            }
         }
         .navigationTitle(list.name)
         .task {
             await viewModel.loadItems(listId: list.id)
         }
         .overlay {
-            if let error = viewModel.errorMessage {
-                Text(error).foregroundColor(.red)
+            VStack {
+                if let status = viewModel.statusMessage {
+                    Text(status).foregroundColor(.green)
+                }
+                if let error = viewModel.errorMessage {
+                    Text(error).foregroundColor(.red)
+                }
             }
         }
     }

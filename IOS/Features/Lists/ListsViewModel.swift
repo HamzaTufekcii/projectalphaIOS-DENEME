@@ -4,6 +4,7 @@ import Foundation
 final class ListsViewModel: ObservableObject {
     @Published var lists: [UserList] = []
     @Published var errorMessage: String?
+    @Published var statusMessage: String?
 
     private let service = ListService()
     private let session = UserSession.shared
@@ -13,19 +14,23 @@ final class ListsViewModel: ObservableObject {
         do {
             lists = try await service.getUserLists(userId: userId)
             errorMessage = nil
+            statusMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            statusMessage = nil
         }
     }
 
     func createList(name: String, isPublic: Bool = false) async {
         guard let userId = session.getUserId() else { return }
         do {
-            let newList = try await service.createList(userId: userId, name: name, isPublic: isPublic)
-            lists.append(newList)
+            _ = try await service.createList(userId: userId, name: name, isPublic: isPublic)
+            await loadLists()
+            statusMessage = "List created"
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            statusMessage = nil
         }
     }
 
@@ -33,10 +38,12 @@ final class ListsViewModel: ObservableObject {
         guard let userId = session.getUserId() else { return }
         do {
             _ = try await service.removeList(userId: userId, listId: id)
-            lists.removeAll { $0.id == id }
+            await loadLists()
+            statusMessage = "List removed"
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            statusMessage = nil
         }
     }
 }

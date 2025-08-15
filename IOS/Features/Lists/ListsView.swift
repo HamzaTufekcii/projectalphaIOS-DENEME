@@ -15,12 +15,12 @@ struct ListsView: View {
                             if list.isFavorite == true {
                                 Image(systemName: "star.fill").foregroundColor(.yellow)
                             }
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            let id = viewModel.lists[index].id
-                            Task { await viewModel.removeList(id) }
+                            Button {
+                                Task { await viewModel.removeList(list.id) }
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
                         }
                     }
                 }
@@ -34,6 +34,9 @@ struct ListsView: View {
                     }
                 }
                 .padding()
+                if let status = viewModel.statusMessage {
+                    Text(status).foregroundColor(.green)
+                }
                 if let message = viewModel.errorMessage {
                     Text(message).foregroundColor(.red)
                 }
