@@ -18,8 +18,14 @@ struct UserList: Identifiable, Decodable {
 
 /// Service handling list operations through the API client.
 final class ListService {
-    private let api = APIClient.shared
-    private let userService = UserService()
+    private let api: APIClientProtocol
+    private let userService: UserService
+
+    init(api: APIClientProtocol = APIClient.shared, userService: UserService = UserService()) {
+        self.api = api
+        self.userService = userService
+    }
+
     private var base: String {
         let role = userService.getUserRoleFromStorage() ?? "diner_user"
         return "api/users/\(role)"

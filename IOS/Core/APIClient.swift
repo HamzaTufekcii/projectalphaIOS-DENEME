@@ -1,11 +1,19 @@
 import Foundation
 
+protocol APIClientProtocol {
+    var message: String? { get }
+    func setAuthData(_ data: AuthData?)
+    func request<T: Decodable>(_ path: String,
+                               method: String,
+                               body: Data?) async throws -> T
+}
+
 enum APIClientError: Error {
     case insecureURL
 }
 
 /// Simple API client used by feature services to perform network calls.
-final class APIClient {
+final class APIClient: APIClientProtocol {
     static let shared = APIClient()
     private let baseURL: URL
     private let session: URLSession

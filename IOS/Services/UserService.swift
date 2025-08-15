@@ -41,13 +41,18 @@ struct UserReview: Identifiable, Codable {
 /// Service responsible for user related operations such as profile
 /// management, likes and reviews.
 final class UserService {
-    private let api = APIClient.shared
-    private let storage = SecureStorage.shared
+    private let api: APIClientProtocol
+    private let storage: SecureStorage
     private let base = "api/users"
     private let tokenKey = "authToken"
     private let userIdKey = "userId"
     private let userRoleKey = "userRole"
     private let favoritesIdKey = "favoritesListId"
+
+    init(api: APIClientProtocol = APIClient.shared, storage: SecureStorage = .shared) {
+        self.api = api
+        self.storage = storage
+    }
 
     // MARK: - Secure Storage
     /// Persists user identifier and token securely using Keychain.

@@ -2,8 +2,12 @@ import Foundation
 
 /// Handles authentication related network operations.
 final class AuthService {
-    private let api = APIClient.shared
+    private let api: APIClientProtocol
     private let authStorageKey = "authData"
+
+    init(api: APIClientProtocol = APIClient.shared) {
+        self.api = api
+    }
 
     // MARK: - Networking
     func sendVerificationCode(email: String) async throws -> EmptyResponse {

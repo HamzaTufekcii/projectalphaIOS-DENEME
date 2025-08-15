@@ -2,28 +2,22 @@ import XCTest
 @testable import IOS
 
 final class BusinessServiceTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        URLProtocol.registerClass(MockURLProtocol.self)
-    }
-
-    override func tearDown() {
-        URLProtocol.unregisterClass(MockURLProtocol.self)
-        MockURLProtocol.requestHandler = nil
-        super.tearDown()
-    }
-
-    func testGetAllBusinessesReturnsData() async throws {
-        MockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.path, "/api/business")
-            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            let data = Data("[{\"id\":\"1\",\"name\":\"Test\",\"description\":null,\"priceRange\":null,\"avgRating\":4.5,\"address\":null,\"tags\":[],\"promotions\":[]}]".utf8)
-            return (response, data)
-        }
-        let service = BusinessService()
+    func testGetAllBusinessesSuccess() async throws {
+        let dto = BusinessDTO(id: "1", name: "T", description: nil, priceRange: nil, avgRating: 4.0, address: nil, tags: [], promotions: [])
+        let mock = MockAPIClient()
+        mock.result = [dto]
+        let service = BusinessService(api: mock)
         let businesses = try await service.getAllBusinesses()
         XCTAssertEqual(businesses.count, 1)
         XCTAssertEqual(businesses.first?.id, "1")
-        XCTAssertEqual(businesses.first?.name, "Test")
+    }
+
+    func testGetAllBusinessesFailure() async {
+        let mock = MockAPIClient()
+        mock.error = APIError.serverError
+        let service = BusinessService(api: mock)
+        await XCTAssertThrowsError(try await service.getAllBusinesses()) { error in
+            XCTAssertEqual(error as? APIError, .serverError)
+        }
     }
 }
