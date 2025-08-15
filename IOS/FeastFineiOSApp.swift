@@ -13,9 +13,15 @@ struct FeastFineiOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
-                .environmentObject(appViewModel)
-                .environmentObject(authViewModel)
+            Group {
+                if appViewModel.isAuthenticated {
+                    HomeView()
+                } else {
+                    LoginView()
+                }
+            }
+            .environmentObject(appViewModel)
+            .environmentObject(authViewModel)
         }
     }
 }

@@ -16,6 +16,12 @@ final class AuthViewModel: ObservableObject {
     init(appViewModel: AppViewModel) {
         self.appViewModel = appViewModel
         self.isAuthenticated = appViewModel.isAuthenticated
+
+        if let auth = service.getAuthData() {
+            session.save(userId: auth.user?.id, token: auth.accessToken)
+            appViewModel.isAuthenticated = true
+            isAuthenticated = true
+        }
     }
 
     // MARK: - Actions
