@@ -55,7 +55,11 @@ struct RestaurantDetailView: View {
         .task {
             await viewModel.fetchBusiness(id: businessId)
             await viewModel.fetchPromotions(businessId: businessId)
-            await viewModel.fetchReviews(businessId: businessId)
+        }
+        .onAppear {
+            Task {
+                await viewModel.fetchReviews(businessId: businessId)
+            }
         }
     }
 }

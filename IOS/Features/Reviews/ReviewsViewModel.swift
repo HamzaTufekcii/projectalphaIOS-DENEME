@@ -4,6 +4,7 @@ import Foundation
 final class ReviewsViewModel: ObservableObject {
     @Published var reviews: [UserReview] = []
     @Published var errorMessage: String?
+    @Published var successMessage: String?
 
     private let service = UserService()
     private let session = UserSession.shared
@@ -24,8 +25,11 @@ final class ReviewsViewModel: ObservableObject {
         do {
             _ = try await service.newReview(userId: userId, businessId: businessId, review: request)
             await loadReviews()
+            successMessage = "Yorum eklendi"
+            errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            successMessage = nil
         }
     }
 }
