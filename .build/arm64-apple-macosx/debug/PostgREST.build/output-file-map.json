@@ -1,0 +1,53 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/master.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestBuilder.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestBuilder.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestBuilder.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestBuilder.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestClient.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestClient.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestClient.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestClient.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestFilterBuilder.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestFilterBuilder.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestFilterBuilder.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestFilterBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestFilterBuilder.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestQueryBuilder.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestQueryBuilder.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestQueryBuilder.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestQueryBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestQueryBuilder.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestRpcBuilder.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestRpcBuilder.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestRpcBuilder.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestRpcBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestRpcBuilder.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/PostgrestTransformBuilder.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestTransformBuilder.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestTransformBuilder.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestTransformBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/PostgrestTransformBuilder.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/Types.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/Types.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/Types.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/Types~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/Types.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/PostgREST/URLQueryRepresentable.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/URLQueryRepresentable.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/URLQueryRepresentable.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/URLQueryRepresentable~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/PostgREST.build/URLQueryRepresentable.swiftdeps"
+  }
+}

@@ -1,0 +1,4 @@
+module Supabase {
+    header "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Supabase.build/Supabase-Swift.h"
+    requires objc
+}

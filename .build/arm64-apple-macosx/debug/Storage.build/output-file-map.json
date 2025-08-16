@@ -1,0 +1,89 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/master.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/Bucket.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Bucket.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Bucket.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Bucket~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Bucket.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/BucketOptions.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/BucketOptions.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/BucketOptions.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/BucketOptions~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/BucketOptions.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/Codable.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Codable.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Codable.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Codable~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Codable.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/FileObject.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/FileObject.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/FileObject.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/FileObject~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/FileObject.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/MultipartFile.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/MultipartFile.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/MultipartFile.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/MultipartFile~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/MultipartFile.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/SignedURL.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SignedURL.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SignedURL.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SignedURL~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SignedURL.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/StorageApi.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageApi.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageApi.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageApi~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageApi.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/StorageBucketApi.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageBucketApi.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageBucketApi.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageBucketApi~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageBucketApi.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/StorageError.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageError.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageError.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageError~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageError.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/StorageFileApi.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageFileApi.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageFileApi.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageFileApi~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageFileApi.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/StorageHTTPClient.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageHTTPClient.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageHTTPClient.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageHTTPClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/StorageHTTPClient.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/SupabaseStorage.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SupabaseStorage.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SupabaseStorage.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SupabaseStorage~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/SupabaseStorage.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/TransformOptions.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/TransformOptions.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/TransformOptions.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/TransformOptions~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/TransformOptions.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/Storage/Types.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Types.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Types.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Types~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/Storage.build/Types.swiftdeps"
+  }
+}

@@ -1,0 +1,4 @@
+module _Helpers {
+    header "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/_Helpers.build/_Helpers-Swift.h"
+    requires objc
+}

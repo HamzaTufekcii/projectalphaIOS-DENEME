@@ -1,0 +1,53 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/master.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/APIClientTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/APIClientTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/APIClientTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/APIClientTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/APIClientTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/AuthServiceTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/AuthServiceTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/AuthServiceTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/AuthServiceTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/AuthServiceTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/BusinessServiceTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/BusinessServiceTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/BusinessServiceTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/BusinessServiceTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/BusinessServiceTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/HTTPSRequirementTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/HTTPSRequirementTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/HTTPSRequirementTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/HTTPSRequirementTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/HTTPSRequirementTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/IOSTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/IOSTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/IOSTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/IOSTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/IOSTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/ListServiceTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/ListServiceTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/ListServiceTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/ListServiceTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/ListServiceTests.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/MockURLProtocol.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/MockURLProtocol.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/MockURLProtocol.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/MockURLProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/MockURLProtocol.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/IOS/IOSTests/UserServiceTests.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/UserServiceTests.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/UserServiceTests.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/UserServiceTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOSTests.build/UserServiceTests.swiftdeps"
+  }
+}

@@ -1,5 +1,7 @@
-import UIKit
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct SaveToListsSheet: View {
     let businessId: String
@@ -17,21 +19,25 @@ struct SaveToListsSheet: View {
                 }
             }
             .navigationTitle("Listelerine Ekle")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") {
                         Task {
                             await viewModel.save(for: businessId)
                             if viewModel.errorMessage == nil {
-                                // Success haptic
+                                #if canImport(UIKit)
                                 let notification = UINotificationFeedbackGenerator()
                                 notification.notificationOccurred(.success)
+                                #endif
                                 dismiss()
                             } else {
-                                // Error haptic
+                                #if canImport(UIKit)
                                 let notification = UINotificationFeedbackGenerator()
                                 notification.notificationOccurred(.error)
+                                #endif
                             }
                         }
                     }
@@ -63,9 +69,10 @@ struct SaveToListsSheet: View {
         return Toggle(list.name, isOn: listBinding)
             .toggleStyle(SwitchToggleStyle(tint: .red))
             .onChange(of: listBinding.wrappedValue) { _ in
-                // Haptic feedback
+                #if canImport(UIKit)
                 let impact = UIImpactFeedbackGenerator(style: .light)
                 impact.impactOccurred()
+                #endif
             }
     }
 

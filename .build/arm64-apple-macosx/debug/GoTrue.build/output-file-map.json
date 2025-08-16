@@ -1,0 +1,83 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/master.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/GoTrueClient.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueClient.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueClient.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueClient.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/GoTrueError.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueError.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueError.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueError~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueError.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/GoTrueLocalStorage.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueLocalStorage.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueLocalStorage.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueLocalStorage~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueLocalStorage.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/GoTrueMFA.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueMFA.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueMFA.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueMFA~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/GoTrueMFA.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/APIClient.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/APIClient.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/APIClient.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/APIClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/APIClient.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/CodeVerifierStorage.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/CodeVerifierStorage.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/CodeVerifierStorage.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/CodeVerifierStorage~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/CodeVerifierStorage.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/Dependencies.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Dependencies.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Dependencies.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Dependencies~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Dependencies.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/EventEmitter.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/EventEmitter.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/EventEmitter.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/EventEmitter~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/EventEmitter.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/Helpers.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Helpers.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Helpers.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Helpers~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Helpers.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/PKCE.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/PKCE.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/PKCE.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/PKCE~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/PKCE.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/SessionManager.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionManager.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionManager.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionManager.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Internal/SessionStorage.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionStorage.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionStorage.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionStorage~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/SessionStorage.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/checkouts/supabase-swift/Sources/GoTrue/Types.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Types.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Types.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Types~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/GoTrue.build/Types.swiftdeps"
+  }
+}

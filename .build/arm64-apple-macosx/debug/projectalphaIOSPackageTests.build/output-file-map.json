@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/master.swiftdeps"
+  },
+  "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/runner.d",
+    "object": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/runner.swiftdeps"
+  }
+}
