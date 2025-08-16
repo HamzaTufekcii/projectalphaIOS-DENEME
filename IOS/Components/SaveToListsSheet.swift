@@ -12,15 +12,7 @@ struct SaveToListsSheet: View {
                     ProgressView("Yükleniyor...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(viewModel.lists) { list in
-                        Toggle(list.name, isOn: binding(for: list.id))
-                            .toggleStyle(SwitchToggleStyle(tint: .red))
-                            .onChange(of: viewModel.selectedListIds.contains(list.id)) { _ in
-                                // Haptic feedback
-                                let impact = UIImpactFeedbackGenerator(style: .light)
-                                impact.impactOccurred()
-                            }
-                    }
+                    listsView
                 }
             }
             .navigationTitle("Listelerine Ekle")
@@ -58,11 +50,28 @@ struct SaveToListsSheet: View {
         }
         .errorAlert($viewModel.errorMessage)
     }
-    
+
+    private var listsView: some View {
+        List(viewModel.lists) { list in
+            listRow(for: list)
+        }
+    }
+
+    private func listRow(for list: UserList) -> some View {
+        let listBinding = binding(for: list.id)
+        return Toggle(list.name, isOn: listBinding)
+            .toggleStyle(SwitchToggleStyle(tint: .red))
+            .onChange(of: listBinding.wrappedValue) { _ in
+                // Haptic feedback
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.impactOccurred()
+            }
+    }
+
     private func binding(for listId: String) -> Binding<Bool> {
         Binding(
             get: { viewModel.selectedListIds.contains(listId) },
-            set: { _ in 
+            set: { _ in
                 viewModel.toggleSelection(for: listId)
             }
         )
