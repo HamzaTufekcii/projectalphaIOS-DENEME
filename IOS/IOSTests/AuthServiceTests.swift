@@ -36,7 +36,7 @@ final class AuthServiceTests: XCTestCase {
         XCTAssertEqual(saved?.user?.id, "u1")
     }
 
-    func testLoginFailure() async {
+    func testLoginFailureDoesNotStoreAuthData() async {
         let json = """
         {"message":"not found"}
         """
@@ -44,5 +44,16 @@ final class AuthServiceTests: XCTestCase {
         await XCTAssertThrowsError(try await service.login(email: "e", password: "p", role: "user")) { error in
             XCTAssertEqual(error as? APIError, .notFound)
         }
+        XCTAssertNil(service.getAuthData())
+    }
+
+    func testSaveAuthDataStoresTokens() {
+        let service = AuthService(api: makeClient(body: "{}"), storage: storage)
+        let auth = AuthData(accessToken: "a", refreshToken: "r", user: User(id: "u1", email: nil, emailConfirmedAt: nil, appMetadata: nil))
+        service.saveAuthData(auth)
+        let saved = service.getAuthData()
+        XCTAssertEqual(saved?.accessToken, "a")
+        XCTAssertEqual(saved?.refreshToken, "r")
+        XCTAssertEqual(saved?.user?.id, "u1")
     }
 }

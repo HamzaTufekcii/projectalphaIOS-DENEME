@@ -32,4 +32,24 @@ final class ListServiceTests: XCTestCase {
             XCTAssertEqual(error as? APIError, .forbidden)
         }
     }
+
+    func testCreateListSuccess() async throws {
+        let json = """
+        {"id":"1","name":"Favorites","is_favorite":false,"is_public":true,"like_counter":0}
+        """
+        let service = ListService(api: makeClient(body: json))
+        let list = try await service.createList(userId: "u1", name: "Favorites", isPublic: true)
+        XCTAssertEqual(list.id, "1")
+        XCTAssertEqual(list.name, "Favorites")
+    }
+
+    func testCreateListFailure() async {
+        let json = """
+        {"message":"bad"}
+        """
+        let service = ListService(api: makeClient(statusCode: 400, body: json))
+        await XCTAssertThrowsError(try await service.createList(userId: "u1", name: "Favorites", isPublic: true)) { error in
+            XCTAssertEqual(error as? APIError, .badRequest("bad"))
+        }
+    }
 }
