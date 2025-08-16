@@ -71,13 +71,15 @@ struct RestaurantDetailView: View {
             }
         }
         .task {
-            await viewModel.fetchBusiness(id: businessId)
-            await viewModel.fetchPromotions(businessId: businessId)
-        }
-        .onAppear {
-            Task {
-                await viewModel.fetchReviews(businessId: businessId)
-            }
+            // Paralel API çağrıları - tüm veriler aynı anda yüklenir
+            async let business = viewModel.fetchBusiness(id: businessId)
+            async let promotions = viewModel.fetchPromotions(businessId: businessId)
+            async let reviews = viewModel.fetchReviews(businessId: businessId)
+            
+            // Hepsinin tamamlanmasını bekle
+            await business
+            await promotions
+            await reviews
         }
         .overlay {
             if viewModel.isLoading { LoadingView() }

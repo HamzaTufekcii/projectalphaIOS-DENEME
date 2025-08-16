@@ -19,7 +19,9 @@ final class InsideDiscoverViewModel: ObservableObject {
             businesses = try await service.getTopRated()
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            // Temporarily disable error popup for top rated
+            print("⚠️ Top rated fetch failed: \(error.localizedDescription)")
+            // errorMessage = error.localizedDescription
         }
     }
 }

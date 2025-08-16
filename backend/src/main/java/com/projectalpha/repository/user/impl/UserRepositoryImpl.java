@@ -93,8 +93,15 @@ public class UserRepositoryImpl implements UserRepository {
 
                 if (email.equals(userEmail)) {
                     JsonNode appMetaData = user.get("app_metadata");
+                    System.out.println("🔍 User found: " + userEmail);
+                    System.out.println("🔍 app_metadata: " + (appMetaData != null ? appMetaData.toString() : "null"));
                     if (appMetaData != null && appMetaData.has("role")) {
-                        return appMetaData.get("role").asText();
+                        String role = appMetaData.get("role").asText();
+                        System.out.println("🔍 Role found: " + role);
+                        return role;
+                    } else {
+                        System.out.println("🔍 No role in app_metadata, defaulting to 'user'");
+                        return "user"; // Default role if not set
                     }
                 }
             }

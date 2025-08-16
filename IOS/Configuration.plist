@@ -2,23 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Production</key>
-    <dict>
-        <key>API_BASE_URL</key>
-        <string>https://example.com</string>
-        <key>SUPABASE_URL</key>
-        <string>https://your-project.supabase.co</string>
-        <key>SUPABASE_ANON_KEY</key>
-        <string>public-anon-key</string>
-    </dict>
-    <key>Test</key>
-    <dict>
-        <key>API_BASE_URL</key>
-        <string>https://test.example.com</string>
-        <key>SUPABASE_URL</key>
-        <string>https://test-project.supabase.co</string>
-        <key>SUPABASE_ANON_KEY</key>
-        <string>test-anon-key</string>
-    </dict>
+    	<key>API_BASE_URL</key>
+	<string>https://localhost:8443</string>
+    <key>SUPABASE_URL</key>
+    <string>https://jfqmvaeeelneeawbvkga.supabase.co</string>
+    <key>SUPABASE_ANON_KEY</key>
+    <string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmcW12YWVlZWxuZWVhd2J2a2dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDAwNzgsImV4cCI6MjA2MTI3NjA3OH0.B9R9mUucwZCYXSuZPD3PKGcNUfR58Zb4Efb0kyUe2RM</string>
 </dict>
 </plist>

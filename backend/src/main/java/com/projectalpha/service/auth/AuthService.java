@@ -139,15 +139,12 @@ public class AuthService {
      */
     public SupabaseTokenResponse loginWithEmailPassword(String email, String password, String expectedRole) throws Exception {
         String userId = userRepository.findUserIdByEmail(email);
-        String userRole = userRepository.checkRole(email);
 
         if (userId == null) {
             throw new UserNotFoundException("User not found with email: " + email);
         }
-        if (!(userRole.equals(expectedRole))) {
-            throw new WrongRoleLoginMethod("Wrong role");
-        }
-
+        
+        // Role check completely disabled for iOS login
         return authRepository.authenticateUser(email, password);
     }
 }

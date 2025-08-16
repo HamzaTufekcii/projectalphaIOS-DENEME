@@ -11,7 +11,12 @@ struct HomeView: View {
     @State private var showAddressSheet = false
 
     var body: some View {
-        List {
+        VStack {
+            Text("Debug: topRated: \(viewModel.topRated.count), searchResults: \(viewModel.searchResults.count)")
+                .font(.caption)
+                .foregroundColor(.gray)
+            
+            List {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -151,10 +156,28 @@ struct HomeView: View {
                     }
                 }
             }
-            .task {
-                await viewModel.fetchTopRated()
-                await viewModel.search()
-                await viewModel.refreshFavorites()
+        }
+        .task {
+                let totalStartTime = Date()
+                print("🚀 Starting parallel API calls...")
+                print("🔍 Debug: HomeView.task started")
+                
+                // Paralel API çağrıları - 3 işlem aynı anda başlar
+                async let topRated = viewModel.fetchTopRated()
+                async let search = viewModel.search()
+                async let favorites = viewModel.refreshFavorites()
+                
+                print("🔍 Debug: API calls initiated")
+                
+                // Hepsinin tamamlanmasını bekle
+                await topRated
+                await search
+                await favorites
+                
+                let totalDuration = Date().timeIntervalSince(totalStartTime)
+                print("✅ All API calls completed in: \(String(format: "%.2f", totalDuration))s")
+                print("🔍 Debug: topRated count: \(viewModel.topRated.count)")
+                print("🔍 Debug: searchResults count: \(viewModel.searchResults.count)")
             }
             .overlay {
                 if viewModel.isLoading { LoadingView() }

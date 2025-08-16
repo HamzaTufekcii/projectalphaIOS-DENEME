@@ -14,7 +14,9 @@ final class ListServiceTests: XCTestCase {
     }
 
     func testGetUserListsSuccess() async throws {
-        let json = "[{""id"":""1"",""name"":""Favorites"",""is_favorite"":true,""is_public"":true,""like_counter"":0}]"
+        let json = """
+        [{"id":"1","name":"Favorites","is_favorite":true,"is_public":true,"like_counter":0}]
+        """
         let service = ListService(api: makeClient(body: json))
         let lists = try await service.getUserLists(userId: "u1")
         XCTAssertEqual(lists.count, 1)
@@ -22,7 +24,9 @@ final class ListServiceTests: XCTestCase {
     }
 
     func testGetUserListsFailure() async {
-        let json = "{""message"":""forbidden""}"
+        let json = """
+        {"message":"forbidden"}
+        """
         let service = ListService(api: makeClient(statusCode: 403, body: json))
         await XCTAssertThrowsError(try await service.getUserLists(userId: "u1")) { error in
             XCTAssertEqual(error as? APIError, .forbidden)

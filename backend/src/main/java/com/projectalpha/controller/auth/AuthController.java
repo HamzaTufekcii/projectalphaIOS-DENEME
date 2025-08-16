@@ -146,6 +146,16 @@ public class AuthController {
     }
     
     /**
+     * Test endpoint to check if controller is working
+     */
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        System.out.println("=== TEST ENDPOINT HIT ===");
+        System.err.println("=== TEST ENDPOINT ERROR STREAM ===");
+        return ResponseEntity.ok("Controller is working!");
+    }
+
+    /**
      * Authenticates a user with email and password.
      * 
      * @param body Request body containing email and password
@@ -153,10 +163,16 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+        System.out.println("=== LOGIN REQUEST RECEIVED ===");
+        System.out.println("Request body: " + body);
+        System.err.println("=== ERROR STREAM LOGIN ===");
+        System.err.println("Error stream body: " + body);
         try {
             String email = body.get("email");
             String password = body.get("password");
             String expectedRole = body.get("role");
+            
+            System.out.println("🔐 Login attempt - Email: " + email + ", Role: " + expectedRole + ", Password length: " + (password != null ? password.length() : 0));
             
             if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
                 return ResponseEntity.badRequest()

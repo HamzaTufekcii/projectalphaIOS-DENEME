@@ -26,11 +26,19 @@
     <array>
         <string>UIInterfaceOrientationPortrait</string>
     </array>
-    <!-- Only HTTPS connections are allowed; no ATS exceptions -->
+    <!-- Allow HTTP for localhost development -->
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>
         <false/>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>192.168.1.24</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+        </dict>
     </dict>
 </dict>
 </plist>

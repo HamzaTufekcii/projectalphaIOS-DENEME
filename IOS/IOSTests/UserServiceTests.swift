@@ -22,14 +22,18 @@ final class UserServiceTests: XCTestCase {
     }
 
     func testGetUserDataSuccess() async throws {
-        let json = "{""id"":""1"",""name"":""Test"",""email"":null,""surname"":null,""phone_numb"":null}"
+        let json = """
+        {"id":"1","name":"Test","email":null,"surname":null,"phone_numb":null}
+        """
         let service = UserService(api: makeClient(body: json), storage: storage)
         let result = try await service.getUserData(userId: "1")
         XCTAssertEqual(result.id, "1")
     }
 
     func testGetUserDataFailure() async {
-        let json = "{""message"":""unauthorized""}"
+        let json = """
+        {"message":"unauthorized"}
+        """
         let service = UserService(api: makeClient(statusCode: 401, body: json), storage: storage)
         await XCTAssertThrowsError(try await service.getUserData(userId: "1")) { error in
             XCTAssertEqual(error as? APIError, .unauthorized)

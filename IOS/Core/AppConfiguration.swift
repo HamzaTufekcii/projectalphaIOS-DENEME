@@ -4,7 +4,7 @@ enum AppConfiguration {
     private nonisolated(unsafe) static let info: [String: Any] = {
         var config: [String: Any] = [:]
 
-        if let url = Bundle.module.url(forResource: "Configuration", withExtension: "plist"),
+        if let url = Bundle.main.url(forResource: "Configuration", withExtension: "plist"),
            let data = try? Data(contentsOf: url),
            let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
             config = dict

@@ -23,7 +23,9 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testLoginStoresAuthData() async throws {
-        let json = "{""access_token"":""abc"",""refresh_token"":""def"",""user"":{""id"":""u1""}}"
+        let json = """
+        {"access_token":"abc","refresh_token":"def","user":{"id":"u1"}}
+        """
         let service = AuthService(api: makeClient(body: json), storage: storage)
         let auth = try await service.login(email: "e", password: "p", role: "user")
         XCTAssertEqual(auth.accessToken, "abc")
@@ -35,7 +37,9 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testLoginFailure() async {
-        let json = "{""message"":""not found""}"
+        let json = """
+        {"message":"not found"}
+        """
         let service = AuthService(api: makeClient(statusCode: 404, body: json), storage: storage)
         await XCTAssertThrowsError(try await service.login(email: "e", password: "p", role: "user")) { error in
             XCTAssertEqual(error as? APIError, .notFound)

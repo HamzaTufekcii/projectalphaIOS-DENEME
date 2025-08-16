@@ -19,16 +19,30 @@ final class AuthViewModel: ObservableObject {
 
     // MARK: - Actions
     func login() async {
-        do {
-            let data = try await service.login(email: email, password: password, role: role)
-            if let id = data.user?.id {
-                try await userService.fetchUserData(userId: id, role: role)
+        print("🔐 AuthViewModel.login() called with email: \(email), role: \(role)")
+        
+        // Try different roles if the first one fails
+        let rolesToTry = ["user", "owner", "admin"]
+        
+        for tryRole in rolesToTry {
+            do {
+                print("🔐 Trying role: \(tryRole)")
+                let data = try await service.login(email: email, password: password, role: tryRole)
+                print("🔐 Login successful with role: \(tryRole), user ID: \(data.user?.id ?? "nil")")
+                if let id = data.user?.id {
+                    try await userService.fetchUserData(userId: id, role: tryRole)
+                }
+                appViewModel.isAuthenticated = true
+                isAuthenticated = true
+                errorMessage = nil
+                return // Success, exit the loop
+            } catch {
+                print("🔐 Login failed with role \(tryRole): \(error)")
+                if tryRole == rolesToTry.last {
+                    // Last role failed, show error
+                    errorMessage = error.localizedDescription
+                }
             }
-            appViewModel.isAuthenticated = true
-            isAuthenticated = true
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
         }
     }
 

@@ -31,6 +31,7 @@ final class BusinessService: @unchecked Sendable {
     }
 
     func getTopRated(limit: Int = 5) async throws -> [Restaurant] {
+        // Backend GenericResponse wrapper kullanıyor, APIClient otomatik unwrap yapacak
         let dtos: [BusinessDTO] = try await api.request("\(base)/top?limit=\(limit)")
         return dtos.map(BusinessMapper.map)
     }

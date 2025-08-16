@@ -1,5 +1,20 @@
 import Foundation
 
+/// Backend login response format
+private struct LoginResponse: Codable {
+    let success: Bool
+    let accessToken: String
+    let refreshToken: String
+    let user: User?
+    
+    enum CodingKeys: String, CodingKey {
+        case success
+        case accessToken = "access_token"
+        case refreshToken = "refresh_token"
+        case user
+    }
+}
+
 /// Handles authentication related network operations.
 final class AuthService: @unchecked Sendable {
     private let api: APIClientProtocol
@@ -42,14 +57,19 @@ final class AuthService: @unchecked Sendable {
 
     func login(email: String, password: String, role: String) async throws -> AuthData {
         let body = try JSONEncoder().encode([
-            "email": email,
-            "password": password,
+            "email": email.trimmingCharacters(in: .whitespacesAndNewlines),
+            "password": password.trimmingCharacters(in: .whitespacesAndNewlines),
             "role": role
         ])
-        let auth: AuthData = try await api.request(
+        let response: LoginResponse = try await api.request(
             "api/auth/login",
             method: "POST",
             body: body
+        )
+        let auth = AuthData(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            user: response.user
         )
         saveAuthData(auth)
         return auth
@@ -61,10 +81,15 @@ final class AuthService: @unchecked Sendable {
             "password": password,
             "role": "user"
         ])
-        let auth: AuthData = try await api.request(
+        let response: LoginResponse = try await api.request(
             "api/auth/login",
             method: "POST",
             body: body
+        )
+        let auth = AuthData(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            user: response.user
         )
         return auth
     }

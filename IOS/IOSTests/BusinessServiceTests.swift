@@ -14,7 +14,9 @@ final class BusinessServiceTests: XCTestCase {
     }
 
     func testGetAllBusinessesSuccess() async throws {
-        let json = "[{""id"":""1"",""name"":""T"",""description"":null,""priceRange"":null,""avgRating"":4.0,""address"":null,""tags"":[],""promotions"":[],""photos"":null,""distance"":null}]"
+        let json = """
+        [{"id":"1","name":"T","description":null,"priceRange":null,"avgRating":4.0,"address":null,"tags":[],"promotions":[],"photos":null,"distance":null}]
+        """
         let service = BusinessService(api: makeClient(body: json))
         let businesses = try await service.getAllBusinesses()
         XCTAssertEqual(businesses.count, 1)
@@ -22,7 +24,9 @@ final class BusinessServiceTests: XCTestCase {
     }
 
     func testGetAllBusinessesFailure() async {
-        let json = "{""message"":""error""}"
+        let json = """
+        {"message":"error"}
+        """
         let service = BusinessService(api: makeClient(statusCode: 500, body: json))
         await XCTAssertThrowsError(try await service.getAllBusinesses()) { error in
             XCTAssertEqual(error as? APIError, .serverError)

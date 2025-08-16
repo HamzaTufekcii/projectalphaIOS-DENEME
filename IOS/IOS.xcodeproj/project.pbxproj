@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BB7E9F552E50B24000C69C99 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = BB7E9F542E50B24000C69C99 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BB9FFBF22E4AB2E600E1A28C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,15 +28,65 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BB7298352E50AA9C006307DE /* IOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = IOS.xcodeproj; sourceTree = "<group>"; };
+		BB7E9E332E50AAB900C69C99 /* IOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = IOS.xcodeproj; sourceTree = "<group>"; };
+		BB7E9EE82E50AEEC00C69C99 /* IOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = IOS.xcodeproj; sourceTree = "<group>"; };
 		BB9FFBE42E4AB2E500E1A28C /* IOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB9FFBF12E4AB2E600E1A28C /* IOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB9FFBFB2E4AB2E600E1A28C /* IOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BB7E9E8E2E50AE5300C69C99 /* Exceptions for "IOS" folder in "IOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				IOSTests/APIClientTests.swift,
+				IOSTests/AuthServiceTests.swift,
+				IOSTests/BusinessServiceTests.swift,
+				IOSTests/HTTPSRequirementTests.swift,
+				IOSTests/IOSTests.swift,
+				IOSTests/ListServiceTests.swift,
+				IOSTests/MockURLProtocol.swift,
+				IOSTests/UserServiceTests.swift,
+				IOSUITests/IOSUITests.swift,
+				IOSUITests/IOSUITestsLaunchTests.swift,
+			);
+			target = BB9FFBE32E4AB2E500E1A28C /* IOS */;
+		};
+		BB7E9F442E50B06700C69C99 /* Exceptions for "IOS" folder in "IOSTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				IOSTests/APIClientTests.swift,
+				IOSTests/AuthServiceTests.swift,
+				IOSTests/BusinessServiceTests.swift,
+				IOSTests/HTTPSRequirementTests.swift,
+				IOSTests/IOSTests.swift,
+				IOSTests/ListServiceTests.swift,
+				IOSTests/MockURLProtocol.swift,
+				IOSTests/UserServiceTests.swift,
+			);
+			target = BB9FFBF02E4AB2E600E1A28C /* IOSTests */;
+		};
+		BB7E9F462E50B07600C69C99 /* Exceptions for "IOS" folder in "IOSUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				IOSUITests/IOSUITests.swift,
+				IOSUITests/IOSUITestsLaunchTests.swift,
+			);
+			target = BB9FFBFA2E4AB2E600E1A28C /* IOSUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BB9FFBE62E4AB2E500E1A28C /* IOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = IOS;
+			exceptions = (
+				BB7E9E8E2E50AE5300C69C99 /* Exceptions for "IOS" folder in "IOS" target */,
+				BB7E9F442E50B06700C69C99 /* Exceptions for "IOS" folder in "IOSTests" target */,
+				BB7E9F462E50B07600C69C99 /* Exceptions for "IOS" folder in "IOSUITests" target */,
+			);
+			name = IOS;
 			sourceTree = "<group>";
 		};
 		BB9FFBF42E4AB2E600E1A28C /* IOSTests */ = {
@@ -52,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB7E9F552E50B24000C69C99 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +127,35 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BB7298362E50AA9C006307DE /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB7E9E342E50AAB900C69C99 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB7E9EE92E50AEEC00C69C99 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB7E9F532E50B24000C69C99 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BB9FFBDB2E4AB2E500E1A28C = {
 			isa = PBXGroup;
 			children = (
 				BB9FFBE62E4AB2E500E1A28C /* IOS */,
 				BB9FFBF42E4AB2E600E1A28C /* IOSTests */,
 				BB9FFBFE2E4AB2E600E1A28C /* IOSUITests */,
+				BB7E9F532E50B24000C69C99 /* Frameworks */,
 				BB9FFBE52E4AB2E500E1A28C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +190,7 @@
 			);
 			name = IOS;
 			packageProductDependencies = (
+				BB7E9F542E50B24000C69C99 /* Supabase */,
 			);
 			productName = IOS;
 			productReference = BB9FFBE42E4AB2E500E1A28C /* IOS.app */;
@@ -195,9 +274,26 @@
 			);
 			mainGroup = BB9FFBDB2E4AB2E500E1A28C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB7E9F522E50B1EB00C69C99 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB9FFBE52E4AB2E500E1A28C /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = BB7E9E342E50AAB900C69C99 /* Products */;
+					ProjectRef = BB7E9E332E50AAB900C69C99 /* IOS.xcodeproj */;
+				},
+				{
+					ProductGroup = BB7E9EE92E50AEEC00C69C99 /* Products */;
+					ProjectRef = BB7E9EE82E50AEEC00C69C99 /* IOS.xcodeproj */;
+				},
+				{
+					ProductGroup = BB7298362E50AA9C006307DE /* Products */;
+					ProjectRef = BB7298352E50AA9C006307DE /* IOS.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				BB9FFBE32E4AB2E500E1A28C /* IOS */,
@@ -321,6 +417,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -378,6 +475,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -396,7 +494,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -423,7 +521,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -550,6 +648,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BB7E9F522E50B1EB00C69C99 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB7E9F542E50B24000C69C99 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB7E9F522E50B1EB00C69C99 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BB9FFBDC2E4AB2E500E1A28C /* Project object */;
 }

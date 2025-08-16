@@ -1,5 +1,29 @@
 import Foundation
 
+/// URLSessionDelegate that allows self-signed certificates for development
+private class DevelopmentURLSessionDelegate: NSObject, URLSessionDelegate {
+    func urlSession(_ session: URLSession, 
+                   didReceive challenge: URLAuthenticationChallenge,
+                   completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("🔒 SSL Challenge received for host: \(challenge.protectionSpace.host)")
+        print("🔒 Authentication method: \(challenge.protectionSpace.authenticationMethod)")
+        
+        // WARNING: This bypasses SSL certificate validation - only use in development!
+        #if DEBUG
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                print("🔒 Accepting self-signed certificate for development")
+                let credential = URLCredential(trust: serverTrust)
+                completionHandler(.useCredential, credential)
+                return
+            }
+        }
+        #endif
+        print("🔒 Using default SSL handling")
+        completionHandler(.performDefaultHandling, nil)
+    }
+}
+
 protocol APIClientProtocol {
     var message: String? { get }
     func setAuthData(_ data: AuthData?)
@@ -22,9 +46,19 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     private(set) var message: String?
 
     init(baseURL: URL = AppConfiguration.apiBaseURL,
-         session: URLSession = .shared) {
+         session: URLSession = APIClient.createDevelopmentSession()) {
         self.baseURL = baseURL
         self.session = session
+    }
+    
+    /// Creates a URLSession that allows self-signed certificates for development
+    private static func createDevelopmentSession() -> URLSession {
+        let delegate = DevelopmentURLSessionDelegate()
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 60
+        print("🔧 Creating development URLSession with SSL bypass delegate")
+        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
     }
 
     /// Updates tokens used for authenticated requests.
@@ -37,13 +71,28 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
                                method: String = "GET",
                                body: Data? = nil) async throws -> T {
         message = nil
-        let url = baseURL.appendingPathComponent(path)
+        
+        // Handle URLs with query parameters correctly
+        let url: URL
+        if path.contains("?") {
+            // For paths with query parameters, construct URL manually
+            url = URL(string: "\(baseURL.absoluteString)/\(path)")!
+        } else {
+            // For simple paths, use appendingPathComponent
+            url = baseURL.appendingPathComponent(path)
+        }
         var request = URLRequest(url: url)
         request.httpMethod = method
 
+        // Debug logging
+        print("🌐 API Request: \(method) \(url)")
+        
         if let body = body {
             request.httpBody = body
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            if let bodyString = String(data: body, encoding: .utf8) {
+                print("📤 Request Body: \(bodyString)")
+            }
         }
 
         return try await performRequest(request)
@@ -73,6 +122,12 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             throw APIError.unknown(statusCode: 0, message: nil)
         }
 
+        // Debug logging
+        print("📥 API Response: \(http.statusCode) from \(request.url?.absoluteString ?? "unknown")")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📄 Response Body: \(responseString)")
+        }
+
         switch http.statusCode {
         case 200..<300:
             if data.isEmpty {
@@ -84,25 +139,38 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             }
 
             let decoder = JSONDecoder()
+            
+            // Önce direct decode dene
             if let direct = try? decoder.decode(T.self, from: data) {
+                print("🔍 Direct decode successful for type: \(T.self)")
                 return direct
             }
+            
+            print("🔍 Direct decode failed, trying GenericResponse for type: \(T.self)")
+            
+            // GenericResponse ile decode dene
+            do {
+                let wrapped = try decoder.decode(GenericResponse<T>.self, from: data)
+                print("🔍 GenericResponse decode successful, success: \(wrapped.success)")
+                message = wrapped.message
+                guard wrapped.success else {
+                    throw APIError.badRequest(wrapped.message)
+                }
 
-            let wrapped = try decoder.decode(GenericResponse<T>.self, from: data)
-            message = wrapped.message
-            guard wrapped.success else {
-                throw APIError.badRequest(wrapped.message)
-            }
-
-            if let payload = wrapped.data {
-                return payload
+                if let payload = wrapped.data {
+                    print("🔍 GenericResponse payload found, type: \(type(of: payload))")
+                    return payload
+                }
+            } catch {
+                print("🔍 GenericResponse decode failed: \(error)")
+                throw error
             }
 
             if T.self == EmptyResponse.self {
                 return EmptyResponse() as! T
             }
 
-            throw APIError.unknown(statusCode: http.statusCode, message: wrapped.message)
+            throw APIError.unknown(statusCode: http.statusCode, message: "JSON decode failed")
 
         case 401:
             if allowRefresh, await refreshTokens() {

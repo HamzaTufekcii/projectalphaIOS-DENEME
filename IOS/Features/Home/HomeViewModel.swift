@@ -40,18 +40,30 @@ final class HomeViewModel: ObservableObject {
     }
 
     func fetchTopRated(limit: Int = 5) async {
+        let startTime = Date()
         isLoading = true
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            let duration = Date().timeIntervalSince(startTime)
+            print("⏱️ Top rated fetch took: \(String(format: "%.2f", duration))s")
+        }
         do {
             topRated = try await service.getTopRated(limit: limit)
         } catch {
-            errorMessage = error.localizedDescription
+            // Temporarily disable error popup for top rated
+            print("⚠️ Top rated fetch failed: \(error.localizedDescription)")
+            // errorMessage = error.localizedDescription
         }
     }
 
     func search() async {
+        let startTime = Date()
         isLoading = true
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            let duration = Date().timeIntervalSince(startTime)
+            print("⏱️ Search took: \(String(format: "%.2f", duration))s")
+        }
         do {
             if searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 allResults = try await service.getAllBusinesses()

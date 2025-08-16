@@ -34,7 +34,9 @@ final class APIClientTests: XCTestCase {
         let session = URLSession(configuration: config)
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            let body = "{""success"":true,""data"":{""value"":""test""}}"
+            let body = """
+            {"success":true,"data":{"value":"test"}}
+            """
             return (response, Data(body.utf8))
         }
 
@@ -62,7 +64,9 @@ final class APIClientTests: XCTestCase {
         let session = URLSession(configuration: config)
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            let body = "{""success"":false,""message"":""bad""}"
+            let body = """
+            {"success":false,"message":"bad"}
+            """
             return (response, Data(body.utf8))
         }
 
