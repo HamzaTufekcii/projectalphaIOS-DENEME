@@ -1,4 +1,0 @@
-module IOS {
-    header "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/IOS.build/IOS-Swift.h"
-    requires objc
-}

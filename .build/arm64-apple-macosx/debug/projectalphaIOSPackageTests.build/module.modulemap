@@ -1,4 +1,0 @@
-module projectalphaIOSPackageTests {
-    header "/Users/hamz/Desktop/projectalphaIOS-DENEME/.build/arm64-apple-macosx/debug/projectalphaIOSPackageTests.build/projectalphaIOSPackageTests-Swift.h"
-    requires objc
-}
