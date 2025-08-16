@@ -70,6 +70,24 @@ struct BusinessDTO: Codable, Identifiable {
         
         ownerId = try container.decodeIfPresent(String.self, forKey: .ownerId)
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(priceRange, forKey: .priceRange)
+        try container.encode(avgRating, forKey: .avgRating)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(ownerId, forKey: .ownerId)
+        try container.encodeIfPresent(address, forKey: .address)
+        try container.encodeIfPresent(tags, forKey: .tags)
+        try container.encodeIfPresent(promotions, forKey: .promotions)
+        try container.encodeIfPresent(photos, forKey: .photos)
+        try container.encodeIfPresent(settings, forKey: .settings)
+        try container.encodeIfPresent(operatingHours, forKey: .operatingHours)
+        try container.encodeIfPresent(distance, forKey: .distance)
+    }
 }
 
 struct AddressDTO: Codable {
