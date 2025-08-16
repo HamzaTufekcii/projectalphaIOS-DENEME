@@ -155,7 +155,7 @@ final class UserService: @unchecked Sendable {
     }
 }
 
-private struct UserProfileResponse: Decodable {
+private struct UserProfileResponse: Codable {
     let profile: UserProfile
     let dinerLists: [UserList]?
 }
