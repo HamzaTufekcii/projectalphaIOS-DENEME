@@ -11,8 +11,7 @@ struct HomeView: View {
     @State private var showAddressSheet = false
 
     var body: some View {
-        NavigationView {
-            List {
+        List {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -129,7 +128,7 @@ struct HomeView: View {
                 ProfileView()
             }
             .sheet(isPresented: $showAddressSheet) {
-                NavigationView {
+                NavigationStack {
                     Form {
                         Section("Adres") {
                             TextField("City", text: $viewModel.addressFilter.city)
@@ -157,18 +156,14 @@ struct HomeView: View {
                 await viewModel.search()
                 await viewModel.refreshFavorites()
             }
+            .overlay {
+                if viewModel.isLoading { LoadingView() }
+            }
             .onReceive(locationManager.$userLocation.compactMap { $0 }) { location in
                 viewModel.userLocation = location
                 Task { await viewModel.fetchNearby() }
             }
-            .alert("Error", isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
-                set: { _ in viewModel.errorMessage = nil }
-            )) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(viewModel.errorMessage ?? "")
-            }
+            .errorAlert($viewModel.errorMessage)
             .alert("Location Error", isPresented: Binding(
                 get: { locationManager.locationStatus != nil },
                 set: { _ in locationManager.locationStatus = nil }
@@ -180,7 +175,6 @@ struct HomeView: View {
             .onChange(of: authViewModel.isAuthenticated) { isAuth in
                 if isAuth { showLogin = false }
             }
-        }
     }
 }
 

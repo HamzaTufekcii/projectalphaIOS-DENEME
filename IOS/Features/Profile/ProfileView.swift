@@ -21,11 +21,6 @@ struct ProfileView: View {
                 Button("Save") {
                     Task { await viewModel.updateProfile(name: name, surname: surname, phoneNumber: phoneNumber, email: email) }
                 }
-            } else if let error = viewModel.errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-            } else {
-                ProgressView()
             }
         }
         .padding()
@@ -38,6 +33,10 @@ struct ProfileView: View {
                 email = profile.email ?? ""
             }
         }
+        .overlay {
+            if viewModel.isLoading { LoadingView() }
+        }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

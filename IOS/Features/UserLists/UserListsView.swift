@@ -12,10 +12,9 @@ struct UserListsView: View {
             await viewModel.loadLikes()
         }
         .overlay {
-            if let error = viewModel.errorMessage {
-                Text(error).foregroundColor(.red)
-            }
+            if viewModel.isLoading { LoadingView() }
         }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

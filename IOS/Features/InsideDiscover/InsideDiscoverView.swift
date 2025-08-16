@@ -12,10 +12,9 @@ struct InsideDiscoverView: View {
             await viewModel.loadTopRated()
         }
         .overlay {
-            if let error = viewModel.errorMessage {
-                Text(error).foregroundColor(.red)
-            }
+            if viewModel.isLoading { LoadingView() }
         }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

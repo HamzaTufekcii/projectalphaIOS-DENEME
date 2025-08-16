@@ -4,27 +4,25 @@ struct LoginView: View {
     @EnvironmentObject private var viewModel: AuthViewModel
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                TextField("Email", text: $viewModel.email)
-                    .textFieldStyle(.roundedBorder)
-                SecureField("Password", text: $viewModel.password)
-                    .textFieldStyle(.roundedBorder)
-                if let message = viewModel.errorMessage {
-                    Text(message).foregroundColor(.red)
-                }
-                Button("Login") {
-                    Task {
-                        await viewModel.login()
-                    }
-                }
-                NavigationLink("Register") {
-                    RegisterEmailView()
+        VStack(spacing: 16) {
+            TextField("Email", text: $viewModel.email)
+                .textFieldStyle(.roundedBorder)
+            SecureField("Password", text: $viewModel.password)
+                .textFieldStyle(.roundedBorder)
+            if let message = viewModel.errorMessage {
+                Text(message).foregroundColor(.red)
+            }
+            Button("Login") {
+                Task {
+                    await viewModel.login()
                 }
             }
-            .padding()
-            .navigationTitle("Login")
+            NavigationLink("Register") {
+                RegisterEmailView()
+            }
         }
+        .padding()
+        .navigationTitle("Login")
     }
 }
 

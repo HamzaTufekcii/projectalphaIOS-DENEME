@@ -19,16 +19,29 @@ final class HomeViewModel: ObservableObject {
     @Published var addressFilter = AddressFilter()
     /// Currently selected sorting option
     @Published var sortOption: SortOption = .rating
+    @Published var isLoading = false
 
     /// Internal storage for the raw results before applying filtering & sorting
     private var allResults: [Restaurant] = []
 
-    private let service = BusinessService()
-    private let listService = ListService()
-    private let userService = UserService()
-    private let session = UserSession.shared
+    private let service: BusinessService
+    private let listService: ListService
+    private let userService: UserService
+    private let session: UserSession
+
+    init(service: BusinessService = BusinessService(),
+         listService: ListService = ListService(),
+         userService: UserService = UserService(),
+         session: UserSession = .shared) {
+        self.service = service
+        self.listService = listService
+        self.userService = userService
+        self.session = session
+    }
 
     func fetchTopRated(limit: Int = 5) async {
+        isLoading = true
+        defer { isLoading = false }
         do {
             topRated = try await service.getTopRated(limit: limit)
         } catch {
@@ -37,6 +50,8 @@ final class HomeViewModel: ObservableObject {
     }
 
     func search() async {
+        isLoading = true
+        defer { isLoading = false }
         do {
             if searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 allResults = try await service.getAllBusinesses()
@@ -54,6 +69,8 @@ final class HomeViewModel: ObservableObject {
             await search()
             return
         }
+        isLoading = true
+        defer { isLoading = false }
         do {
             if filter == .all {
                 await search()
@@ -72,6 +89,8 @@ final class HomeViewModel: ObservableObject {
 
     func fetchNearby() async {
         guard let location = userLocation else { return }
+        isLoading = true
+        defer { isLoading = false }
         do {
             allResults = try await service.getNearby(latitude: location.latitude, longitude: location.longitude)
             applyFiltersAndSort()
@@ -82,6 +101,8 @@ final class HomeViewModel: ObservableObject {
 
     func toggleFavorite(_ id: String) async {
         guard let userId = session.getUserId() else { return }
+        isLoading = true
+        defer { isLoading = false }
         do {
             _ = try await listService.toggleFavorite(userId: userId, itemId: id)
         } catch {
@@ -92,6 +113,8 @@ final class HomeViewModel: ObservableObject {
     func refreshFavorites() async {
         guard let userId = session.getUserId(),
               let favoritesId = userService.getUserFavoritesIdFromStorage() else { return }
+        isLoading = true
+        defer { isLoading = false }
         do {
             let favorites = try await listService.getUserListItems(userId: userId, listId: favoritesId)
             favoriteIds = Set(favorites.map { $0.id })

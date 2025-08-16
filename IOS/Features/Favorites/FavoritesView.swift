@@ -21,15 +21,14 @@ struct FavoritesView: View {
             await viewModel.loadFavorites()
         }
         .overlay {
-            VStack {
-                if let status = viewModel.statusMessage {
-                    Text(status).foregroundColor(.green)
-                }
-                if let error = viewModel.errorMessage {
-                    Text(error).foregroundColor(.red)
-                }
+            if viewModel.isLoading { LoadingView() }
+        }
+        .overlay(alignment: .bottom) {
+            if let status = viewModel.statusMessage {
+                Text(status).foregroundColor(.green)
             }
         }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

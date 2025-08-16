@@ -24,10 +24,9 @@ struct MyReviewsView: View {
             await viewModel.loadReviews()
         }
         .overlay {
-            if let error = viewModel.errorMessage {
-                Text(error).foregroundColor(.red)
-            }
+            if viewModel.isLoading { LoadingView() }
         }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

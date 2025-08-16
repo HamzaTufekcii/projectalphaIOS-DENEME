@@ -61,6 +61,10 @@ struct RestaurantDetailView: View {
                 await viewModel.fetchReviews(businessId: businessId)
             }
         }
+        .overlay {
+            if viewModel.isLoading { LoadingView() }
+        }
+        .errorAlert($viewModel.errorMessage)
     }
 }
 

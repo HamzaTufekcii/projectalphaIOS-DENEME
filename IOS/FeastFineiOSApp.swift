@@ -13,7 +13,7 @@ struct FeastFineiOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
+            NavigationStack {
                 if appViewModel.isAuthenticated {
                     HomeView()
                 } else {
