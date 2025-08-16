@@ -3,6 +3,7 @@ import SwiftUI
 struct RestaurantDetailView: View {
     let businessId: String
     @StateObject private var viewModel = RestaurantDetailViewModel()
+    @State private var showSaveToListsSheet = false
 
     var body: some View {
         List {
@@ -51,6 +52,23 @@ struct RestaurantDetailView: View {
                     }
                 }
             }
+            
+            // Save to Lists Section
+            Section {
+                Button(action: {
+                    showSaveToListsSheet = true
+                }) {
+                    HStack {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.red)
+                        Text("Listelerime Ekle")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .foregroundColor(.primary)
+            }
         }
         .task {
             await viewModel.fetchBusiness(id: businessId)
@@ -63,6 +81,9 @@ struct RestaurantDetailView: View {
         }
         .overlay {
             if viewModel.isLoading { LoadingView() }
+        }
+        .sheet(isPresented: $showSaveToListsSheet) {
+            SaveToListsSheet(businessId: businessId)
         }
         .errorAlert($viewModel.errorMessage)
     }
