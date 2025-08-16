@@ -6,7 +6,7 @@ final class SaveToListsViewModel: ObservableObject {
     @Published var selectedListIds = Set<String>()
     @Published var isLoading = false
     @Published var isSaving = false
-    @Published var errorMessage: String?
+    @Published var toast: Toast?
     
     private var initiallySelectedIds = Set<String>()
     private let listService: ListService
@@ -52,7 +52,7 @@ final class SaveToListsViewModel: ObservableObject {
             self.initiallySelectedIds = currentSelections
             
         } catch {
-            self.errorMessage = error.localizedDescription
+            self.toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
     
@@ -75,12 +75,10 @@ final class SaveToListsViewModel: ObservableObject {
             for list in lists {
                 let wasSelected = initiallySelectedIds.contains(list.id)
                 let isSelected = selectedListIds.contains(list.id)
-                
+
                 if wasSelected && !isSelected {
-                    // Remove from list
                     _ = try await listService.removeFromList(userId: userId, listId: list.id, itemId: businessId)
                 } else if !wasSelected && isSelected {
-                    // Add to list
                     if list.name == "Favorilerim" {
                         _ = try await listService.addToFavorites(userId: userId, itemId: businessId)
                     } else {
@@ -88,9 +86,9 @@ final class SaveToListsViewModel: ObservableObject {
                     }
                 }
             }
-            
+            toast = Toast(style: .success, message: "Listeler güncellendi")
         } catch {
-            self.errorMessage = error.localizedDescription
+            self.toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 }

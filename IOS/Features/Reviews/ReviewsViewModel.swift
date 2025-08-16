@@ -3,8 +3,7 @@ import Foundation
 @MainActor
 final class ReviewsViewModel: ObservableObject {
     @Published var reviews: [UserReview] = []
-    @Published var errorMessage: String?
-    @Published var successMessage: String?
+    @Published var toast: Toast?
 
     private let service = UserService()
     private let session = UserSession.shared
@@ -13,9 +12,8 @@ final class ReviewsViewModel: ObservableObject {
         guard let userId = session.getUserId() else { return }
         do {
             reviews = try await service.getUserReviews(userId: userId)
-            errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 
@@ -25,11 +23,9 @@ final class ReviewsViewModel: ObservableObject {
         do {
             _ = try await service.newReview(userId: userId, businessId: businessId, review: request)
             await loadReviews()
-            successMessage = "Yorum eklendi"
-            errorMessage = nil
+            toast = Toast(style: .success, message: "Yorum eklendi")
         } catch {
-            errorMessage = error.localizedDescription
-            successMessage = nil
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 }

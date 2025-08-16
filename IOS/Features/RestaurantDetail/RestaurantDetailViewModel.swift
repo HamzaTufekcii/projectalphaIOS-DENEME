@@ -5,7 +5,7 @@ final class RestaurantDetailViewModel: ObservableObject {
     @Published var selectedBusiness: Restaurant?
     @Published var promotions: [Promotion] = []
     @Published var reviews: [Review] = []
-    @Published var errorMessage: String?
+    @Published var toast: Toast?
     @Published var isLoading = false
     
     private let service: BusinessService
@@ -20,7 +20,7 @@ final class RestaurantDetailViewModel: ObservableObject {
         do {
             selectedBusiness = try await service.getBusinessById(id)
         } catch {
-            errorMessage = error.localizedDescription
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 
@@ -30,7 +30,7 @@ final class RestaurantDetailViewModel: ObservableObject {
         do {
             promotions = try await service.getBusinessPromotions(businessId)
         } catch {
-            errorMessage = error.localizedDescription
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 
@@ -40,7 +40,7 @@ final class RestaurantDetailViewModel: ObservableObject {
         do {
             reviews = try await service.getBusinessReviews(businessId)
         } catch {
-            errorMessage = error.localizedDescription
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 
@@ -50,7 +50,7 @@ final class RestaurantDetailViewModel: ObservableObject {
         do {
             _ = try await service.setViewed(reviewId)
         } catch {
-            errorMessage = error.localizedDescription
+            toast = Toast(style: .error, message: error.localizedDescription)
         }
     }
 }

@@ -60,7 +60,7 @@ struct RestaurantDetailView: View {
         .sheet(isPresented: $showSaveToListsSheet) {
             SaveToListsSheet(businessId: businessId)
         }
-        .errorAlert($viewModel.errorMessage)
+        .toast($viewModel.toast)
     }
 
     @ViewBuilder
@@ -82,8 +82,9 @@ struct RestaurantDetailView: View {
                     Text(business.name)
                         .font(.title)
                     Text(business.description)
-                    HStack {
-                        Text("⭐️ \\(String(format: "%.1f", business.rating))")
+                    HStack(spacing: 4) {
+                        StarRatingView(rating: business.rating)
+                        Text(String(format: "%.1f", business.rating))
                         Text(business.priceRange)
                     }
                     .font(.subheadline)

@@ -9,8 +9,9 @@ struct RestaurantRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(restaurant.name)
                     .font(.headline)
-                HStack {
-                    Text("⭐️ \(String(format: "%.1f", restaurant.rating))")
+                HStack(spacing: 4) {
+                    StarRatingView(rating: restaurant.rating)
+                    Text(String(format: "%.1f", restaurant.rating))
                     Text(restaurant.priceRange)
                 }
                 .font(.subheadline)

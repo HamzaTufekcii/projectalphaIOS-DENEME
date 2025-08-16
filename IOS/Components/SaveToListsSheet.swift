@@ -27,17 +27,10 @@ struct SaveToListsSheet: View {
                     Button("Kaydet") {
                         Task {
                             await viewModel.save(for: businessId)
-                            if viewModel.errorMessage == nil {
-                                #if canImport(UIKit)
-                                let notification = UINotificationFeedbackGenerator()
-                                notification.notificationOccurred(.success)
-                                #endif
-                                dismiss()
-                            } else {
-                                #if canImport(UIKit)
-                                let notification = UINotificationFeedbackGenerator()
-                                notification.notificationOccurred(.error)
-                                #endif
+                            if viewModel.toast?.style == .success {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                    dismiss()
+                                }
                             }
                         }
                     }
@@ -55,7 +48,7 @@ struct SaveToListsSheet: View {
         .task {
             await viewModel.loadLists(for: businessId)
         }
-        .errorAlert($viewModel.errorMessage)
+        .toast($viewModel.toast)
     }
 
     private var listsView: some View {
