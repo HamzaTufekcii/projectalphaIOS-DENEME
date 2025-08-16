@@ -265,6 +265,7 @@ enum BusinessMapper {
             rating: dto.avgRating,
             distance: dto.distance,
             imageURL: coverPhoto?.url ?? "",
+            photos: dto.photos?.map { $0.url } ?? [],
             address: AddressMapper.map(dto.address),
             tags: dto.tags?.map(TagMapper.map) ?? [],
             promotions: dto.promotions?.map(PromotionMapper.map) ?? []

@@ -11,6 +11,8 @@ struct Business: Identifiable {
     let distance: Double?
     /// URL of the cover image associated with the business.
     let imageURL: String
+    /// URLs of all photos associated with the business.
+    let photos: [String]
     let address: Address?
     let tags: [Tag]
     let promotions: [Promotion]

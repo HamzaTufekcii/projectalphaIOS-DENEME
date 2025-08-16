@@ -53,6 +53,7 @@ struct RestaurantRow: View {
             rating: 4.5,
             distance: 1500,
             imageURL: "",
+            photos: [],
             address: Address(id: "a1", street: "Main St", city: "City", district: "District", neighborhood: "Neighborhood"),
             tags: [Tag(id: "t1", name: "Fast Food")],
             promotions: []
