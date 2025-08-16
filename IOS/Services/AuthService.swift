@@ -81,27 +81,6 @@ final class AuthService: @unchecked Sendable {
         return auth
     }
 
-    func checkPassword(email: String, password: String) async throws -> AuthData {
-        let body = try JSONEncoder().encode([
-            "email": email,
-            "password": password,
-            "role": "user"
-        ])
-        let response = try await api.request(
-            "api/auth/login",
-            method: "POST",
-            body: body,
-            useCache: false,
-            cacheTTL: nil
-        ) as LoginResponse
-        let auth = AuthData(
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-            user: response.user
-        )
-        return auth
-    }
-
     // MARK: - Auth Storage
     func saveAuthData(_ data: AuthData) {
         if let id = data.user?.id {
