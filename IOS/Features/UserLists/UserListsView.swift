@@ -15,6 +15,8 @@ struct UserListsView: View {
                 HStack {
                     Text(list.name)
                     Spacer()
+                    Text("\(list.likeCount)")
+                        .foregroundColor(.secondary)
                     Button {
                         Task { await viewModel.toggleLike(list) }
                     } label: {

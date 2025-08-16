@@ -36,12 +36,17 @@ final class UserListsViewModel: ObservableObject {
                 guard let userId = session.getUserId() else { return }
                 lists = try await listService.getUserLists(userId: userId)
             case .explore:
-                lists = try await listService.getPublicLists()
+                lists = try await fetchPublicLists()
             }
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func fetchPublicLists() async throws -> [UserList] {
+        let publicLists = try await listService.getPublicLists()
+        return publicLists.sorted { $0.likeCount > $1.likeCount }
     }
 
     func loadLikes() async {
