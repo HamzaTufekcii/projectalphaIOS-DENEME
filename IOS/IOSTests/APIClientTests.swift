@@ -90,4 +90,19 @@ final class APIClientTests: XCTestCase {
         _ = try await client.request("msg") as EmptyResponse
         XCTAssertEqual(client.message, "ok")
     }
+
+    func testUnauthorizedReturnsAPIError() async {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: config)
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+
+        let client = APIClient(baseURL: URL(string: "https://example.com/api")!, session: session)
+        await XCTAssertThrowsError(try await client.request("secure") as EmptyResponse) { error in
+            XCTAssertEqual(error as? APIError, .unauthorized)
+        }
+    }
 }

@@ -129,8 +129,7 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     /// Executes the URLRequest and decodes the response into either `T`
     /// directly or a `GenericResponse<T>` wrapper.
     private func performRequest<T: Codable>(_ request: URLRequest,
-                                              includeToken: Bool = true,
-                                              allowRefresh: Bool = true) async throws -> T {
+                                              includeToken: Bool = true) async throws -> T {
         guard request.url?.scheme?.lowercased() == "https" else {
             throw APIClientError.insecureURL
         }
@@ -196,9 +195,6 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             throw APIError.unknown(statusCode: http.statusCode, message: "JSON decode failed")
 
         case 401:
-            if allowRefresh, await refreshTokens() {
-                return try await performRequest(request, includeToken: includeToken, allowRefresh: false)
-            }
             throw APIError.unauthorized
 
         default:
@@ -206,24 +202,5 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
         }
     }
 
-    /// Attempts to refresh the authentication tokens using the stored refresh token.
-    private func refreshTokens() async -> Bool {
-        guard let refresh = authData?.refreshToken else { return false }
-        let url = baseURL.appendingPathComponent("api/auth/refresh")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONEncoder().encode(["refresh_token": refresh])
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        do {
-            let newAuth: AuthData = try await performRequest(request,
-                                                             includeToken: false,
-                                                             allowRefresh: false)
-            setAuthData(newAuth)
-            return true
-        } catch {
-            return false
-        }
-    }
 }
 
