@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a user-created list of restaurants.
-struct UserList: Identifiable, Decodable {
+struct UserList: Identifiable, Codable {
     let id: String
     let name: String
     /// Indicates whether this list is the user's favorites list.
