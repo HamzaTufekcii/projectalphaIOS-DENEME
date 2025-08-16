@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - DTOs from backend
-struct BusinessDTO: Decodable, Identifiable {
+struct BusinessDTO: Codable, Identifiable {
     let id: String
     let name: String
     let description: String?
@@ -72,7 +72,7 @@ struct BusinessDTO: Decodable, Identifiable {
     }
 }
 
-struct AddressDTO: Decodable {
+struct AddressDTO: Codable {
     let id: String?
     let street: String?
     let city: String?
@@ -87,12 +87,12 @@ struct AddressDTO: Decodable {
     }
 }
 
-struct TagDTO: Decodable {
+struct TagDTO: Codable {
     let id: String
     let name: String
     let icon: TagIconDTO?
     
-    struct TagIconDTO: Decodable {
+    struct TagIconDTO: Codable {
         let name: String
         let photo_url: String
         
@@ -103,7 +103,7 @@ struct TagDTO: Decodable {
     }
 }
 
-struct PromotionDTO: Decodable {
+struct PromotionDTO: Codable {
     let id: String
     let title: String
     let description: String?
@@ -161,14 +161,14 @@ struct PromotionDTO: Decodable {
     }
 }
 
-struct PhotoDTO: Decodable {
+struct PhotoDTO: Codable {
     let id: String
     let url: String
     let caption: String?
     let cover: Bool
 }
 
-struct BusinessSettingsDTO: Decodable {
+struct BusinessSettingsDTO: Codable {
     let id: String?
     let businessId: String?
     let petFriendly: Bool?
@@ -186,7 +186,7 @@ struct BusinessSettingsDTO: Decodable {
     }
 }
 
-struct OperatingHourDTO: Decodable {
+struct OperatingHourDTO: Codable {
     let id: String?
     let businessId: String?
     let weekday: String?
@@ -203,14 +203,14 @@ struct OperatingHourDTO: Decodable {
     }
 }
 
-struct ReviewDTO: Decodable {
+struct ReviewDTO: Codable {
     let id: String
     let reviewerName: String?
     let rating: Double
     let comment: String?
 }
 
-struct ReviewInfoForBusinessDTO: Decodable {
+struct ReviewInfoForBusinessDTO: Codable {
     let review: InnerReview
     let reviewerName: String?
 

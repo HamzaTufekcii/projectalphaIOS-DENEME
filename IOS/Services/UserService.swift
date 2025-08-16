@@ -93,7 +93,7 @@ final class UserService: @unchecked Sendable {
         let rolePath = role == "owner" ? "owner_user" : "diner_user"
         saveUserRole(rolePath)
 
-        let response: UserProfileResponse = try await api.request("\(base)/\(rolePath)/\(userId)/profile")
+        let response = try await api.request("\(base)/\(rolePath)/\(userId)/profile", method: "GET", body: nil, useCache: true, cacheTTL: 600) as UserProfileResponse
 
         if let favorites = response.dinerLists?.first(where: { $0.name == "Favorilerim" }) {
             saveUserFavoritesId(favorites.id)
@@ -104,38 +104,38 @@ final class UserService: @unchecked Sendable {
     /// Requests a password change for the specified user.
     func changePassword(userId: String, newPassword: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["newPassword": newPassword])
-        return try await api.request("\(base)/\(userId)/change-password", method: "PATCH", body: body)
+        return try await api.request("\(base)/\(userId)/change-password", method: "PATCH", body: body, useCache: false, cacheTTL: nil) as EmptyResponse
     }
 
     /// Fetches profile information for the given user identifier.
     func getUserData(userId: String) async throws -> UserProfile {
-        return try await api.request("\(base)/diner_user/\(userId)/profile")
+        return try await api.request("\(base)/diner_user/\(userId)/profile", method: "GET", body: nil, useCache: true, cacheTTL: 600) as UserProfile
     }
 
     /// Returns the lists liked by the user.
     func getUserLikes(userId: String) async throws -> [UserLike] {
-        return try await api.request("\(base)/diner_user/\(userId)/likes")
+        return try await api.request("\(base)/diner_user/\(userId)/likes", method: "GET", body: nil, useCache: true, cacheTTL: 300) as [UserLike]
     }
 
     /// Adds a like to a list for the user.
     func addLike(userId: String, listId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST", body: nil)
+        return try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST", body: nil, useCache: false, cacheTTL: nil) as EmptyResponse
     }
 
     /// Removes a like from a list for the user.
     func removeLike(userId: String, listId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE", body: nil)
+        return try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE", body: nil, useCache: false, cacheTTL: nil) as EmptyResponse
     }
 
     /// Creates a new review for a business.
     func newReview(userId: String, businessId: String, review: ReviewRequest) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(review)
-        return try await api.request("\(base)/diner_user/\(userId)/reviews/\(businessId)", method: "POST", body: body)
+        return try await api.request("\(base)/diner_user/\(userId)/reviews/\(businessId)", method: "POST", body: body, useCache: false, cacheTTL: nil) as EmptyResponse
     }
 
     /// Retrieves reviews written by the user.
     func getUserReviews(userId: String) async throws -> [UserReview] {
-        return try await api.request("\(base)/diner_user/\(userId)/reviews")
+        return try await api.request("\(base)/diner_user/\(userId)/reviews", method: "GET", body: nil, useCache: true, cacheTTL: 300) as [UserReview]
     }
 
     /// Updates profile information for the given user and returns the updated profile.
@@ -151,7 +151,7 @@ final class UserService: @unchecked Sendable {
             )
         )
         let body = try JSONEncoder().encode(request)
-        return try await api.request("\(base)/diner_user/\(userId)/profile", method: "PUT", body: body)
+        return try await api.request("\(base)/diner_user/\(userId)/profile", method: "PUT", body: body, useCache: false, cacheTTL: nil) as UserProfile
     }
 }
 

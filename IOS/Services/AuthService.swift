@@ -31,27 +31,31 @@ final class AuthService: @unchecked Sendable {
     // MARK: - Networking
     func sendVerificationCode(email: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["email": email])
-        let response: EmptyResponse = try await api.request(
+        let response = try await api.request(
             "api/auth/send-verification-code",
             method: "POST",
-            body: body
-        )
+            body: body,
+            useCache: false,
+            cacheTTL: nil
+        ) as EmptyResponse
         return response
     }
 
     func verifyCode(email: String, token: String) async throws -> VerificationResponse {
         let body = try JSONEncoder().encode(["email": email, "token": token])
-        let response: VerificationResponse = try await api.request(
+        let response = try await api.request(
             "api/auth/verify-verification-code",
             method: "POST",
-            body: body
-        )
+            body: body,
+            useCache: false,
+            cacheTTL: nil
+        ) as VerificationResponse
         return response
     }
 
     func updateUser(email: String, password: String, role: String) async throws -> EmptyResponse {
         let body = try JSONEncoder().encode(["email": email, "password": password, "role": role])
-        let response: EmptyResponse = try await api.request("api/auth/update-user", method: "POST", body: body)
+        let response = try await api.request("api/auth/update-user", method: "POST", body: body, useCache: false, cacheTTL: nil) as EmptyResponse
         return response
     }
 
@@ -61,11 +65,13 @@ final class AuthService: @unchecked Sendable {
             "password": password.trimmingCharacters(in: .whitespacesAndNewlines),
             "role": role
         ])
-        let response: LoginResponse = try await api.request(
+        let response = try await api.request(
             "api/auth/login",
             method: "POST",
-            body: body
-        )
+            body: body,
+            useCache: false,
+            cacheTTL: nil
+        ) as LoginResponse
         let auth = AuthData(
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,
@@ -81,11 +87,13 @@ final class AuthService: @unchecked Sendable {
             "password": password,
             "role": "user"
         ])
-        let response: LoginResponse = try await api.request(
+        let response = try await api.request(
             "api/auth/login",
             method: "POST",
-            body: body
-        )
+            body: body,
+            useCache: false,
+            cacheTTL: nil
+        ) as LoginResponse
         let auth = AuthData(
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,

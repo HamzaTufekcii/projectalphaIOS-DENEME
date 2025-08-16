@@ -10,83 +10,99 @@ final class BusinessService: @unchecked Sendable {
     }
 
     func getAllBusinesses() async throws -> [Restaurant] {
-        let dtos: [BusinessDTO] = try await api.request(base)
+        // Cache for 10 minutes - business list changes rarely
+        let dtos: [BusinessDTO] = try await api.request(base, method: "GET", body: nil, useCache: true, cacheTTL: 600)
         return dtos.map(BusinessMapper.map)
     }
 
     func getBusinessById(_ id: String) async throws -> Restaurant {
-        let dto: BusinessDTO = try await api.request("\(base)/\(id)")
+        // Cache for 15 minutes - individual business details change rarely
+        let dto: BusinessDTO = try await api.request("\(base)/\(id)", method: "GET", body: nil, useCache: true, cacheTTL: 900)
         return BusinessMapper.map(dto)
     }
 
     func searchBusinesses(_ name: String) async throws -> [Restaurant] {
         let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
-        let dtos: [BusinessDTO] = try await api.request("\(base)/search?name=\(encoded)")
+        // Cache search results for 5 minutes - users often repeat searches
+        let dtos: [BusinessDTO] = try await api.request("\(base)/search?name=\(encoded)", method: "GET", body: nil, useCache: true, cacheTTL: 300)
         return dtos.map(BusinessMapper.map)
     }
 
     func getBusinessesByOwner(_ ownerId: String) async throws -> [Restaurant] {
-        let dtos: [BusinessDTO] = try await api.request("\(base)/owner/\(ownerId)")
+        // Cache for 10 minutes - owner's businesses don't change often
+        let dtos: [BusinessDTO] = try await api.request("\(base)/owner/\(ownerId)", method: "GET", body: nil, useCache: true, cacheTTL: 600)
         return dtos.map(BusinessMapper.map)
     }
 
     func getTopRated(limit: Int = 5) async throws -> [Restaurant] {
-        // Backend GenericResponse wrapper kullanıyor, APIClient otomatik unwrap yapacak
-        let dtos: [BusinessDTO] = try await api.request("\(base)/top?limit=\(limit)")
+        // Cache for 5 minutes - top rated should be relatively fresh
+        let dtos: [BusinessDTO] = try await api.request("\(base)/top?limit=\(limit)", method: "GET", body: nil, useCache: true, cacheTTL: 300)
         return dtos.map(BusinessMapper.map)
     }
 
     func getByTag(_ tagId: String) async throws -> [Restaurant] {
-        let dtos: [BusinessDTO] = try await api.request("\(base)/tag/\(tagId)")
+        // Cache for 10 minutes - tag-based results change rarely
+        let dtos: [BusinessDTO] = try await api.request("\(base)/tag/\(tagId)", method: "GET", body: nil, useCache: true, cacheTTL: 600)
         return dtos.map(BusinessMapper.map)
     }
 
     func getBusinessReviews(_ businessId: String) async throws -> [Review] {
-        let dtos: [ReviewInfoForBusinessDTO] = try await api.request("\(base)/reviews/\(businessId)")
+        // Cache for 5 minutes - reviews might change more frequently
+        let dtos: [ReviewInfoForBusinessDTO] = try await api.request("\(base)/reviews/\(businessId)", method: "GET", body: nil, useCache: true, cacheTTL: 300)
         return dtos.map(ReviewInfoMapper.map)
     }
 
     func getBusinessPromotions(_ businessId: String) async throws -> [Promotion] {
-        let dtos: [PromotionDTO] = try await api.request("\(base)/promotions/\(businessId)")
+        // Cache for 5 minutes - promotions might change frequently
+        let dtos: [PromotionDTO] = try await api.request("\(base)/promotions/\(businessId)", method: "GET", body: nil, useCache: true, cacheTTL: 300)
         return dtos.map(PromotionMapper.map)
     }
 
     func getNearby(latitude: Double, longitude: Double) async throws -> [Restaurant] {
-        let dtos: [BusinessDTO] = try await api.request("\(base)/nearby?lat=\(latitude)&lng=\(longitude)")
+        // Cache for 2 minutes - location-based results should be fresh
+        let dtos: [BusinessDTO] = try await api.request("\(base)/nearby?lat=\(latitude)&lng=\(longitude)", method: "GET", body: nil, useCache: true, cacheTTL: 120)
         return dtos.map(BusinessMapper.map)
     }
 
     func newPromotion(_ businessId: String, promotion: PromotionRequest) async throws -> Promotion {
         let body = try encodePromotionRequest(promotion)
-        let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)", method: "POST", body: body)
+        // POST requests should not use cache
+        let dto: PromotionDTO = try await api.request("\(base)/promotions/\(businessId)", method: "POST", body: body, useCache: false, cacheTTL: nil)
         return PromotionMapper.map(dto)
     }
 
     func updatePromotion(_ businessId: String, promotionId: String, promotion: PromotionRequest) async throws {
         let body = try encodePromotionRequest(promotion)
-        try await api.request(
+        // PATCH requests should not use cache
+        let _: EmptyResponse = try await api.request(
             "\(base)/promotions/\(businessId)/\(promotionId)",
             method: "PATCH",
-            body: body
-        ) as EmptyResponse
+            body: body,
+            useCache: false,
+            cacheTTL: nil
+        )
         if let message = api.message {
             print(message)
         }
     }
 
     func deletePromotion(_ businessId: String, promotionId: String) async throws {
-        try await api.request(
+        // DELETE requests should not use cache
+        let _: EmptyResponse = try await api.request(
             "\(base)/promotions/\(businessId)/\(promotionId)",
             method: "DELETE",
-            body: nil
-        ) as EmptyResponse
+            body: nil,
+            useCache: false,
+            cacheTTL: nil
+        )
         if let message = api.message {
             print(message)
         }
     }
 
     func setViewed(_ reviewId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH", body: nil)
+        // PATCH requests should not use cache
+        return try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH", body: nil, useCache: false, cacheTTL: nil) as EmptyResponse
     }
 }
 

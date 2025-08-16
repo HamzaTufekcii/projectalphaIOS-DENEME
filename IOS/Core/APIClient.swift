@@ -27,10 +27,12 @@ private class DevelopmentURLSessionDelegate: NSObject, URLSessionDelegate {
 protocol APIClientProtocol {
     var message: String? { get }
     func setAuthData(_ data: AuthData?)
-    func request<T: Decodable>(_ path: String,
+    func request<T: Codable>(_ path: String,
                                method: String,
-                               body: Data?) async throws -> T
-    func request<T: Decodable>(_ path: String) async throws -> T
+                               body: Data?,
+                               useCache: Bool,
+                               cacheTTL: TimeInterval?) async throws -> T
+    func request<T: Codable>(_ path: String) async throws -> T
 }
 
 enum APIClientError: Error {
@@ -67,10 +69,23 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     }
 
     /// Performs a request for the given path and HTTP method.
-    func request<T: Decodable>(_ path: String,
+    func request<T: Codable>(_ path: String,
                                method: String = "GET",
-                               body: Data? = nil) async throws -> T {
+                               body: Data? = nil,
+                               useCache: Bool = true,
+                               cacheTTL: TimeInterval? = nil) async throws -> T {
         message = nil
+        
+        // Generate cache key for GET requests
+        let cacheKey = ResponseCache.key(for: path)
+        
+        // Try cache first for GET requests
+        if method == "GET" && useCache {
+            if let cachedData: T = ResponseCache.shared.get(cacheKey, type: T.self) {
+                print("📦 Using cached response for: \(path)")
+                return cachedData
+            }
+        }
         
         // Handle URLs with query parameters correctly
         let url: URL
@@ -95,17 +110,25 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             }
         }
 
-        return try await performRequest(request)
+        let result: T = try await performRequest(request)
+        
+        // Cache successful GET responses
+        if method == "GET" && useCache {
+            ResponseCache.shared.set(cacheKey, value: result, memoryTTL: cacheTTL)
+            print("💾 Cached response for: \(path)")
+        }
+        
+        return result
     }
     
     /// Convenience method for GET requests without method and body parameters.
-    func request<T: Decodable>(_ path: String) async throws -> T {
-        return try await request(path, method: "GET", body: nil)
+    func request<T: Codable>(_ path: String) async throws -> T {
+        return try await request(path, method: "GET", body: nil, useCache: true, cacheTTL: nil)
     }
 
     /// Executes the URLRequest and decodes the response into either `T`
     /// directly or a `GenericResponse<T>` wrapper.
-    private func performRequest<T: Decodable>(_ request: URLRequest,
+    private func performRequest<T: Codable>(_ request: URLRequest,
                                               includeToken: Bool = true,
                                               allowRefresh: Bool = true) async throws -> T {
         guard request.url?.scheme?.lowercased() == "https" else {

@@ -14,7 +14,7 @@ final class ListService: @unchecked Sendable {
 
     func addToList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        return try await api.request(path, method: "POST", body: nil)
+        return try await api.request(path, method: "POST", body: nil, useCache: false, cacheTTL: nil)
     }
 
     func addToFavorites(userId: String, itemId: String) async throws -> EmptyResponse {
@@ -24,40 +24,43 @@ final class ListService: @unchecked Sendable {
 
     func removeFromList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        return try await api.request(path, method: "DELETE", body: nil)
+        return try await api.request(path, method: "DELETE", body: nil, useCache: false, cacheTTL: nil)
     }
 
     func createList(userId: String, name: String, isPublic: Bool) async throws -> UserList {
         let body = try JSONEncoder().encode(ListRequest(name: name, isPublic: isPublic))
         let path = "\(base)/\(userId)/lists"
-        return try await api.request(path, method: "POST", body: body)
+        return try await api.request(path, method: "POST", body: body, useCache: false, cacheTTL: nil)
     }
 
     func removeList(userId: String, listId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)"
-        return try await api.request(path, method: "DELETE", body: nil)
+        return try await api.request(path, method: "DELETE", body: nil, useCache: false, cacheTTL: nil)
     }
 
     func updateList(userId: String, listId: String, name: String, isPublic: Bool) async throws -> UserList {
         let body = try JSONEncoder().encode(ListRequest(name: name, isPublic: isPublic))
         let path = "\(base)/\(userId)/lists/\(listId)"
-        return try await api.request(path, method: "PATCH", body: body)
+        return try await api.request(path, method: "PATCH", body: body, useCache: false, cacheTTL: nil)
     }
 
     func getUserLists(userId: String) async throws -> [UserList] {
         let path = "\(base)/\(userId)/lists"
-        return try await api.request(path)
+        // Cache user lists for 5 minutes
+        return try await api.request(path, method: "GET", body: nil, useCache: true, cacheTTL: 300)
     }
 
     func getUserListItems(userId: String, listId: String) async throws -> [Restaurant] {
         let path = "\(base)/\(userId)/lists/\(listId)/items"
-        let dtos: [BusinessDTO] = try await api.request(path)
+        // Cache list items for 3 minutes - favorites might change
+        let dtos: [BusinessDTO] = try await api.request(path, method: "GET", body: nil, useCache: true, cacheTTL: 180)
         return dtos.map(BusinessMapper.map)
     }
 
     func getPublicLists() async throws -> [UserList] {
         let path = "\(base)/public/lists"
-        return try await api.request(path)
+        // Cache public lists for 10 minutes
+        return try await api.request(path, method: "GET", body: nil, useCache: true, cacheTTL: 600)
     }
 
     func toggleFavorite(userId: String, itemId: String) async throws -> [Restaurant] {
