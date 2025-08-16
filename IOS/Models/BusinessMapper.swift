@@ -232,7 +232,7 @@ struct ReviewInfoForBusinessDTO: Codable {
     let review: InnerReview
     let reviewerName: String?
 
-    struct InnerReview: Decodable {
+    struct InnerReview: Codable {
         let id: String
         let comment: String?
         let rating: Double
