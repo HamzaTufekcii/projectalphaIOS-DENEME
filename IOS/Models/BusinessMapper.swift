@@ -138,7 +138,7 @@ struct PromotionDTO: Codable {
     private enum CodingKeys: String, CodingKey {
         case id, title, description, amount, active
         case startDate = "start_date"
-        case endDate = "end_date" 
+        case endDate = "end_date"
         case createdAt = "created_at"
         case businessId = "business_id"
         // Backend ayrıca startat/endat da gönderiyor
@@ -176,6 +176,19 @@ struct PromotionDTO: Codable {
         active = try container.decode(Bool.self, forKey: .active)
         createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
         businessId = try container.decodeIfPresent(String.self, forKey: .businessId)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(startDate, forKey: .startDate)
+        try container.encodeIfPresent(endDate, forKey: .endDate)
+        try container.encodeIfPresent(amount, forKey: .amount)
+        try container.encode(active, forKey: .active)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(businessId, forKey: .businessId)
     }
 }
 
