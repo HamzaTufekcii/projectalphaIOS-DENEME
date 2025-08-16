@@ -4,12 +4,32 @@ struct UserListsView: View {
     @StateObject private var viewModel = UserListsViewModel()
 
     var body: some View {
-        List(viewModel.likedLists) { like in
-            Text(like.name ?? "Unnamed")
+        VStack {
+            Picker("Mode", selection: $viewModel.mode) {
+                Text("Listelerim").tag(UserListsViewModel.Mode.myLists)
+                Text("Keşfet").tag(UserListsViewModel.Mode.explore)
+            }
+            .pickerStyle(.segmented)
+
+            List(viewModel.lists) { list in
+                HStack {
+                    Text(list.name)
+                    Spacer()
+                    Button {
+                        Task { await viewModel.toggleLike(list) }
+                    } label: {
+                        Image(systemName: viewModel.likedListIds.contains(list.id) ? "heart.fill" : "heart")
+                            .foregroundColor(.red)
+                    }
+                }
+            }
         }
-        .navigationTitle("User Lists")
+        .navigationTitle("Listeler")
         .task {
-            await viewModel.loadLikes()
+            await viewModel.load()
+        }
+        .onChange(of: viewModel.mode) { _ in
+            Task { await viewModel.loadLists() }
         }
         .overlay {
             if viewModel.isLoading { LoadingView() }
