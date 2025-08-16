@@ -105,7 +105,7 @@ struct HomeView: View {
             .listStyle(.plain)
             .navigationTitle("Home")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         if authViewModel.isAuthenticated {
                             showProfile = true

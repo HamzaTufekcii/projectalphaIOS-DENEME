@@ -4,7 +4,8 @@ import PackageDescription
 let package = Package(
     name: "projectalphaIOS",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v17),
+        .macOS(.v13)
     ],
     products: [
         .library(
@@ -18,7 +19,9 @@ let package = Package(
     targets: [
         .target(
             name: "IOS",
-            dependencies: ["Supabase"],
+            dependencies: [
+                .product(name: "Supabase", package: "supabase-swift")
+            ],
             path: "IOS",
             exclude: [
                 "IOS.xcodeproj",

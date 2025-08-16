@@ -1,7 +1,7 @@
 import Foundation
 
 /// Handles authentication related network operations.
-final class AuthService {
+final class AuthService: @unchecked Sendable {
     private let api: APIClientProtocol
     private let storage: SecureStorage
     private let userIdKey = "userId"

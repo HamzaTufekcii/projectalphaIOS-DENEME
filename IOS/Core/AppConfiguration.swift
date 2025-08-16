@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppConfiguration {
-    private static let info: [String: Any] = {
+    private nonisolated(unsafe) static let info: [String: Any] = {
         var config: [String: Any] = [:]
 
         if let url = Bundle.module.url(forResource: "Configuration", withExtension: "plist"),

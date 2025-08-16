@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 
-final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate, @unchecked Sendable {
     private let manager = CLLocationManager()
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var locationStatus: String?
@@ -18,25 +18,33 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         case .authorizedWhenInUse, .authorizedAlways:
             manager.startUpdatingLocation()
         case .denied:
-            locationStatus = "Location access denied"
+            Task { @MainActor in
+                locationStatus = "Location access denied"
+            }
         case .restricted:
-            locationStatus = "Location access restricted"
+            Task { @MainActor in
+                locationStatus = "Location access restricted"
+            }
         case .notDetermined:
             break
         @unknown default:
-            locationStatus = "Unknown authorization status"
+            Task { @MainActor in
+                locationStatus = "Unknown authorization status"
+            }
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        DispatchQueue.main.async {
-            self.userLocation = location.coordinate
+        Task { @MainActor in
+            userLocation = location.coordinate
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        locationStatus = error.localizedDescription
+        Task { @MainActor in
+            locationStatus = error.localizedDescription
+        }
     }
 }
 

@@ -9,7 +9,7 @@ struct ProfileView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if let profile = viewModel.profile {
+            if viewModel.profile != nil {
                 TextField("Name", text: $name)
                     .textFieldStyle(.roundedBorder)
                 TextField("Surname", text: $surname)

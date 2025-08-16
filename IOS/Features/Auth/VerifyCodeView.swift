@@ -21,10 +21,12 @@ struct VerifyCodeView: View {
                     }
                 }
             }
-            NavigationLink(
-                destination: SetPasswordView(email: email),
-                isActive: $navigateToPassword
-            ) { EmptyView() }
+            NavigationLink(value: navigateToPassword ? email : nil) {
+                EmptyView()
+            }
+            .navigationDestination(for: String.self) { email in
+                SetPasswordView(email: email)
+            }
         }
         .padding()
         .navigationTitle("Verify Code")

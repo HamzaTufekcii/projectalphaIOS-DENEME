@@ -1,7 +1,7 @@
 import Foundation
 
 /// Authentication tokens returned by backend.
-public struct AuthData: Codable {
+public struct AuthData: Codable, Sendable {
     public let accessToken: String
     public let refreshToken: String
     public let user: User?
@@ -19,7 +19,7 @@ public struct AuthData: Codable {
     }
 }
 
-public struct User: Codable {
+public struct User: Codable, Sendable {
     public let id: String?
     public let email: String?
     public let emailConfirmedAt: String?
@@ -33,6 +33,6 @@ public struct User: Codable {
     }
 }
 
-public struct AppMetadata: Codable {
+public struct AppMetadata: Codable, Sendable {
     public let role: String?
 }

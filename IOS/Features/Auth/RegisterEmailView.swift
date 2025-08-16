@@ -20,10 +20,12 @@ struct RegisterEmailView: View {
                     }
                 }
             }
-            NavigationLink(
-                destination: VerifyCodeView(email: email),
-                isActive: $navigateToVerify
-            ) { EmptyView() }
+            NavigationLink(value: navigateToVerify ? email : nil) {
+                EmptyView()
+            }
+            .navigationDestination(for: String.self) { email in
+                VerifyCodeView(email: email)
+            }
         }
         .padding()
         .navigationTitle("Register Email")

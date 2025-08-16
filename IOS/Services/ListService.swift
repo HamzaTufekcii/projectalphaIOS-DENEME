@@ -1,7 +1,7 @@
 import Foundation
 
 /// Service handling list operations through the API client.
-final class ListService {
+final class ListService: @unchecked Sendable {
     private let api: APIClientProtocol
     private let userService: UserService
 
@@ -14,7 +14,7 @@ final class ListService {
 
     func addToList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        return try await api.request(path, method: "POST")
+        return try await api.request(path, method: "POST", body: nil)
     }
 
     func addToFavorites(userId: String, itemId: String) async throws -> EmptyResponse {
@@ -24,7 +24,7 @@ final class ListService {
 
     func removeFromList(userId: String, listId: String, itemId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)/items/\(itemId)"
-        return try await api.request(path, method: "DELETE")
+        return try await api.request(path, method: "DELETE", body: nil)
     }
 
     func createList(userId: String, name: String, isPublic: Bool) async throws -> UserList {
@@ -35,7 +35,7 @@ final class ListService {
 
     func removeList(userId: String, listId: String) async throws -> EmptyResponse {
         let path = "\(base)/\(userId)/lists/\(listId)"
-        return try await api.request(path, method: "DELETE")
+        return try await api.request(path, method: "DELETE", body: nil)
     }
 
     func updateList(userId: String, listId: String, name: String, isPublic: Bool) async throws -> UserList {

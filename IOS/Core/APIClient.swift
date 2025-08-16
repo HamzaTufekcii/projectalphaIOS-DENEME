@@ -6,6 +6,7 @@ protocol APIClientProtocol {
     func request<T: Decodable>(_ path: String,
                                method: String,
                                body: Data?) async throws -> T
+    func request<T: Decodable>(_ path: String) async throws -> T
 }
 
 enum APIClientError: Error {
@@ -13,7 +14,7 @@ enum APIClientError: Error {
 }
 
 /// Simple API client used by feature services to perform network calls.
-final class APIClient: APIClientProtocol {
+final class APIClient: APIClientProtocol, @unchecked Sendable {
     static let shared = APIClient()
     private let baseURL: URL
     private let session: URLSession
@@ -46,6 +47,11 @@ final class APIClient: APIClientProtocol {
         }
 
         return try await performRequest(request)
+    }
+    
+    /// Convenience method for GET requests without method and body parameters.
+    func request<T: Decodable>(_ path: String) async throws -> T {
+        return try await request(path, method: "GET", body: nil)
     }
 
     /// Executes the URLRequest and decodes the response into either `T`
@@ -112,7 +118,7 @@ final class APIClient: APIClientProtocol {
     /// Attempts to refresh the authentication tokens using the stored refresh token.
     private func refreshTokens() async -> Bool {
         guard let refresh = authData?.refreshToken else { return false }
-        var url = baseURL.appendingPathComponent("api/auth/refresh")
+        let url = baseURL.appendingPathComponent("api/auth/refresh")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = try? JSONEncoder().encode(["refresh_token": refresh])

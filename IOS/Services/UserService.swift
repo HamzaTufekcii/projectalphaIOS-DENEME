@@ -40,7 +40,7 @@ struct UserReview: Identifiable, Codable {
 
 /// Service responsible for user related operations such as profile
 /// management, likes and reviews.
-final class UserService {
+final class UserService: @unchecked Sendable {
     private let api: APIClientProtocol
     private let storage: SecureStorage
     private let base = "api/users"
@@ -119,12 +119,12 @@ final class UserService {
 
     /// Adds a like to a list for the user.
     func addLike(userId: String, listId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST")
+        return try await api.request("\(base)/diner_user/\(userId)/like/\(listId)", method: "POST", body: nil)
     }
 
     /// Removes a like from a list for the user.
     func removeLike(userId: String, listId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE")
+        return try await api.request("\(base)/diner_user/\(userId)/unlike/\(listId)", method: "DELETE", body: nil)
     }
 
     /// Creates a new review for a business.

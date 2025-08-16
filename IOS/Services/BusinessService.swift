@@ -1,7 +1,7 @@
 import Foundation
 
 /// Service responsible for fetching business related data from backend via `APIClient`.
-final class BusinessService {
+final class BusinessService: @unchecked Sendable {
     private let api: APIClientProtocol
     private let base = "api/business"
 
@@ -76,7 +76,8 @@ final class BusinessService {
     func deletePromotion(_ businessId: String, promotionId: String) async throws {
         try await api.request(
             "\(base)/promotions/\(businessId)/\(promotionId)",
-            method: "DELETE"
+            method: "DELETE",
+            body: nil
         ) as EmptyResponse
         if let message = api.message {
             print(message)
@@ -84,7 +85,7 @@ final class BusinessService {
     }
 
     func setViewed(_ reviewId: String) async throws -> EmptyResponse {
-        return try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH")
+        return try await api.request("\(base)/reviews/\(reviewId)", method: "PATCH", body: nil)
     }
 }
 
@@ -121,7 +122,7 @@ private func encodePromotionRequest(_ promotion: PromotionRequest) throws -> Dat
         description: promotion.description,
         startDate: promotion.startDate,
         endDate: promotion.endDate,
-        amount: promotion.amount.map(Int.init),
+        amount: promotion.amount,
         isActive: promotion.isActive
     )
     return try JSONEncoder().encode(request)

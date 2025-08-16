@@ -1,7 +1,7 @@
 import Foundation
 
 /// Manages access to the persisted user identifier and authentication token.
-final class UserSession {
+final class UserSession: @unchecked Sendable {
     static let shared = UserSession()
     private let storage = SecureStorage.shared
     private let userIdKey = "userId"

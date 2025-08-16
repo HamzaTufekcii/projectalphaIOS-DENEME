@@ -6,7 +6,7 @@ import Security
 /// Simple helper around Keychain for securely storing small pieces of data such as
 /// authentication tokens or identifiers. Fallbacks to `UserDefaults` when the
 /// Security framework is not available (e.g. on Linux for testing).
-final class SecureStorage {
+final class SecureStorage: @unchecked Sendable {
     static let shared = SecureStorage()
     private let service = "com.example.app"
     private init() {}
