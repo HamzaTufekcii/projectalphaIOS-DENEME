@@ -38,4 +38,16 @@ final class ProfileViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
+
+    func changePassword(newPassword: String) async {
+        guard let userId = session.getUserId() else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            _ = try await service.changePassword(userId: userId, newPassword: newPassword)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }
