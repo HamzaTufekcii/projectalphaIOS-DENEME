@@ -15,11 +15,6 @@ final class AuthViewModel: ObservableObject {
     init(appViewModel: AppViewModel) {
         self.appViewModel = appViewModel
         self.isAuthenticated = appViewModel.isAuthenticated
-
-        if service.getAuthData() != nil {
-            appViewModel.isAuthenticated = true
-            isAuthenticated = true
-        }
     }
 
     // MARK: - Actions
