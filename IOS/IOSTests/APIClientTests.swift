@@ -4,9 +4,8 @@ import XCTest
 
 final class APIClientTests: XCTestCase {
     func testRequestToInsecureURLThrows() async {
-        // This test intentionally uses HTTP to verify insecure URL handling.
-        // Without an ATS exception in Info.plist, it cannot run on a real device.
-        let client = APIClient(baseURL: URL(string: "http://example.com/api")!)
+        // Use a non-HTTPS scheme to ensure insecure URL detection.
+        let client = APIClient(baseURL: URL(string: "ftp://example.com/api")!)
         await XCTAssertThrowsError(try await client.request("test") as EmptyResponse) { error in
             XCTAssertEqual(error as? APIClientError, .insecureURL)
         }
