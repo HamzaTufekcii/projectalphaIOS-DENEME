@@ -32,4 +32,24 @@ final class BusinessServiceTests: XCTestCase {
             XCTAssertEqual(error as? APIError, .serverError)
         }
     }
+
+    func testGetBusinessByIdSuccess() async throws {
+        let json = """
+        {"id":"1","name":"Cafe","description":null,"priceRange":null,"avgRating":4.0,"address":null,"tags":[],"promotions":[],"photos":null,"distance":null}
+        """
+        let service = BusinessService(api: makeClient(body: json))
+        let business = try await service.getBusinessById("1")
+        XCTAssertEqual(business.id, "1")
+        XCTAssertEqual(business.name, "Cafe")
+    }
+
+    func testGetBusinessByIdFailure() async {
+        let json = """
+        {"message":"not found"}
+        """
+        let service = BusinessService(api: makeClient(statusCode: 404, body: json))
+        await XCTAssertThrowsError(try await service.getBusinessById("1")) { error in
+            XCTAssertEqual(error as? APIError, .notFound)
+        }
+    }
 }

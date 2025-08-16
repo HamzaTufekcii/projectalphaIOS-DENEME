@@ -48,4 +48,24 @@ final class UserServiceTests: XCTestCase {
         XCTAssertEqual(fetched?.userId, "u1")
         XCTAssertEqual(fetched?.token, "tok")
     }
+
+    func testGetUserLikesSuccess() async throws {
+        let json = """
+        [{"id":"like1","listId":"l1","name":"Favorites"}]
+        """
+        let service = UserService(api: makeClient(body: json), storage: storage)
+        let likes = try await service.getUserLikes(userId: "u1")
+        XCTAssertEqual(likes.count, 1)
+        XCTAssertEqual(likes.first?.listId, "l1")
+    }
+
+    func testGetUserLikesFailure() async {
+        let json = """
+        {"message":"server"}
+        """
+        let service = UserService(api: makeClient(statusCode: 500, body: json), storage: storage)
+        await XCTAssertThrowsError(try await service.getUserLikes(userId: "u1")) { error in
+            XCTAssertEqual(error as? APIError, .serverError)
+        }
+    }
 }
