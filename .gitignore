@@ -34,3 +34,14 @@ build/
 
 ### Node Modules ###
 node_modules/
+
+# SwiftPM
+.swiftpm/
+
+# Xcode
+*.xcuserdata
+xcuserdata/
+
+# macOS
+*.DS_Store
+
